@@ -1,0 +1,39 @@
+server:
+  port: 12345
+  tomcat:
+    threads:
+      max: 100
+
+# 数据库配置
+spring:
+  application:
+    name: cometpan
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/cometpan?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# 配置mybatis实体和xml映射
+mybatis:
+
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: top.nomelin.cometpan.pojo
+  configuration:
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+
+
+# 分页
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true #pageNum 小于 1 时会查询第一页，pageSize 小于 1 时会查询全部数据，等。
+  support-methods-arguments: true
+  params: count=countSql
+
+ip: localhost
