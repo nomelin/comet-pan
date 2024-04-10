@@ -7,6 +7,10 @@ import top.nomelin.cometpan.pojo.User;
 
 import java.util.List;
 
+/**
+ *
+ * @author nomelin
+ */
 @Mapper
 public interface UserMapper {
     /**

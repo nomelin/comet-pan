@@ -9,21 +9,42 @@ import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.BusinessException;
 import top.nomelin.cometpan.common.exception.SystemException;
 
+/**
+ * @author nomelin
+ */
 @RestControllerAdvice
 public class ExceptionHandle {
     private final Logger logger = LoggerFactory.getLogger(ExceptionHandle.class);
 
+    /**
+     * 处理业务异常
+     *
+     * @param e 业务异常
+     * @return 结果
+     */
     @ExceptionHandler(BusinessException.class)
     public Result doBusinessException(BusinessException e) {
         return new Result(e.codeMessage.code, e.codeMessage.msg);
     }
 
+    /**
+     * 处理系统异常
+     *
+     * @param e 系统异常
+     * @return 结果
+     */
     @ExceptionHandler(SystemException.class)
     public Result doSystemException(SystemException e) {
         logger.warn("系统异常->" + e.codeMessage.code + ":" + e.codeMessage.msg);
         return new Result(e.codeMessage.code, e.codeMessage.msg);
     }
 
+    /**
+     * 处理其它异常
+     *
+     * @param e 其它异常
+     * @return 结果
+     */
     @ExceptionHandler(Exception.class)
     public Result doException(Exception e) {
         logger.warn("其它异常->" + e.getMessage());

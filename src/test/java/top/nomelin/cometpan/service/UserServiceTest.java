@@ -1,6 +1,5 @@
 package top.nomelin.cometpan.service;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,9 @@ import top.nomelin.cometpan.pojo.User;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author nomelin
+ */
 @SpringBootTest
 class UserServiceTest {
     private final UserService userService;
@@ -22,9 +24,9 @@ class UserServiceTest {
 
     @Test
     void add() {
-        //User user=new User();
-        //user.setUserName("哈喽");
-        //userService.add(user);
+        User user = new User();
+        user.setUserName("哈喽");
+        userService.add(user);
     }
 
     @Test
@@ -34,13 +36,13 @@ class UserServiceTest {
 
     @Test
     void deleteBatch() {
-        List<Integer> ids=new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
         userService.deleteBatch(ids);
     }
 
     @Test
     void updateById() {
-        User user =new User();
+        User user = new User();
         user.setId(10);
         user.setName("小米");
         user.setUserName("小米小米小米小米小米小米");
@@ -64,20 +66,20 @@ class UserServiceTest {
     @Test
     void selectPage() {
         User user = new User();
-        PageInfo<User> users = userService.selectPage(user,1,5);
-        System.out.println("总记录数"+users.getTotal());
-        System.out.println("总页数"+users.getPages());
-        for(User u:users.getList()){
+        PageInfo<User> users = userService.selectPage(user, 1, 5);
+        System.out.println("总记录数" + users.getTotal());
+        System.out.println("总页数" + users.getPages());
+        for (User u : users.getList()) {
             System.out.println(u);
         }
         System.out.println("---------------------");
-        users = userService.selectPage(user,users.getPages(),5);
-        for(User u:users.getList()){
+        users = userService.selectPage(user, users.getPages(), 5);
+        for (User u : users.getList()) {
             System.out.println(u);
         }
         System.out.println("---------------------");
-        users = userService.selectPage(user,users.getPages()+1,5);
-        for(User u:users.getList()){
+        users = userService.selectPage(user, users.getPages() + 1, 5);
+        for (User u : users.getList()) {
             System.out.println(u);
         }
 
@@ -85,28 +87,28 @@ class UserServiceTest {
 
     @Test
     void login() {
-        Account account=new Account();
+        Account account = new Account();
         account.setUserName("test2");
         account.setPassword("123456");
         System.out.println(userService.login(account));
         account.setUserName("test1");
-        account.setPassword("123456");
+        account.setPassword("12345678");
         System.out.println(userService.login(account));
 
     }
 
     @Test
     void register() {
-        Account account =new Account();
-        account.setUserName("哈哈哈哈哈哈哈");
-        userService.register(account);
+//        Account account =new Account();
+//        account.setUserName("哈哈哈哈哈哈哈");
+//        userService.register(account);
     }
 
     @Test
     void updatePassword() {
-        User user=new User();
+        User user = new User();
         user.setUserName("test1");
         user.setPassword("12345678");
-        userService.updatePassword(user,"12345678");
+        userService.updatePassword(user, "12345678");
     }
 }

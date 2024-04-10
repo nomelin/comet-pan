@@ -4,6 +4,7 @@ public class User extends Account {
     private String phone;
     private String email;
     private Long usedSpace;
+    private Integer rootId;
 
     public String getPhone() {
         return phone;
@@ -31,11 +32,14 @@ public class User extends Account {
 
     @Override
     public String toString() {
-        return "User{" +
-                super.toString() +
-                ", phone='" + phone + '\'' +
-                ", email='" + email + '\'' +
-                ", usedSpace=" + usedSpace +
-                '}';
+        return "User{" + super.toString() + ", phone='" + phone + '\'' + ", email='" + email + '\'' + ", usedSpace=" + usedSpace + ", rootId=" + rootId + '}';
+    }
+
+    public Integer getRootId() {
+        return rootId;
+    }
+
+    public void setRootId(Integer rootId) {
+        this.rootId = rootId;
     }
 }

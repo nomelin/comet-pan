@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.nomelin.cometpan.dao.UserMapper">
     <select id="selectAll" parameterType="User" resultType="User">
-        select id, name, user_name, password, avatar, role, phone, email, used_space
+        select id, name, user_name, password, avatar, role, phone, email, used_space, root_id
         from user
         <where>
             <if test="id != null">and id= #{id}</if>
@@ -15,6 +15,7 @@
             <if test="email != null">and email= #{email}</if>
             <if test="avatar != null">and avatar= #{avatar}</if>
             <if test="role != null">and role= #{role}</if>
+            <if test="rootId != null">and root_id = #{rootId}</if>
         </where>
     </select>
 
@@ -27,7 +28,8 @@
                role,
                phone,
                email,
-               used_space
+               used_space,
+               root_id
         from user
         where id = #{id}
     </select>
@@ -38,7 +40,12 @@
         where id = #{id}
     </delete>
 
-    <insert id="insert" parameterType="User" useGeneratedKeys="true">
+    <!--
+         useGeneratedKeys="true" 开启新增主键返回功能
+         keyProperty="id" user实体主键属性
+         keyColumn="id" user表中主键列
+   -->
+    <insert id="insert" parameterType="User" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
         insert into user
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">id,</if>
@@ -49,6 +56,7 @@
             <if test="email != null">email,</if>
             <if test="avatar != null">avatar,</if>
             <if test="role != null">role,</if>
+            <if test="rootId != null">root_id,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">#{id},</if>
@@ -59,6 +67,7 @@
             <if test="email != null">#{email},</if>
             <if test="avatar != null">#{avatar},</if>
             <if test="role != null">#{role},</if>
+            <if test="rootId != null">#{rootId}</if>
         </trim>
     </insert>
 
@@ -85,6 +94,9 @@
             </if>
             <if test="role != null">
                 role = #{role},
+            </if>
+            <if test="rootId != null">
+                root_id = #{rootId},
             </if>
         </set>
         where id = #{id}

@@ -1,5 +1,8 @@
 package top.nomelin.cometpan.common.enums;
 
+/**
+ * @author nomelin
+ */
 public enum Role {
     //ROOT(0),
     ADMIN(1),

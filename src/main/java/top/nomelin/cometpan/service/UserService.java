@@ -7,7 +7,7 @@ import top.nomelin.cometpan.pojo.User;
 import java.util.List;
 
 public interface UserService {
-    void add(User user);
+    int add(User user);
 
     void deleteById(Integer id);
 
@@ -23,7 +23,7 @@ public interface UserService {
 
     Account login(Account account);
 
-    void register(Account account);
+    User register(Account account);
 
     void updatePassword(Account account, String newPassword);
 }

@@ -3,6 +3,8 @@ package top.nomelin.cometpan.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,30 +12,38 @@ import top.nomelin.cometpan.common.Constants;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.enums.Role;
 import top.nomelin.cometpan.common.exception.BusinessException;
+import top.nomelin.cometpan.dao.FileMapper;
 import top.nomelin.cometpan.dao.UserMapper;
 import top.nomelin.cometpan.pojo.Account;
 import top.nomelin.cometpan.pojo.User;
+import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.service.UserService;
 import top.nomelin.cometpan.util.TokenUtil;
 
 import java.util.List;
 
+/**
+ * @author nomelin
+ */
 @Service
 public class UserServiceImpl implements UserService {
 
 
+    private final static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserMapper userMapper;
+    private final FileService fileService;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper) {
+    public UserServiceImpl(UserMapper userMapper, FileMapper fileMapper, FileService fileService) {
         this.userMapper = userMapper;
+        this.fileService = fileService;
     }
 
     /**
      * 新增
      */
     @Override
-    public void add(User user) {
+    public int add(User user) {
         if (ObjectUtil.isNull(user.getUserName())) {
             throw new BusinessException(CodeMessage.USER_NAME_NULL_ERROR);//用户名不能为空
         }
@@ -47,8 +57,13 @@ public class UserServiceImpl implements UserService {
         if (ObjectUtil.isEmpty(user.getName())) {//如果没有设置昵称，则默认昵称是用户名
             user.setName(user.getUserName());//默认昵称是用户名
         }
-        user.setRole(Role.USER.roleCode);//默认角色是普通用户
+        user.setRole(Role.USER.roleCode);//默认角色是普通用户//TODO 后续可以增加角色管理功能
         userMapper.insert(user);//插入数据库
+        int fileId = fileService.addRoot(user.getId());//创建用户目录,id自动获取
+        logger.info("新增用户，：" + user.getId() + "，根文件夹ID：" + fileId);
+        user.setRootId(fileId);//设置用户目录ID
+        updateById(user);//更新用户信息
+        return user.getId();
     }
 
     /**
@@ -118,8 +133,10 @@ public class UserServiceImpl implements UserService {
         if (!account.getPassword().equals(dbUser.getPassword())) {
             throw new BusinessException(CodeMessage.USER_ACCOUNT_ERROR);
         }
-        // 生成token，格式为用户ID-角色名
-        String tokenData = dbUser.getId() + "-" + Role.ADMIN.name();
+        // 生成token，格式为用户ID-角色-时间戳
+        // 其中时间戳用于防止重放攻击
+        // TODO 没有用，不能防止重放攻击，因为token在有效期内始终不变。必须客户端加上时间戳验证，然后私钥签名。
+        String tokenData = dbUser.getId() + "-" + dbUser.getRole();//+ "-" + System.currentTimeMillis();
         String token = TokenUtil.createToken(tokenData, dbUser.getPassword());
         // 将生成的token设置到用户对象中
         dbUser.setToken(token);
@@ -132,10 +149,11 @@ public class UserServiceImpl implements UserService {
      * 注册
      */
     @Override
-    public void register(Account account) {
+    public User register(Account account) {
         User user = new User();
         BeanUtils.copyProperties(account, user);
-        add(user);
+        int id = add(user);
+        return selectById(id);
     }
 
     /**
