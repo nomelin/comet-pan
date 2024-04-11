@@ -33,6 +33,11 @@ public interface FileService {
     void updateSizeById(Integer id, boolean add);
 
     /**
+     * 更新“修改时间”
+     */
+    void updateTimeById(Integer id);
+
+    /**
      * 新增根目录
      * 返回根目录ID
      */
