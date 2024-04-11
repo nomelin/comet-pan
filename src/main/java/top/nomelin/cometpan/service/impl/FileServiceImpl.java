@@ -16,7 +16,10 @@ import top.nomelin.cometpan.pojo.User;
 import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.util.Util;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * 网盘文件信息表业务处理
@@ -42,6 +45,86 @@ public class FileServiceImpl implements FileService {
     public int add(FileMeta fileMeta) {
         fileMapper.insert(fileMeta);
         return fileMeta.getId();
+    }
+
+    @Transactional
+    @Override
+    public void setDeleteNode(Integer id) {
+        FileMeta root = fileMapper.selectById(id);
+        if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
+            setDeleteById(id);
+            return;
+        }
+        //bfs遍历删除，相当于层序遍历
+        Queue<FileMeta> queue = new LinkedList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            FileMeta current = queue.poll();
+            setDeleteById(current.getId());
+            List<FileMeta> children = selectByParentFolderId(current.getId());
+            for (FileMeta child : children) {
+                if (child.getFolder()) { // 如果是文件夹，将其加入队列
+                    queue.offer(child);
+                }
+                setDeleteById(child.getId());// 不管是文件还是文件夹，都删除子节点
+            }
+        }
+    }
+
+    public void cancelDeleteById(Integer id) {
+        FileMeta fileMeta = new FileMeta();
+        fileMeta.setId(id);
+        fileMeta.setDelete(false);
+        fileMapper.updateById(fileMeta);
+    }
+
+    @Transactional
+    @Override
+    public void cancelDeleteNode(Integer id) {
+        FileMeta root = fileMapper.selectById(id);
+        if (!root.getFolder()) {
+            cancelDeleteById(id);
+            return;
+        }
+        Queue<FileMeta> queue = new LinkedList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            FileMeta current = queue.poll();
+            cancelDeleteById(current.getId());
+            List<FileMeta> children = selectByParentFolderId(current.getId());
+            for (FileMeta child : children) {
+                if (child.getFolder()) { // 如果是文件夹，将其加入队列
+                    queue.offer(child);
+                }
+                cancelDeleteById(child.getId());
+            }
+        }
+    }
+
+    @Transactional
+    @Override
+    public void deleteNode(Integer id) {
+        FileMeta root = fileMapper.selectById(id);
+        if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
+            deleteById(id);
+            return;
+        }
+        //bfs遍历删除，相当于层序遍历
+        List<Integer> ids = new ArrayList<>();//直接删除会导致记录已经删除，导致查询不到子节点，所以需要记录一下id
+        Queue<FileMeta> queue = new LinkedList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            FileMeta current = queue.poll();
+            ids.add(current.getId());
+            List<FileMeta> children = selectByParentFolderId(current.getId());
+            for (FileMeta child : children) {
+                if (child.getFolder()) { // 如果是文件夹，将其加入队列
+                    queue.offer(child);
+                }
+                ids.add(child.getId());// 不管是文件还是文件夹，都删除子节点
+            }
+        }
+        deleteBatch(ids);
     }
 
     @Override
@@ -175,7 +258,7 @@ public class FileServiceImpl implements FileService {
     public List<FileMeta> selectByParentFolderId(Integer parentFolderId) {
         FileMeta fileMeta = new FileMeta();
         fileMeta.setFolderId(parentFolderId);
-        fileMeta.setUserId(fileMapper.selectById(parentFolderId).getUserId());
+        fileMeta.setUserId(fileMapper.selectById(parentFolderId).getUserId());// 限制用户只能看到自己的文件
         return fileMapper.selectAll(fileMeta);
     }
 

@@ -2,7 +2,6 @@ package top.nomelin.cometpan.service;
 
 
 import com.github.pagehelper.PageInfo;
-import org.springframework.transaction.annotation.Transactional;
 import top.nomelin.cometpan.pojo.FileMeta;
 
 import java.util.List;
@@ -59,7 +58,20 @@ public interface FileService {
      */
     void setDeleteBatch(List<Integer> ids);
 
+    /**
+     * 标记删除节点，包括子节点
+     */
+    void setDeleteNode(Integer id);
 
+    /**
+     * 取消标记删除节点，包括子节点
+     */
+    void cancelDeleteNode(Integer id);
+
+    /**
+     * 彻底删除节点，包括子节点
+     */
+    void deleteNode(Integer id);
 
     /**
      * 修改
