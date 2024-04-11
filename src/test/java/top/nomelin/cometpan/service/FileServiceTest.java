@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import top.nomelin.cometpan.pojo.FileMeta;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SpringBootTest
 class FileServiceTest {
     private final FileService fileService;
@@ -21,23 +24,23 @@ class FileServiceTest {
 
     @Test
     void addRoot() {
-        fileService.addRoot(3);
+        //fileService.addRoot(3);
     }
 
     @Test
     void deleteById() {
-    }
 
-    @Test
-    void testAdd() {
-    }
-
-    @Test
-    void testDeleteById() {
     }
 
     @Test
     void deleteBatch() {
+//        List<Integer> ids = new ArrayList<>();
+//        ids.add(29);
+//        ids.add(28);
+//        ids.add(27);
+//        ids.add(31);
+//        ids.add(32);
+//        fileService.deleteBatch(ids);
     }
 
     @Test
@@ -46,6 +49,10 @@ class FileServiceTest {
 
     @Test
     void setDeleteBatch() {
+        List<Integer> ids = new ArrayList<>();
+        ids.add(31);
+        ids.add(32);
+        fileService.setDeleteBatch(ids);
     }
 
     @Test
@@ -54,13 +61,39 @@ class FileServiceTest {
 
     @Test
     void selectById() {
+        System.out.println(fileService.selectById(5));
     }
 
     @Test
     void selectAll() {
+        FileMeta fileMeta = new FileMeta();
+        fileMeta.setUserId(3);
+        fileService.selectAll(fileMeta).forEach(System.out::println);
     }
 
     @Test
     void selectPage() {
     }
+
+    @Test
+    void updateSzieById() {
+    }
+
+
+    @Test
+    void addFolder() {
+        //fileService.addFolder("demo文件夹", 29);
+    }
+
+    @Test
+    void addFile() {
+        fileService.addFile("demo文件", 29, 1089, "txt");
+    }
+
+
+    @Test
+    void selectByParentFolderId() {
+        fileService.selectByParentFolderId(5).forEach(System.out::println);
+    }
+
 }

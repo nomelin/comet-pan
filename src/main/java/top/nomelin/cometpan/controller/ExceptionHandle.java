@@ -24,6 +24,7 @@ public class ExceptionHandle {
      */
     @ExceptionHandler(BusinessException.class)
     public Result doBusinessException(BusinessException e) {
+        logger.warn("业务异常->" + e.codeMessage.code + ":" + e.codeMessage.msg);//TODO 仅调试用, 正式环境不打印业务异常信息
         return new Result(e.codeMessage.code, e.codeMessage.msg);
     }
 

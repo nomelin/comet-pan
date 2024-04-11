@@ -16,7 +16,7 @@ public enum CodeMessage {
 
 
     USER_NAME_EXIST_ERROR("501", "用户名已存在"),
-    USER_NOT_LOGIN("502", "用户未登录"),
+    USER_NOT_LOGIN_ERROR("502", "用户未登录"),
     USER_ACCOUNT_ERROR("503", "账号或密码错误"),
     USER_NOT_EXIST_ERROR("504", "用户不存在"),
     PARAM_PASSWORD_ERROR("505", "原密码输入错误"),
@@ -25,8 +25,12 @@ public enum CodeMessage {
     NEED_USER_ERROR("507", "权限不适配,此处为普通用户权限才能访问"),
     ROLE_ERROR("508", "权限不匹配"),
 
-    SYSTEM_ERROR("600", "系统异常"),
-    UNKNOWN_ERROR("700", "未知异常"),
+    PARENT_FOLDER_NOT_EXIST_ERROR("601", "父文件夹不存在"),
+    PARENT_IS_NOT_FOLDER_ERROR("602", "父节点不是文件夹"),
+    INVALID_FILE_ID_ERROR("603", "操作的节点id不合法"),
+
+    SYSTEM_ERROR("800", "系统异常"),
+    UNKNOWN_ERROR("900", "未知异常"),
     ;
 
     public final String code;

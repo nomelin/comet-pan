@@ -46,6 +46,7 @@ public class TokenUtil {
      * 获取当前登录的用户信息
      */
     public static Account getCurrentUser() {
+        //TODO 在拦截器已经获取了账号，此处不需要再解析token获取账号。
         try {
             HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
                     RequestContextHolder.getRequestAttributes())).getRequest();// 获取当前请求
@@ -59,7 +60,7 @@ public class TokenUtil {
         } catch (Exception e) {
             log.warn("获取当前用户信息出错", e);
         }
-        throw new BusinessException(CodeMessage.USER_NOT_LOGIN);  // 用户未登录
+        throw new BusinessException(CodeMessage.USER_NOT_LOGIN_ERROR);  // 用户未登录
         //return new Account();  // 返回空的账号对象
     }
 

@@ -41,7 +41,6 @@
         from files
         <where>
             and id = #{id}
-            <if test="userId != null">and user_id= #{userId}</if>
         </where>
 
     </select>
@@ -51,7 +50,6 @@
         from files
         where id = #{id}
         and `delete` = 1
-        <if test="userId != null">and user_id = #{userId}</if>
     </delete>
 
     <delete id="deleteBatch">
@@ -106,7 +104,7 @@
             <if test="folder != null">
                 folder = #{folder},
             </if>
-            <if test="file != null">
+            <if test="path != null">
                 path = #{path},
             </if>
             <if test="userId != null">
