@@ -28,7 +28,9 @@ mybatis:
     map-underscore-to-camel-case: true
     cache-enabled: false
 
-
+logging:
+  file:
+    path: /logs
 # 分页
 pagehelper:
   helper-dialect: mysql
