@@ -4,6 +4,8 @@ package top.nomelin.cometpan.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,7 @@ import java.util.Queue;
  **/
 @Service
 public class FileServiceImpl implements FileService {
-
+    private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
     private final FileMapper fileMapper;
     private final UserMapper userMapper;
@@ -51,6 +53,8 @@ public class FileServiceImpl implements FileService {
     @Override
     public void setDeleteNode(Integer id) {
         FileMeta root = fileMapper.selectById(id);
+        updateSizeById(id, false);// 更新全部父目录大小
+        updateTimeById(id);// 更新全部父目录时间
         if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
             setDeleteById(id);
             return;
@@ -82,6 +86,8 @@ public class FileServiceImpl implements FileService {
     @Override
     public void cancelDeleteNode(Integer id) {
         FileMeta root = fileMapper.selectById(id);
+        updateSizeById(id, true);// 更新全部父目录大小
+        updateTimeById(id);// 更新全部父目录时间
         if (!root.getFolder()) {
             cancelDeleteById(id);
             return;
@@ -105,6 +111,11 @@ public class FileServiceImpl implements FileService {
     @Override
     public void deleteNode(Integer id) {
         FileMeta root = fileMapper.selectById(id);
+        //删除首先要标记删除，所以不用再更新父目录大小了，因为已经更新过了
+        //不用更新时间，因为删除回收站文件不会改变时间
+        if(!root.getDelete()){
+            throw new BusinessException(CodeMessage.INVALID_DELETE_ERROR);//如果文件没有被标记删除，则不能删除
+        }
         if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
             deleteById(id);
             return;
@@ -127,6 +138,7 @@ public class FileServiceImpl implements FileService {
         deleteBatch(ids);
     }
 
+    @Transactional
     @Override
     public int addFile(String fileName, Integer parentFolderId, int size, String type) {
         FileMeta file = new FileMeta();
@@ -142,6 +154,9 @@ public class FileServiceImpl implements FileService {
         if (!parent.getFolder()) {
             throw new BusinessException(CodeMessage.PARENT_IS_NOT_FOLDER_ERROR);
         }
+        if(parent.getDelete()){
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
         file.setPath(parent.getFolderId() == 0 ? "/" + fileName + "." + type
                 : parent.getPath() + "/" + fileName + "." + type);
         int userId = parent.getUserId();
@@ -154,6 +169,7 @@ public class FileServiceImpl implements FileService {
         file.setUpdateTime(time);
         fileMapper.insert(file);
         updateSizeById(file.getId(), true);// 更新全部父目录大小
+        updateTimeById(file.getId());// 更新全部父目录时间
         return file.getId();
     }
 
@@ -173,6 +189,7 @@ public class FileServiceImpl implements FileService {
         if (fileMeta.getFolderId() == 0) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
+
         int folderId;
         while (true) {
             folderId = fileMeta.getFolderId();
@@ -180,9 +197,32 @@ public class FileServiceImpl implements FileService {
                 break; // 到达根目录
             }
             fileMeta = fileMapper.selectById(folderId); // 获取父目录
-            int newSize = add ? size + fileMeta.getSize() : size - fileMeta.getSize();
+            int newSize = add ? fileMeta.getSize() + size : fileMeta.getSize() - size;
             fileMeta.setSize(newSize); // 更新父目录大小
+            //logger.info("更新目录{}的大小为{}", folderId, newSize);
             fileMapper.updateById(fileMeta); // 更新父目录
+        }
+    }
+
+    @Transactional
+    @Override
+    public void updateTimeById(Integer id) {
+        FileMeta fileMeta = new FileMeta();
+        fileMeta.setId(id);
+        String time = String.valueOf(System.currentTimeMillis());
+        fileMeta = fileMapper.selectById(id);
+        if (fileMeta.getFolderId() == 0) {
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
+        int folderId;
+        while (true) {
+            fileMeta.setUpdateTime(time);
+            fileMapper.updateById(fileMeta); // 更新目录
+            folderId = fileMeta.getFolderId();
+            if (folderId == 0) {
+                break; // 到达根目录
+            }
+            fileMeta = fileMapper.selectById(folderId); // 获取父目录
         }
     }
 
@@ -227,6 +267,7 @@ public class FileServiceImpl implements FileService {
 
     }
 
+    @Transactional
     @Override
     public int addFolder(String folderName, Integer parentFolderId) {
         FileMeta folder = new FileMeta();
@@ -237,6 +278,9 @@ public class FileServiceImpl implements FileService {
         }
         if (!parent.getFolder()) {
             throw new BusinessException(CodeMessage.PARENT_IS_NOT_FOLDER_ERROR);
+        }
+        if(parent.getDelete()){
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
         folderName = checkSameName(folderName, parentFolderId, true);
         folder.setName(folderName);
@@ -250,6 +294,8 @@ public class FileServiceImpl implements FileService {
         folder.setCrateTime(time);
         folder.setUpdateTime(time);
         fileMapper.insert(folder);
+        updateTimeById(folder.getId());// 更新父目录时间
+        //不更新父目录大小，因为文件夹大小为0
         return folder.getId();
     }
 
@@ -273,6 +319,9 @@ public class FileServiceImpl implements FileService {
         root.setUserId(userId);
         root.setFolderId(0);
         root.setPath("/");
+        String time = String.valueOf(System.currentTimeMillis());
+        root.setCrateTime(time);
+        root.setUpdateTime(time);
         add(root);
         return root.getId();
     }

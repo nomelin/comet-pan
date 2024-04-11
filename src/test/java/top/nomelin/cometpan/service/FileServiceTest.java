@@ -44,6 +44,17 @@ class FileServiceTest {
     }
 
     @Test
+    void deleteNode() {
+        //fileService.setDeleteNode(29);
+        //fileService.cancelDeleteNode(29);
+        //fileService.deleteNode(29);
+    }
+    @Test
+    void updateTime () {
+        //fileService.updateTimeById(36);
+    }
+
+    @Test
     void setDeleteById() {
     }
 
@@ -82,12 +93,12 @@ class FileServiceTest {
 
     @Test
     void addFolder() {
-        //fileService.addFolder("demo文件夹", 29);
+        //fileService.addFolder("demo文件夹2333", 29);
     }
 
     @Test
     void addFile() {
-        fileService.addFile("demo文件", 29, 1089, "txt");
+        //fileService.addFile("de文", 38, 2000 ,"mp4");
     }
 
 

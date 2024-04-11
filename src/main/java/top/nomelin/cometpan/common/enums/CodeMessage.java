@@ -28,6 +28,7 @@ public enum CodeMessage {
     PARENT_FOLDER_NOT_EXIST_ERROR("601", "父文件夹不存在"),
     PARENT_IS_NOT_FOLDER_ERROR("602", "父节点不是文件夹"),
     INVALID_FILE_ID_ERROR("603", "操作的节点id不合法"),
+    INVALID_DELETE_ERROR("604", "要彻底删除的节点不在回收站中"),
 
     SYSTEM_ERROR("800", "系统异常"),
     UNKNOWN_ERROR("900", "未知异常"),
