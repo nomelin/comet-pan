@@ -7,26 +7,34 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import top.nomelin.cometpan.cache.CurrentUserCache;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.enums.Role;
 import top.nomelin.cometpan.common.exception.BusinessException;
-import top.nomelin.cometpan.pojo.Account;
+import top.nomelin.cometpan.pojo.User;
+
 @Component
 public class UserInterceptor implements HandlerInterceptor {
-    private static final Logger logger = LoggerFactory.getLogger(TokenInterceptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserInterceptor.class);
+    private final CurrentUserCache currentUserCache;
+
+    public UserInterceptor(CurrentUserCache currentUserCache) {
+        this.currentUserCache = currentUserCache;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
         // 获取请求中的用户信息
-        Account currentUser = (Account) request.getAttribute("currentUser");
+        //Account currentUser = (Account) request.getAttribute("currentUser");
+        User currentUser = currentUserCache.getCurrentUser();
         if (currentUser == null) {
-            throw new BusinessException(CodeMessage.HTTP_ERROR);
+            throw new BusinessException(CodeMessage.ACCOUNT_CACHE_ERROR);
         }
         int role = currentUser.getRole();
         if (Role.USER.roleCode == role) {
             return true;
         } else if (Role.ADMIN.roleCode == role) {
-            logger.info("用户+" + currentUser.getName() + "为管理员,此处仅限用户访问："+request.getRequestURI());
+            logger.warn("用户+" + currentUser.getName() + "为管理员,此处仅限用户访问："+request.getRequestURI());
             throw new BusinessException(CodeMessage.NEED_USER_ERROR);
         } else {
             throw new BusinessException(CodeMessage.UNKNOWN_ERROR);

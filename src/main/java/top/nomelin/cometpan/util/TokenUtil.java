@@ -45,6 +45,7 @@ public class TokenUtil {
     /**
      * 获取当前登录的用户信息
      */
+    @Deprecated(forRemoval = true)
     public static Account getCurrentUser() {
         //TODO 在拦截器已经获取了账号，此处不需要再解析token获取账号。
         try {

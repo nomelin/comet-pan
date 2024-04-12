@@ -12,7 +12,7 @@ public enum CodeMessage {
     TOKEN_PARSING_ERROR("403", "token解析失败，请重新登录"),
     NOT_FOUND_ERROR("404", "资源不存在"),
     PARAM_LOST_ERROR("405", "参数缺失"),
-    HTTP_ERROR("406", "http请求异常,请重新登录"),
+    ACCOUNT_CACHE_ERROR("406", "缓存读取失败,请重新登录"),
 
 
     USER_NAME_EXIST_ERROR("501", "用户名已存在"),

@@ -3,6 +3,9 @@ server:
   tomcat:
     threads:
       max: 100
+  servlet:
+    session:
+      timeout: 600 #设置会话超时时间,单位是秒
 
 # 数据库配置
 spring:
