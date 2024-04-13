@@ -48,7 +48,7 @@ const router = new VueRouter({
 // 这段代码是一个路由守卫，在 Vue Router 中使用路由守卫可以实现在导航触发时进行一些特定操作，比如验证用户身份、权限验证等。
 // 让我来解释一下这段路由守卫的逻辑：
 // 首先，通过 router.beforeEach 注册了一个全局前置守卫，该守卫会在路由切换之前执行。
-// 在守卫函数中，通过 localStorage.getItem("xm-user") 获取了本地存储中的用户信息，并将其解析为一个对象。
+// 在守卫函数中，通过 localStorage.getItem("user") 获取了本地存储中的用户信息，并将其解析为一个对象。
 // 然后，判断要跳转的路由路径 to.path 是否为根路径 /，即判断用户是否访问了网站的根路径。
 // 如果用户访问的是根路径 /，则进一步判断用户的角色（假设角色信息存储在用户信息中的 role 字段中）：
 // 如果用户已登录且角色为 'USER'，则将路由重定向到前台页面的首页 /front/home。
@@ -58,7 +58,7 @@ const router = new VueRouter({
 // 如果项目不需要前台页面，可以根据注释提示，将该路由守卫注释掉，这样在导航时就不会执行这段逻辑。
 // 这段路由守卫的作用是根据用户的角色信息，将用户导向不同的页面，从而实现基本的身份认证和权限控制。
 router.beforeEach((to ,from, next) => {
-  let user = JSON.parse(localStorage.getItem("xm-user") || '{}');
+  let user = JSON.parse(localStorage.getItem("user") || '{}');
   if (to.path === '/') {
     if (user.role) {
       if (user.role === 'USER') {

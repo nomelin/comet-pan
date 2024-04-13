@@ -1,5 +1,7 @@
 package top.nomelin.cometpan.pojo;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 /**
  * 文件元数据
  *
@@ -25,8 +27,9 @@ public class FileMeta {
     /**
      * 创建人ID
      */
+    @JsonAlias({"userid", "user_id"})
     private Integer userId;
-
+    @JsonAlias({"diskid", "disk_id"})
     private Integer diskId;
     /**
      * 文件类型
@@ -39,13 +42,17 @@ public class FileMeta {
     /**
      * 创建时间
      */
+    @JsonAlias({"createtime", "create_time"})
     private String crateTime;
     /**
      * 修改时间
      */
+    @JsonAlias({"updatetime", "update_time"})
     private String updateTime;
 
+    @JsonAlias({"folderid", "folder_id"})
     private Integer folderId;
+    @JsonAlias({"rootfolderid", "root_folder_id"})
     private Integer rootFolderId;
 
     private Boolean delete;

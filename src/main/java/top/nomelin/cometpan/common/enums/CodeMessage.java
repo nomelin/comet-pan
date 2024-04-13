@@ -24,6 +24,8 @@ public enum CodeMessage {
     NEED_ADMIN_ERROR("507", "用户权限不足,需要管理员权限"),
     NEED_USER_ERROR("507", "权限不适配,此处为普通用户权限才能访问"),
     ROLE_ERROR("508", "权限不匹配"),
+    INVALID_USER_NAME_ERROR("509", "要操作的用户名不合法，无权限操作"),
+    EQUAL_PASSWORD_ERROR("510", "新密码不能与原密码相同"),
 
     PARENT_FOLDER_NOT_EXIST_ERROR("601", "父文件夹不存在"),
     PARENT_IS_NOT_FOLDER_ERROR("602", "父节点不是文件夹"),

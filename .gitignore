@@ -34,3 +34,5 @@ build/
 vue/node_modules/**
 资料/
 log/
+avatar/**
+DiskFiles/**

@@ -1,7 +1,10 @@
 package top.nomelin.cometpan.pojo;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class Account {
     private Integer id;
+    @JsonAlias({"username", "user_name"})
     private String userName;
     private String name;
     private String password;

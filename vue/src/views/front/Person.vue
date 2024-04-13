@@ -66,7 +66,7 @@ export default {
       }
     }
     return {
-      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
+      user: JSON.parse(localStorage.getItem('user') || '{}'),
       dialogVisible: false,
 
       rules: {
@@ -88,17 +88,17 @@ export default {
   methods: {
     update() {
       // 保存当前的用户信息到数据库
-      this.$request.put('/admin/update', this.user).then(res => {
+      this.$request.put('/user/update', this.user).then(res => {
         if (res.code === '200') {
           // 成功更新
           this.$message.success('保存成功')
           // 更新浏览器缓存里的用户信息
-          localStorage.setItem('xm-user', JSON.stringify(this.user))
+          localStorage.setItem('user', JSON.stringify(this.user))
 
           // 触发父级的数据更新
           this.$emit('update:user')
         } else {
-          this.$message.error(res.msg)
+          this.$message.error(res.code+": "+res.msg)
         }
       })
     },

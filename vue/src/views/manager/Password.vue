@@ -34,7 +34,7 @@ export default {
     }
 
     return {
-      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
+      user: JSON.parse(localStorage.getItem('user') || '{}'),
       rules: {
         password: [
           { required: true, message: '请输入原始密码', trigger: 'blur' },
@@ -58,7 +58,7 @@ export default {
           this.$request.put('/updatePassword', this.user).then(res => {
             if (res.code === '200') {
               // 成功更新
-              localStorage.removeItem('xm-user')   // 清除缓存的用户信息
+              localStorage.removeItem('user')   // 清除缓存的用户信息
               this.$message.success('修改密码成功')
               this.$router.push('/login')
             } else {

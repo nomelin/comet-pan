@@ -73,7 +73,7 @@ export default {
       title: null,
       fromVisible: false,
       form: {},
-      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
+      user: JSON.parse(localStorage.getItem('user') || '{}'),
       rules: {
         title: [
           {required: true, message: '请输入标题', trigger: 'blur'},

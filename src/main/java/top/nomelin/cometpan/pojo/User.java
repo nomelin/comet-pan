@@ -1,8 +1,11 @@
 package top.nomelin.cometpan.pojo;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class User extends Account {
     private String phone;
     private String email;
+    @JsonAlias({"used_space","usedspace"})
     private Long usedSpace;
     private Integer rootId;
 

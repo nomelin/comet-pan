@@ -31,7 +31,7 @@ export default {
   name: 'Home',
   data() {
     return {
-      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
+      user: JSON.parse(localStorage.getItem('user') || '{}'),
       notices: []
     }
   },

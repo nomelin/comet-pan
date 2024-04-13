@@ -1,33 +1,32 @@
+.front-layout{
+    background: #f5f6f7;
+}
 .front-notice {
     padding: 5px 20px;
     color: #666;
     font-size: 12px
 }
+.logo {
+    width: 150px;
+    margin-top: 20px;
+}
 .front-header {
     display: flex;
-    height: 60px;
+    height: 100px;
     line-height: 60px;
     border-bottom: 1px solid #eee;
-    background: white;
+    background: #f5f6f7;
 }
 .front-header-left {
-    width: 350px;
-    display: flex;
-    align-items: center;
+    width: 400px;
+    /*display: flex;*/
+    /*align-items: center;*/
     padding-left: 30px;
 }
-.front-header-left img, .front-header-dropdown img {
+.front-header-dropdown img {
     width: 40px;
     height: 40px;
     border-radius: 50%
-}
-.front-header-left .title {
-    flex: 1;
-    color: #355476;
-    cursor: pointer;
-    margin-left: 10px;
-    font-size: 20px;
-    font-weight: bold;
 }
 .front-header-center {
     flex: 1;
@@ -55,5 +54,5 @@
 /* ElementUI 样式覆盖 */
 .el-menu.el-menu--horizontal {
     border: none !important;
-    height: 59px;
+    height: 80px;
 }

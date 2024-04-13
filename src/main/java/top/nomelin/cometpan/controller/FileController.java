@@ -1,12 +1,23 @@
 package top.nomelin.cometpan.controller;
 
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import top.nomelin.cometpan.common.Constants;
 import top.nomelin.cometpan.common.Result;
 import top.nomelin.cometpan.pojo.FileMeta;
 import top.nomelin.cometpan.service.FileService;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -18,10 +29,27 @@ public class FileController {
 
 
     private final FileService fileService;
+    private final Logger logger = LoggerFactory.getLogger(FileController.class);
 
     @Autowired
     public FileController(FileService fileService) {
         this.fileService = fileService;
+    }
+
+    @GetMapping("/files/avatar/{userid}")
+    public ResponseEntity<Resource> getUserAvatar(@PathVariable("userid") String userId) throws IOException {
+        // 构建头像文件路径
+        Path avatarPath = Paths.get(Constants.AVATAR_FOLDER, userId + ".jpg"); // 假设头像文件格式为PNG格式
+
+        // 检查头像文件是否存在
+        if (!Files.exists(avatarPath)) {
+            avatarPath = Paths.get(Constants.AVATAR_FOLDER, "default.jpg");//默认头像文件
+        }
+        logger.info("avatarPath: " + avatarPath);
+        Resource resource = new FileSystemResource(avatarPath);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // 设置响应内容类型
+                .body(resource);
     }
 
 

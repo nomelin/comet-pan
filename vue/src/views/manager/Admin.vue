@@ -99,7 +99,7 @@ export default {
       username: null,
       fromVisible: false,
       form: {},
-      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
+      user: JSON.parse(localStorage.getItem('user') || '{}'),
       rules: {
         username: [
           {required: true, message: '请输入账号', trigger: 'blur'},

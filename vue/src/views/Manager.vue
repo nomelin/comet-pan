@@ -3,7 +3,7 @@
     <!--  头部  -->
     <div class="manager-header">
       <div class="manager-header-left">
-        <img src="@/assets/imgs/logo.png" />
+        <img src="@/assets/imgs/logo.svg" />
         <div class="title">后台管理系统</div>
       </div>
 
@@ -68,7 +68,7 @@ export default {
   name: "Manager",
   data() {
     return {
-      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
+      user: JSON.parse(localStorage.getItem('user') || '{}'),
     }
   },
   created() {
@@ -78,15 +78,15 @@ export default {
   },
   methods: {
     updateUser() {
-      this.user = JSON.parse(localStorage.getItem('xm-user') || '{}')   // 重新获取下用户的最新信息
+      this.user = JSON.parse(localStorage.getItem('user') || '{}')   // 重新获取下用户的最新信息
     },
     goToPerson() {
-      if (this.user.role === 'ADMIN') {
+      if (this.user.role === 1) {
         this.$router.push('/adminPerson')
       }
     },
     logout() {
-      localStorage.removeItem('xm-user')
+      localStorage.removeItem('user')
       this.$router.push('/login')
     }
   }
