@@ -27,8 +27,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(tokenInterceptor).addPathPatterns("/**")
                 .excludePathPatterns("/")
                 .excludePathPatterns("/login")
-                .excludePathPatterns("/register");
-        registry.addInterceptor(adminInterceptor).addPathPatterns("/users/**");// 管理后台
+                .excludePathPatterns("/register")
+                .excludePathPatterns("/avatar/**");
+        registry.addInterceptor(adminInterceptor).addPathPatterns("/users/**");// 管理后台，除了更新用户的接口
         registry.addInterceptor(userInterceptor).addPathPatterns("/files/**");// 用户文件空间
     }
 }

@@ -26,7 +26,7 @@ public interface FileMapper {
     /**
      * 修改
      */
-    int updateById(FileMeta diskFiles);
+    int updateById(FileMeta fileMeta);
 
     /**
      * 根据ID查询
@@ -36,5 +36,5 @@ public interface FileMapper {
     /**
      * 查询所有
      */
-    List<FileMeta> selectAll(FileMeta diskFiles);
+    List<FileMeta> selectAll(FileMeta fileMeta);
 }

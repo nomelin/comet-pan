@@ -5,11 +5,14 @@
     <div class="front-header">
       <div class="front-header-left">
         <a href="/front/home">
-          <img class="logo" src="@/assets/imgs/logo.svg" alt="logo" >
+          <img class="logo" src="@/assets/imgs/logo.svg" alt="logo">
         </a>
       </div>
       <div class="front-header-center">
-
+        <el-breadcrumb separator-class="el-icon-arrow-right">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: $route.path }">{{ $route.meta.name }}</el-breadcrumb-item>
+        </el-breadcrumb>
       </div>
       <div class="front-header-right">
         <div v-if="!user.userName">
@@ -19,7 +22,7 @@
         <div v-else>
           <el-dropdown>
             <div class="front-header-dropdown">
-              <img :src="user.avatar" alt="">
+              <img :src="$baseUrl+'/avatar/'+user.id" alt="">
               <div style="margin-left: 10px; color: #66ccff">
                 <span>{{ user.name }}</span><i class="el-icon-arrow-down" style="margin-left: 5px"></i>
               </div>
@@ -38,7 +41,18 @@
     </div>
     <!--主体-->
     <div class="main-body">
-      <router-view ref="child" @update:user="updateUser" />
+      <div class="main-left">
+        <el-menu :default-openeds="['info', 'user']" router style="border: none" :default-active="$route.path">
+          <el-menu-item index="/files">
+            <i class="el-icon-s-home"></i>
+            <span slot="title">全部文件</span>
+          </el-menu-item>
+
+        </el-menu>
+      </div>
+      <div class="manager-main-right">
+        <router-view @update:user="updateUser"/>
+      </div>
     </div>
   </div>
 
@@ -49,7 +63,7 @@
 export default {
   name: "FrontLayout",
 
-  data () {
+  data() {
     return {
       top: '',
       notice: [],
@@ -92,6 +106,7 @@ export default {
 
 <style scoped>
 @import "@/assets/css/front.css";
+
 .front-layout {
   bakground-color: #66ccff;
 }

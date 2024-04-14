@@ -3,8 +3,7 @@
     <!--  头部  -->
     <div class="manager-header">
       <div class="manager-header-left">
-        <img src="@/assets/imgs/logo.svg" />
-        <div class="title">后台管理系统</div>
+        <img class="logo" src="@/assets/imgs/logo.svg" />
       </div>
 
       <div class="manager-header-center">
@@ -34,7 +33,7 @@
       <!--  侧边栏  -->
       <div class="manager-main-left">
         <el-menu :default-openeds="['info', 'user']" router style="border: none" :default-active="$route.path">
-          <el-menu-item index="/home">
+          <el-menu-item index="/manager/home">
             <i class="el-icon-s-home"></i>
             <span slot="title">系统首页</span>
           </el-menu-item>
@@ -42,14 +41,14 @@
             <template slot="title">
               <i class="el-icon-menu"></i><span>信息管理</span>
             </template>
-            <el-menu-item index="/notice">公告信息</el-menu-item>
+            <el-menu-item index="/manager/notice">公告信息</el-menu-item>
           </el-submenu>
 
           <el-submenu index="user">
             <template slot="title">
               <i class="el-icon-menu"></i><span>用户管理</span>
             </template>
-            <el-menu-item index="/admin">管理员信息</el-menu-item>
+            <el-menu-item index="/manager/admin">管理员信息</el-menu-item>
           </el-submenu>
         </el-menu>
       </div>
@@ -95,4 +94,8 @@ export default {
 
 <style scoped>
 @import "@/assets/css/manager.css";
+.logo{
+  width: 150px;
+  margin-top: 20px;
+}
 </style>

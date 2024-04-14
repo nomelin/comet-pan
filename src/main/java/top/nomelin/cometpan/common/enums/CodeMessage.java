@@ -26,11 +26,14 @@ public enum CodeMessage {
     ROLE_ERROR("508", "权限不匹配"),
     INVALID_USER_NAME_ERROR("509", "要操作的用户名不合法，无权限操作"),
     EQUAL_PASSWORD_ERROR("510", "新密码不能与原密码相同"),
+    INVALID_AVATAR_ERROR("511", "头像格式不合法,请上传jpg,jpeg,png格式的图片"),
 
     PARENT_FOLDER_NOT_EXIST_ERROR("601", "父文件夹不存在"),
     PARENT_IS_NOT_FOLDER_ERROR("602", "父节点不是文件夹"),
     INVALID_FILE_ID_ERROR("603", "操作的节点id不合法"),
     INVALID_DELETE_ERROR("604", "要彻底删除的节点不在回收站中"),
+
+    FILE_UPLOAD_ERROR("701", "文件上传失败"),
 
     SYSTEM_ERROR("800", "系统异常"),
     UNKNOWN_ERROR("900", "未知异常"),

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.nomelin.cometpan.dao.DiskMapper">
+
+    <select id="selectAll" resultType="DiskFile">
+        select
+        id, `count`, `path`
+        from disk_files
+        <where>
+            <if test="id != null">and id= #{id}</if>
+            <if test="count != null">and `count`= #{count}</if>
+            <if test="path != null">and `path`= #{path}</if>
+        </where>
+    </select>
+
+    <select id="selectById" resultType="DiskFile">
+        select
+        id, count, path
+        from disk_files
+        <where>
+            and id = #{id}
+        </where>
+    </select>
+
+    <delete id="deleteById">
+        delete
+        from disk_files
+        where id = #{id}
+    </delete>
+
+
+    <insert id="insert" parameterType="DiskFile" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into disk_files
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="count != null" >`count`,</if>
+            <if test="path != null">`path`,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="count != null">#{count},</if>
+            <if test="path != null">#{path},</if>
+        </trim>
+    </insert>
+
+    <update id="updateById" parameterType="DiskFile">
+        update disk_files
+        <set>
+            <if test="count != null">`count` = #{count},</if>
+            <if test="path != null">`path` = #{path},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>

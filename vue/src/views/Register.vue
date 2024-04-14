@@ -10,16 +10,19 @@
           <div class="blank"></div>
           <el-form :model="form" :rules="rules" ref="formRef">
             <el-form-item prop="username">
+              <div class="custom-input">
               <el-input class="input-field" size="medium" prefix-icon="el-icon-s-custom" placeholder="请输入账号"
-                        v-model="form.username"></el-input>
+                        v-model="form.username"></el-input></div>
             </el-form-item>
             <el-form-item prop="password">
+              <div class="custom-input">
               <el-input class="input-field" size="medium" prefix-icon="el-icon-lock" placeholder="请输入密码"
-                        show-password v-model="form.password"></el-input>
+                        show-password v-model="form.password"></el-input></div>
             </el-form-item>
             <el-form-item prop="confirmPass">
+              <div class="custom-input">
               <el-input class="input-field" size="medium" prefix-icon="el-icon-lock" placeholder="请确认密码"
-                        show-password v-model="form.confirmPass"></el-input>
+                        show-password v-model="form.confirmPass"></el-input></div>
             </el-form-item>
             <el-form-item>
               <el-button class="register-button" type="primary" @click="register">
@@ -126,13 +129,19 @@ export default {
 }
 
 .blank {
-  height: 40px;
+  height: 20px;
 }
-
+.custom-input {
+  position: relative;
+  padding: 10px; /* 输入框内边距 */
+  border: 2px solid #dcdfe6; /* 自定义输入框的边框 */
+  border-radius: 20px; /* 自定义输入框的边框圆角 */
+  height: 60px; /* 自定义输入框的高度 */
+}
 .register-box {
   width: 50vh;
   max-width: 500px;
-  padding: 60px 20px;
+  padding: 40px 20px;
   box-shadow: 0 20px 80px #e6e2ff;
   background-color: white;
   border-radius: 50px;

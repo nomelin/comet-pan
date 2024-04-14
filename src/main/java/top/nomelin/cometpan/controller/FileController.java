@@ -36,22 +36,6 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @GetMapping("/files/avatar/{userid}")
-    public ResponseEntity<Resource> getUserAvatar(@PathVariable("userid") String userId) throws IOException {
-        // 构建头像文件路径
-        Path avatarPath = Paths.get(Constants.AVATAR_FOLDER, userId + ".jpg"); // 假设头像文件格式为PNG格式
-
-        // 检查头像文件是否存在
-        if (!Files.exists(avatarPath)) {
-            avatarPath = Paths.get(Constants.AVATAR_FOLDER, "default.jpg");//默认头像文件
-        }
-        logger.info("avatarPath: " + avatarPath);
-        Resource resource = new FileSystemResource(avatarPath);
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG) // 设置响应内容类型
-                .body(resource);
-    }
-
 
     @PostMapping("")
     private Result add(@RequestBody FileMeta fileMeta) {

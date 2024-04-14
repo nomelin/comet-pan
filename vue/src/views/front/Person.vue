@@ -7,17 +7,19 @@
       <el-form :model="user" label-width="80px" style="padding-right: 20px">
         <div style="margin: 15px; text-align: center">
           <el-upload
+              ref="upload"
               class="avatar-uploader"
-              :action="$baseUrl + '/files/upload'"
+              :action="$baseUrl + '/avatar/'+user.id"
+              :headers="{ token: user.token }"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
           >
-            <img v-if="user.avatar" :src="user.avatar" class="avatar" />
+            <img v-if=true :src="$baseUrl + '/avatar/'+user.id" class="avatar" alt="头像"/>
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </div>
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="user.username" placeholder="用户名" disabled></el-input>
+          <el-input v-model="user.userName" placeholder="用户名" disabled></el-input>
         </el-form-item>
         <el-form-item label="姓名" prop="name">
           <el-input v-model="user.name" placeholder="姓名"></el-input>
@@ -33,7 +35,8 @@
         </div>
       </el-form>
     </el-card>
-    <el-dialog title="修改密码" :visible.sync="dialogVisible" width="30%" :close-on-click-modal="false" destroy-on-close>
+    <el-dialog title="修改密码" :visible.sync="dialogVisible" width="30%" :close-on-click-modal="false"
+               destroy-on-close>
       <el-form :model="user" label-width="80px" style="padding-right: 20px" :rules="rules" ref="formRef">
         <el-form-item label="原始密码" prop="password">
           <el-input show-password v-model="user.password" placeholder="原始密码"></el-input>
@@ -71,13 +74,13 @@ export default {
 
       rules: {
         password: [
-          { required: true, message: '请输入原始密码', trigger: 'blur' },
+          {required: true, message: '请输入原始密码', trigger: 'blur'},
         ],
         newPassword: [
-          { required: true, message: '请输入新密码', trigger: 'blur' },
+          {required: true, message: '请输入新密码', trigger: 'blur'},
         ],
         confirmPassword: [
-          { validator: validatePassword, required: true, trigger: 'blur' },
+          {validator: validatePassword, required: true, trigger: 'blur'},
         ],
       }
     }
@@ -88,23 +91,31 @@ export default {
   methods: {
     update() {
       // 保存当前的用户信息到数据库
-      this.$request.put('/user/update', this.user).then(res => {
+      this.$request.put('/users', this.user).then(res => {
         if (res.code === '200') {
           // 成功更新
-          this.$message.success('保存成功')
+          this.$message.success('个人信息保存成功')
           // 更新浏览器缓存里的用户信息
           localStorage.setItem('user', JSON.stringify(this.user))
 
           // 触发父级的数据更新
           this.$emit('update:user')
         } else {
-          this.$message.error(res.code+": "+res.msg)
+          this.$message.error(res.code + ": " + res.msg)
         }
       })
     },
     handleAvatarSuccess(response, file, fileList) {
       // 把user的头像属性换成上传的图片的链接
-      this.$set(this.user, 'avatar', response.data)
+      //沒有回传数据。
+      //this.$set(this.user, 'avatar', response.data)
+      this.$message.success("头像上传成功")
+      location.reload()
+
+    },
+    avatarError(error, file, fileList) {
+      console.log(error, file, fileList)
+      this.$message.error("头像上传失败")
     },
     // 修改密码
     updatePassword() {
@@ -130,22 +141,26 @@ export default {
 </script>
 
 <style scoped>
-/deep/.el-form-item__label {
+/deep/ .el-form-item__label {
   font-weight: bold;
 }
-/deep/.el-upload {
+
+/deep/ .el-upload {
   border-radius: 50%;
 }
-/deep/.avatar-uploader .el-upload {
+
+/deep/ .avatar-uploader .el-upload {
   border: 1px dashed #d9d9d9;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   border-radius: 50%;
 }
-/deep/.avatar-uploader .el-upload:hover {
-  border-color: #409EFF;
+
+/deep/ .avatar-uploader .el-upload:hover {
+  border-color: #66b1ff;
 }
+
 .avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
@@ -155,6 +170,7 @@ export default {
   text-align: center;
   border-radius: 50%;
 }
+
 .avatar {
   width: 120px;
   height: 120px;

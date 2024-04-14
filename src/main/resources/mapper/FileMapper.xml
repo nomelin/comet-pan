@@ -6,19 +6,19 @@
 
     <select id="selectAll" resultType="FileMeta">
         select
-        id, disk_id, user_id, folder_id, root_folder_id, size, `delete`, folder, name, path, type, crate_time,
+        id, disk_id, user_id, folder_id, root_folder_id, size, `delete`, folder, `name`, `path`, type, crate_time,
         update_time
         from files
         <where>
             <if test="id != null">and id= #{id}</if>
-            <if test="name != null">and name like concat('%', #{name}, '%')</if>
+            <if test="name != null">and `name` like concat('%', #{name}, '%')</if>
             <if test="userId != null">and user_id= #{userId}</if>
             <if test="folderId != null">and folder_id= #{folderId}</if>
             <if test="rootFolderId != null">and root_folder_id= #{rootFolderId}</if>
             <if test="type != null">and type= #{type}</if>
             <if test="delete != null">and `delete`= #{delete}</if>
             <if test="folder != null">and folder like concat('%', #{folder}, '%')</if>
-            <if test="path != null">and path like concat('%', #{path}, '%')</if>
+            <if test="path != null">and `path` like concat('%', #{path}, '%')</if>
 
         </where>
         order by folder_id desc
@@ -65,9 +65,9 @@
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">id,</if>
             <if test="diskId != null">disk_id,</if>
-            <if test="name != null">name,</if>
+            <if test="name != null">`name`,</if>
             <if test="folder != null">folder,</if>
-            <if test="path != null">path,</if>
+            <if test="path != null">`path`,</if>
             <if test="userId != null">user_id,</if>
             <if test="type != null">type,</if>
             <if test="size != null">size,</if>
@@ -105,7 +105,7 @@
                 folder = #{folder},
             </if>
             <if test="path != null">
-                path = #{path},
+                `path` = #{path},
             </if>
             <if test="userId != null">
                 user_id = #{userId},

@@ -25,15 +25,20 @@
           <div class="mask" @click="closeSlideVerify" v-if="slideVerifyShow"></div>
           <el-form :model="form" :rules="rules" ref="formRef">
             <el-form-item prop="username">
-              <el-input class="input-field" size="medium" prefix-icon="el-icon-s-custom" placeholder="用户名"
-                        maxlength="30"
-                        v-model="form.username"></el-input>
+              <div class="custom-input">
+                <el-input class="input-field" size="medium" prefix-icon="el-icon-s-custom" placeholder="用户名"
+                          maxlength="30"
+                          v-model="form.username"></el-input>
+              </div>
             </el-form-item>
             <el-form-item prop="password">
-              <el-input class="input-field" size="medium" prefix-icon="el-icon-lock" placeholder="密码" show-password
-                        maxlength="30"
-                        v-model="form.password"></el-input>
+              <div class="custom-input">
+                <el-input class="input-field" size="medium" prefix-icon="el-icon-lock" placeholder="密码" show-password
+                          maxlength="30"
+                          v-model="form.password"></el-input>
+              </div>
             </el-form-item>
+
             <el-form-item>
               <el-button size="medium" class="login-button" @click="login">
                 <span class="button-text">登 录</span>
@@ -91,9 +96,9 @@ export default {
           this.$message.success('登录成功');
           setTimeout(() => {
             if (res.data.role === 1) {
-              this.$router.push('/home');
+              this.$router.push('/manager/home');
             } else if (res.data.role === 2) {
-              this.$router.push('/front/home');
+              this.$router.push('/home');
             }
           }, 100);
         } else {
@@ -126,6 +131,7 @@ export default {
   align-items: center;
   padding-left: 20px;
 }
+
 .slide-verify-window {
   position: fixed;
   top: 50%;
@@ -133,6 +139,7 @@ export default {
   transform: translate(-50%, -50%);
   z-index: 999;
 }
+
 .mask {
   position: fixed;
   top: 0;
@@ -143,6 +150,7 @@ export default {
   z-index: 998; /* 确保遮罩层位于滑块窗口下面 */
   backdrop-filter: blur(3px); /* 高斯模糊效果，可以根据需要调整模糊程度 */
 }
+
 .logo {
   width: 160px;
   margin-top: 20px; /* 上边距 */
@@ -187,8 +195,18 @@ export default {
 }
 
 .input-field {
-  /*height: 60px;*/
+
+
 }
+
+.custom-input {
+  position: relative;
+  padding: 10px; /* 输入框内边距 */
+  border: 2px solid #dcdfe6; /* 自定义输入框的边框 */
+  border-radius: 20px; /* 自定义输入框的边框圆角 */
+  height: 60px; /* 自定义输入框的高度 */
+}
+
 
 .login-button {
   width: 100%;

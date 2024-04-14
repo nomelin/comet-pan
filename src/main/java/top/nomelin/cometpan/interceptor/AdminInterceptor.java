@@ -1,5 +1,6 @@
 package top.nomelin.cometpan.interceptor;
 
+import cn.hutool.core.util.StrUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -28,6 +29,12 @@ public class AdminInterceptor implements HandlerInterceptor {
         // 获取请求中的用户信息
         //Account currentUser = (Account) request.getAttribute("currentUser");
         User currentUser = currentUserCache.getCurrentUser();
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+        //logger.info("uri:"+uri+",method:"+method);
+        if(uri.equals("/users")&&method.equals("PUT")){
+            return true;//允许访问用户更新接口
+        }
         if (currentUser == null) {
             throw new SystemException(CodeMessage.ACCOUNT_CACHE_ERROR);
         }
