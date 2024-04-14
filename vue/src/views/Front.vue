@@ -1,6 +1,6 @@
 <template>
   <div class="front-layout">
-    <div class="front-notice"><i class="el-icon-bell" style="margin-right: 2px"></i>公告：{{ top }}</div>
+<!--    <div class="front-notice"><i class="el-icon-bell" style="margin-right: 2px"></i>公告：{{ top }}</div>-->
     <!--头部-->
     <div class="front-header">
       <div class="front-header-left">
@@ -23,13 +23,13 @@
           <el-dropdown>
             <div class="front-header-dropdown">
               <img :src="$baseUrl+'/avatar/'+user.id" alt="">
-              <div style="margin-left: 10px; color: #66ccff">
+              <div style="margin-left: 10px; color: #151515;font-size: 14px;font-weight: bold;">
                 <span>{{ user.name }}</span><i class="el-icon-arrow-down" style="margin-left: 5px"></i>
               </div>
             </div>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>
-                <div @click="$router.push('/front/person')">个人中心</div>
+                <div @click="$router.push('/person')">个人中心</div>
               </el-dropdown-item>
               <el-dropdown-item>
                 <div @click="logout">退出</div>
@@ -50,7 +50,7 @@
 
         </el-menu>
       </div>
-      <div class="manager-main-right">
+      <div class="main-right">
         <router-view @update:user="updateUser"/>
       </div>
     </div>
@@ -72,7 +72,7 @@ export default {
   },
 
   mounted() {
-    this.loadNotice()
+    // this.loadNotice()
   },
   methods: {
     loadNotice() {
@@ -105,9 +105,81 @@ export default {
 </script>
 
 <style scoped>
-@import "@/assets/css/front.css";
+.front-layout{
+  /*display: flex;*/
+  height: 100vh;
+}
+.main-body {
+  display: flex;
+  /*height: 100%;*/
+  height: 85vh;
+  /*flex-grow: 1;*/
+}
 
-.front-layout {
-  bakground-color: #66ccff;
+.main-left {
+  width: 15vw;
+}
+
+.main-right {
+  width: 100%;
+}
+.front-layout{
+  background: #f5f6f7;
+}
+.front-notice {
+  height: 5vh;
+  padding: 5px 20px;
+  color: #666;
+  font-size: 12px
+}
+.logo {
+  width: 150px;
+  margin-top: 20px;
+}
+.front-header {
+  display: flex;
+  height: 10vh;
+  line-height: 60px;
+  border-bottom: 1px solid #eee;
+  background: #f5f6f7;
+}
+.front-header-left {
+  width: 400px;
+  /*display: flex;*/
+  /*align-items: center;*/
+  padding-left: 30px;
+}
+.front-header-dropdown img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%
+}
+.front-header-center {
+  flex: 1;
+}
+.front-header-right {
+  width: 200px;
+  padding-right: 20px;
+  text-align: right;
+}
+.front-header-dropdown {
+  display: flex;
+  align-items: center;
+  justify-content: right;
+}
+.el-dropdown-menu {
+  width: 100px !important;
+  text-align: center !important;
+}
+
+/*页面具体样式自定义*/
+.main-content {
+  width: 100%;
+  margin: 5px auto;
+}
+/* ElementUI 样式覆盖 */
+.el-menu.el-menu--horizontal {
+  border: none !important;
+  height: 80px;
 }
 </style>

@@ -165,7 +165,7 @@ public class FileServiceImpl implements FileService {
         file.setFolder(false);
         file.setRootFolderId(user.getRootId());
         String time = String.valueOf(System.currentTimeMillis());
-        file.setCrateTime(time);
+        file.setCreateTime(time);
         file.setUpdateTime(time);
         fileMapper.insert(file);
         updateSizeById(file.getId(), true);// 更新全部父目录大小
@@ -291,7 +291,7 @@ public class FileServiceImpl implements FileService {
         folder.setUserId(userId);
         folder.setRootFolderId(user.getRootId());
         String time = String.valueOf(System.currentTimeMillis());
-        folder.setCrateTime(time);
+        folder.setCreateTime(time);
         folder.setUpdateTime(time);
         fileMapper.insert(folder);
         updateTimeById(folder.getId());// 更新父目录时间
@@ -320,7 +320,7 @@ public class FileServiceImpl implements FileService {
         root.setFolderId(0);
         root.setPath("/");
         String time = String.valueOf(System.currentTimeMillis());
-        root.setCrateTime(time);
+        root.setCreateTime(time);
         root.setUpdateTime(time);
         add(root);
         return root.getId();

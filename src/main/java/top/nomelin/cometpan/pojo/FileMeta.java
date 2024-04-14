@@ -43,7 +43,7 @@ public class FileMeta {
      * 创建时间
      */
     @JsonAlias({"createtime", "create_time"})
-    private String crateTime;
+    private String createTime;
     /**
      * 修改时间
      */
@@ -113,12 +113,12 @@ public class FileMeta {
         this.size = size;
     }
 
-    public String getCrateTime() {
-        return crateTime;
+    public String getCreateTime() {
+        return createTime;
     }
 
-    public void setCrateTime(String crateTime) {
-        this.crateTime = crateTime;
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
     }
 
     public String getUpdateTime() {
@@ -172,7 +172,7 @@ public class FileMeta {
                 ", diskId=" + diskId +
                 ", type='" + type + '\'' +
                 ", size=" + size +
-                ", crateTime='" + crateTime + '\'' +
+                ", createTime='" + createTime + '\'' +
                 ", updateTime='" + updateTime + '\'' +
                 ", folderId=" + folderId +
                 ", rootFolderId=" + rootFolderId +

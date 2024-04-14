@@ -6,7 +6,7 @@
 
     <select id="selectAll" resultType="FileMeta">
         select
-        id, disk_id, user_id, folder_id, root_folder_id, size, `delete`, folder, `name`, `path`, type, crate_time,
+        id, disk_id, user_id, folder_id, root_folder_id, size, `delete`, folder, `name`, `path`, type, create_time,
         update_time
         from files
         <where>
@@ -36,7 +36,7 @@
         name,
         path,
         type,
-        crate_time,
+        create_time,
         update_time
         from files
         <where>
@@ -71,7 +71,7 @@
             <if test="userId != null">user_id,</if>
             <if test="type != null">type,</if>
             <if test="size != null">size,</if>
-            <if test="crateTime != null">crate_time,</if>
+            <if test="createTime != null">create_time,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="folderId != null">folder_id,</if>
             <if test="rootFolderId != null">root_folder_id,</if>
@@ -85,7 +85,7 @@
             <if test="userId != null">#{userId},</if>
             <if test="type != null">#{type},</if>
             <if test="size != null">#{size},</if>
-            <if test="crateTime != null">#{crateTime},</if>
+            <if test="createTime != null">#{createTime},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="folderId != null">#{folderId},</if>
             <if test="rootFolderId != null">#{rootFolderId},</if>
@@ -116,8 +116,8 @@
             <if test="size != null">
                 size = #{size},
             </if>
-            <if test="crateTime != null">
-                crate_time = #{crateTime},
+            <if test="createTime != null">
+                create_time = #{createTime},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},

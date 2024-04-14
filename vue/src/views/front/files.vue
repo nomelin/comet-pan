@@ -11,18 +11,36 @@
     </div>
 
     <div class="table">
-      <el-table :data="tableData" strip @selection-change="handleSelectionChange">
+      <el-table :data="tableData" strip @selection-change="handleSelectionChange"
+                height="70vh">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
-        <el-table-column prop="name" label="文件名称"></el-table-column>
-        <el-table-column prop="folder" label="是否文件夹"></el-table-column>
-        <el-table-column prop="file" label="文件路径" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="name" label="文件名称" sortable></el-table-column>
+        <el-table-column label="是否文件夹">
+          <template v-slot="scope">
+            <span v-if="scope.row.folder">是</span>
+            <span v-else>不是</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
         <el-table-column prop="userId" label="创建人ID"></el-table-column>
-        <el-table-column prop="userName" label="创建人"></el-table-column>
+        <!--        <el-table-column prop="userName" label="创建人"></el-table-column>-->
         <el-table-column prop="type" label="文件类型"></el-table-column>
         <el-table-column prop="size" label="文件大小"></el-table-column>
-        <el-table-column prop="crateTime" label="创建时间"></el-table-column>
-        <el-table-column prop="updateTime" label="修改时间"></el-table-column>
+        <el-table-column label="创建时间">
+          <template slot-scope="scope">
+            <span v-if="scope.row.createTime != null">
+            	{{ formatTime(scope.row.createTime) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="修改时间">
+          <template slot-scope="scope">
+            <span v-if="scope.row.updateTime != null">
+            	{{ formatTime(scope.row.updateTime) }}
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column prop="delete" label="是否删除">
           <template v-slot="scope">
             <span v-if="scope.row.delete">是</span>
@@ -40,15 +58,15 @@
         <el-pagination
             background
             @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
             :current-page="pageNum"
             :page-sizes="[5, 10, 20]"
             :page-size="pageSize"
-            layout="total, prev, pager, next"
+            layout="total, prev, pager, next, sizes, jumper"
             :total="total">
         </el-pagination>
       </div>
     </div>
-
 
 
   </div>
@@ -64,7 +82,7 @@ export default {
       pageSize: 10,  // 每页显示的个数
       total: 0,
       name: null,
-      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
+      user: JSON.parse(localStorage.getItem('user') || '{}'),
       ids: []
     }
   },
@@ -74,7 +92,7 @@ export default {
   methods: {
     del(id) {   // 单个删除
       this.$confirm('您确定删除吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('/diskFiles/delete/' + id).then(res => {
+        this.$request.delete('/files/' + id).then(res => {
           if (res.code === '200') {   // 表示操作成功
             this.$message.success('操作成功')
             this.load(1)
@@ -94,7 +112,7 @@ export default {
         return
       }
       this.$confirm('您确定批量删除这些数据吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('/diskFiles/delete/batch', {data: this.ids}).then(res => {
+        this.$request.delete('files', {data: this.ids}).then(res => {
           if (res.code === '200') {   // 表示操作成功
             this.$message.success('操作成功')
             this.load(1)
@@ -107,7 +125,7 @@ export default {
     },
     load(pageNum) {  // 分页查询
       if (pageNum) this.pageNum = pageNum
-      this.$request.get('/diskFiles/selectPage', {
+      this.$request.get('/files/'+this.user.id, {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
@@ -125,6 +143,22 @@ export default {
     handleCurrentChange(pageNum) {
       this.load(pageNum)
     },
+    handleSizeChange(pageSize) {
+      this.pageSize = pageSize;
+      this.load(1); // 调用 load 方法重新加载数据
+    },
+    formatTime(timestamp) {
+      let date = new Date(parseInt(timestamp));
+      // 获取年、月、日、时、分
+      let year = date.getFullYear();
+      let month = (date.getMonth() + 1).toString().padStart(2, '0');
+      let day = date.getDate().toString().padStart(2, '0');
+      let hour = date.getHours().toString().padStart(2, '0');
+      let minute = date.getMinutes().toString().padStart(2, '0');
+
+      // 拼接成你需要的格式，比如：YYYY-MM-DD HH:mm
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    }
   }
 }
 </script>

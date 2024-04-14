@@ -1,6 +1,6 @@
 <template>
   <div class="main-content">
-    <el-card style="width: 50%; margin: 30px auto">
+    <el-card style="width: 60%; margin: 30px auto">
       <div style="text-align: right; margin-bottom: 20px">
         <el-button type="primary" @click="updatePassword">修改密码</el-button>
       </div>
