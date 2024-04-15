@@ -6,6 +6,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -80,7 +81,10 @@ public class TokenInterceptor implements HandlerInterceptor {
             // 用户密码加签验证 token
             JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(account.getPassword())).build();// 构建JWT验证器
             jwtVerifier.verify(token); // 验证token
-        } catch (JWTVerificationException e) {
+        } catch (TokenExpiredException e) {
+            // Token过期异常处理
+            throw new BusinessException(CodeMessage.TOKEN_EXPIRED_ERROR);
+        }catch (JWTVerificationException e) {
             throw new BusinessException(CodeMessage.TOKEN_CHECK_ERROR);
         }
         logger.info("token验证通过，用户:" + account);

@@ -1,29 +1,53 @@
 <template>
-  <div>
-    <div class="search">
-      <el-input placeholder="请输入名称查询" style="width: 200px" v-model="name"></el-input>
-      <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
-      <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
+  <div class="main-container">
+    <div class="blank">
+
     </div>
 
     <div class="operation">
+      <el-input class="search-input" placeholder="搜索全部文件" style="width: 200px" v-model="name"
+                @keyup.enter.native="selectAll(1)">
+        <template #suffix>
+          <i class="el-icon-search" @click="selectAll(1)"
+             style="cursor: pointer; font-size: 25px; color:#909399; transform: translateY(9px);"></i>
+        </template>
+      </el-input>
+
+
+      <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
+      <el-button type="primary" plain style="margin-left: 10px" @click="addFolder">新建文件夹</el-button>
       <el-button type="danger" plain @click="delBatch">批量删除</el-button>
+      <el-button type="primary" plain @click="backNavigation" icon="el-icon-back"
+                 circle :disabled="cacheIndex <= 0"></el-button>
+      <el-button type="primary" plain @click="forwardNavigation" icon="el-icon-right"
+                 circle :disabled="cacheIndex >= requestCache.length - 1"></el-button>
+
     </div>
 
     <div class="table">
-      <el-table :data="tableData" strip @selection-change="handleSelectionChange"
-                height="70vh">
+      <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
+      <el-skeleton :rows="16" animated v-if="loading"/>
+      <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
+                height="70vh" empty-text="">
+        <template slot="empty">
+          <el-empty description=" ">
+            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
+          </el-empty>
+          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">上传文件</el-button>
+        </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
         <el-table-column prop="name" label="文件名称" sortable></el-table-column>
         <el-table-column label="是否文件夹">
           <template v-slot="scope">
-            <span v-if="scope.row.folder">是</span>
-            <span v-else>不是</span>
+            <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
+              <i v-if="scope.row.folder" class="el-icon-folder"></i>
+              <span v-else>文件</span>
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="userId" label="创建人ID"></el-table-column>
+        <!--        <el-table-column prop="userId" label="创建人ID"></el-table-column>-->
         <!--        <el-table-column prop="userName" label="创建人"></el-table-column>-->
         <el-table-column prop="type" label="文件类型"></el-table-column>
         <el-table-column prop="size" label="文件大小"></el-table-column>
@@ -56,6 +80,7 @@
 
       <div class="pagination">
         <el-pagination
+            v-if="isSearch"
             background
             @current-change="handleCurrentChange"
             @size-change="handleSizeChange"
@@ -83,11 +108,25 @@ export default {
       total: 0,
       name: null,
       user: JSON.parse(localStorage.getItem('user') || '{}'),
-      ids: []
+      ids: [],
+
+      requestCache: [], // 存储发送的请求 URL
+      cacheIndex: -1,  // 缓存数组的当前索引
+      maxCacheSize: 10, // 最大缓存大小
+
+      isSearch: false,//当前是否处于查询模式
+      loading: true, // 控制加载动画的显示与隐藏
+      folderId: 0, // 当前的文件夹的id
     }
   },
   created() {
     this.load(1)
+  },
+  computed: {
+    // 计算属性，过滤出属性 delete 为 false 的数据
+    filteredData() {
+      return this.tableData.filter(item => !item.delete);
+    }
   },
   methods: {
     del(id) {   // 单个删除
@@ -95,7 +134,7 @@ export default {
         this.$request.delete('/files/' + id).then(res => {
           if (res.code === '200') {   // 表示操作成功
             this.$message.success('操作成功')
-            this.load(1)
+            this.reload()
           } else {
             this.$message.error(res.msg)  // 弹出错误的信息
           }
@@ -111,11 +150,11 @@ export default {
         this.$message.warning('请选择数据')
         return
       }
-      this.$confirm('您确定批量删除这些数据吗？', '确认删除', {type: "warning"}).then(response => {
+      this.$confirm('您确定要删除选中的所有文件吗？', '确认删除', {type: "warning"}).then(response => {
         this.$request.delete('files', {data: this.ids}).then(res => {
           if (res.code === '200') {   // 表示操作成功
             this.$message.success('操作成功')
-            this.load(1)
+            this.reload()
           } else {
             this.$message.error(res.msg)  // 弹出错误的信息
           }
@@ -125,27 +164,52 @@ export default {
     },
     load(pageNum) {  // 分页查询
       if (pageNum) this.pageNum = pageNum
-      this.$request.get('/files/'+this.user.id, {
+      this.handleCacheAndGetFileRequest('/files/page')
+    },
+    selectAll(pageNum) {
+      this.isSearch = true;
+      //根据条件查询所有数据
+      if (pageNum) this.pageNum = pageNum
+      this.loading = true;
+      this.$request.get("/files/page/all", {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
           name: this.name,
         }
       }).then(res => {
-        this.tableData = res.data?.list
-        this.total = res.data?.total
+        this.loading = false;
+        if (res.code !== '200') {
+          this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
+        } else {
+          this.tableData = res.data?.list
+          this.total = res.data?.total
+        }
       })
     },
     reset() {
       this.name = null
+      this.isSearch = false;
       this.load(1)
     },
+    reload() {
+      this.getFileRequest(this.requestCache[this.cacheIndex])
+    },
     handleCurrentChange(pageNum) {
-      this.load(pageNum)
+      if (this.isSearch) {
+        this.selectAll(pageNum)
+      } else {
+        this.load(pageNum)
+      }
+
     },
     handleSizeChange(pageSize) {
       this.pageSize = pageSize;
-      this.load(1); // 调用 load 方法重新加载数据
+      if (this.isSearch) {
+        this.selectAll(1)
+      } else {
+        this.load(1)
+      }
     },
     formatTime(timestamp) {
       let date = new Date(parseInt(timestamp));
@@ -158,11 +222,116 @@ export default {
 
       // 拼接成你需要的格式，比如：YYYY-MM-DD HH:mm
       return `${year}-${month}-${day} ${hour}:${minute}`;
-    }
+    },
+    handleCacheAndGetFileRequest(url) {
+      // 用于封装getFileRequest和addToCache方法，统一处理
+      // 丢弃索引之后的缓存(因为用户已经重新点击了新的路径)
+      this.requestCache = this.requestCache.slice(0, this.cacheIndex + 1)
+      this.addToCache(url)
+      this.getFileRequest(url)
+    },
+    getFileRequest(url) {// 发送请求,获取数据。不要直接调用此方法，调用handleCacheAndGetFileRequest方法
+      //前进和后退可以直接调用此方法。
+      this.loading = true;
+      this.$request.get(url, {
+        params: {
+          pageNum: this.pageNum,
+          pageSize: this.pageSize,
+        }
+      }).then(res => {
+        this.loading = false;
+        if (res.code !== '200') {
+          this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
+        } else {
+          this.tableData = res.data?.list
+          this.total = res.data?.total
+        }
+      })
+    },
+    addToCache(url) {
+      // 将新的 URL 添加到缓存中
+      this.requestCache.push(url)
+      // 如果缓存大小超过限制，则丢弃最老的请求 URL
+      if (this.requestCache.length > this.maxCacheSize) {
+        this.requestCache.shift()
+      }
+      // 更新缓存索引
+      this.cacheIndex = this.requestCache.length - 1
+    },
+    handleFolderClick(row) {
+      if (row.folder) {
+        this.handleCacheAndGetFileRequest('/files/page/folder/' + row.id)
+        this.folderId = row.id
+      }
+    },
+    backNavigation() {
+      // 判断是否有可后退的请求
+      if (this.cacheIndex > 0) {
+        this.cacheIndex--
+        this.getFileRequest(this.requestCache[this.cacheIndex])
+      }
+    },
+    forwardNavigation() {
+      // 判断是否有可前进的请求
+      if (this.cacheIndex < this.requestCache.length - 1) {
+        this.cacheIndex++
+        this.getFileRequest(this.requestCache[this.cacheIndex])
+      }
+    },
+    addFolder() {
+      this.$request({
+        url: '/files/folder',
+        method: 'POST',
+        data: {name: '新建文件夹', folderId: this.folderId}
+      }).then(res => {
+        if (res.code !== '200') {
+          this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
+        } else {
+          this.reload()
+        }
+      })
+    },
+    handleAdd() {
+
+    },
   }
 }
 </script>
 
 <style scoped>
+.main-container {
+  border-radius: 50px;
+  background-color: #ffffff;
+  height: 95%;
+}
 
+.table {
+  background-color: #ffffff;
+  height: 100%;
+}
+
+.blank {
+  height: 6vh;
+}
+
+.operation {
+  margin-left: 2vw;
+}
+
+::v-deep .search-input .el-input__inner {
+  width:100%;
+  height: 5vh;
+  background-color: #EBEEF5;
+  text-align: center;
+  border: 0 !important;
+  outline: none;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/*::v-deep .search-input .el-textarea__inner {*/
+/*  border: 0 !important;*/
+/*  resize: none;*/
+/*  font-weight: bold;*/
+/*}*/
 </style>

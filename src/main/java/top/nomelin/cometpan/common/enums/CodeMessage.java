@@ -13,6 +13,7 @@ public enum CodeMessage {
     NOT_FOUND_ERROR("404", "资源不存在"),
     PARAM_LOST_ERROR("405", "参数缺失"),
     ACCOUNT_CACHE_ERROR("406", "缓存读取失败,请重新登录"),
+    TOKEN_EXPIRED_ERROR("407", "token已过期，请重新登录"),
 
 
     USER_NAME_EXIST_ERROR("501", "用户名已存在"),
@@ -32,6 +33,8 @@ public enum CodeMessage {
     PARENT_IS_NOT_FOLDER_ERROR("602", "父节点不是文件夹"),
     INVALID_FILE_ID_ERROR("603", "操作的节点id不合法"),
     INVALID_DELETE_ERROR("604", "要彻底删除的节点不在回收站中"),
+
+    CANNOT_ACCESS_ERROR("700", "没有权限访问此资源"),
 
     FILE_UPLOAD_ERROR("701", "文件上传失败"),
 

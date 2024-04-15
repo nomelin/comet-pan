@@ -37,6 +37,8 @@ public interface FileService {
      */
     void updateTimeById(Integer id);
 
+    PageInfo<FileMeta> selectPagesByFolderId(Integer folderId, Integer pageNum, Integer pageSize);
+
     /**
      * 新增根目录
      * 返回根目录ID

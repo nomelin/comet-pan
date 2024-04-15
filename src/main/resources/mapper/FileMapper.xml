@@ -19,6 +19,7 @@
             <if test="delete != null">and `delete`= #{delete}</if>
             <if test="folder != null">and folder like concat('%', #{folder}, '%')</if>
             <if test="path != null">and `path` like concat('%', #{path}, '%')</if>
+            and folder_id != 0
 
         </where>
         order by folder_id desc
@@ -49,7 +50,7 @@
         delete
         from files
         where id = #{id}
-        and `delete` = 1
+          and `delete` = 1
     </delete>
 
     <delete id="deleteBatch">

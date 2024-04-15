@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import top.nomelin.cometpan.cache.CurrentUserCache;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.BusinessException;
 import top.nomelin.cometpan.dao.FileMapper;
@@ -34,7 +35,7 @@ public class FileServiceImpl implements FileService {
     private final UserMapper userMapper;
 
     @Autowired
-    public FileServiceImpl(FileMapper fileMapper, UserMapper userMapper) {
+    public FileServiceImpl(FileMapper fileMapper, UserMapper userMapper, CurrentUserCache currentUserCache) {
         this.fileMapper = fileMapper;
         this.userMapper = userMapper;
     }
@@ -113,7 +114,7 @@ public class FileServiceImpl implements FileService {
         FileMeta root = fileMapper.selectById(id);
         //删除首先要标记删除，所以不用再更新父目录大小了，因为已经更新过了
         //不用更新时间，因为删除回收站文件不会改变时间
-        if(!root.getDelete()){
+        if (!root.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_DELETE_ERROR);//如果文件没有被标记删除，则不能删除
         }
         if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
@@ -154,7 +155,7 @@ public class FileServiceImpl implements FileService {
         if (!parent.getFolder()) {
             throw new BusinessException(CodeMessage.PARENT_IS_NOT_FOLDER_ERROR);
         }
-        if(parent.getDelete()){
+        if (parent.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
         file.setPath(parent.getFolderId() == 0 ? "/" + fileName + "." + type
@@ -279,7 +280,7 @@ public class FileServiceImpl implements FileService {
         if (!parent.getFolder()) {
             throw new BusinessException(CodeMessage.PARENT_IS_NOT_FOLDER_ERROR);
         }
-        if(parent.getDelete()){
+        if (parent.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
         folderName = checkSameName(folderName, parentFolderId, true);
@@ -299,13 +300,24 @@ public class FileServiceImpl implements FileService {
         return folder.getId();
     }
 
-
+    /**
+     * 根据父文件夹ID查询文件，文件夹
+     */
     @Override
     public List<FileMeta> selectByParentFolderId(Integer parentFolderId) {
         FileMeta fileMeta = new FileMeta();
         fileMeta.setFolderId(parentFolderId);
         fileMeta.setUserId(fileMapper.selectById(parentFolderId).getUserId());// 限制用户只能看到自己的文件
         return fileMapper.selectAll(fileMeta);
+    }
+
+    /**
+     * 根据父文件夹ID分页查询文件，文件夹
+     */
+    @Override
+    public PageInfo<FileMeta> selectPagesByFolderId(Integer folderId, Integer pageNum, Integer pageSize) {
+        List<FileMeta> list = selectByParentFolderId(folderId);
+        return Util.listToPage(list, pageNum, pageSize);
     }
 
 
