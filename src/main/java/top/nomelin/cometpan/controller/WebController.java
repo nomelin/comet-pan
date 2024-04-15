@@ -14,8 +14,10 @@ import top.nomelin.cometpan.pojo.Account;
 import top.nomelin.cometpan.pojo.User;
 import top.nomelin.cometpan.service.UserService;
 
+import java.util.List;
+
 /**
- * 基础前端接口
+ * 公共前端接口和非标准前端接口
  *
  * @author nomelin
  */
@@ -92,6 +94,21 @@ public class WebController {
         account.setPassword(password);
         userService.updatePassword(account, newPassword);// 修改密码
         return Result.success();
+    }
+
+    @GetMapping("/valid/{username}")
+    public Result validUserName(@PathVariable String username) {
+        User user=new User();
+        user.setUserName(username);
+        List<User> users=userService.selectAll(user);//模糊查找，所以要遍历再验证
+        boolean res=true;
+        for(User u:users){
+            if(u.getUserName().equals(username)){
+                res=false;
+                break;
+            }
+        }
+        return Result.success(res);
     }
 
 }

@@ -45,7 +45,7 @@ public class TokenInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         HttpSession session = request.getSession();
-        logger.info("session id:"+session.getId());
+        logger.info("session id:"+session.getId()+",请求路径："+request.getRequestURI());
         if(!ObjectUtil.isNull(currentUserCache.getCurrentUser())){
             logger.info("从session缓存bean中取到用户信息，跳过token解析。");
             return true;

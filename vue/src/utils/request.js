@@ -25,12 +25,11 @@ request.interceptors.request.use(config => {
 request.interceptors.response.use(
     response => {
         let res = response.data;
-
         // 兼容服务端返回的字符串数据
         if (typeof res === 'string') {
             res = res ? JSON.parse(res) : res
         }
-        if (res.code === '401'||res.code === '402'||res.code === '403'||res.code === '406'||res.code === '502') {
+        if (res.code === '402' || res.code === '403' || res.code === '406' || res.code === '407' || res.code === '502') {
             router.push('/login')
         }
         return res;

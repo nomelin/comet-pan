@@ -48,9 +48,10 @@ public class FileController {
     }
 
     /**
-     * 获取一个用户的根目录文件,分页
+     * 获取一个用户的根目录文件
      */
-    @GetMapping("/page")
+//    @GetMapping("/page")
+    @GetMapping("")
     public Result selectRootFiles(@RequestParam(defaultValue = "1") Integer pageNum,
                                   @RequestParam(defaultValue = "10") Integer pageSize) {
         User user = currentUserCache.getCurrentUser();
@@ -59,14 +60,16 @@ public class FileController {
         }
         Integer rootId = user.getRootId();
         logger.info("获取用户:" + user.getId() + "的根目录文件，用户根目录ID: " + rootId);
-        PageInfo<FileMeta> pageInfo = fileService.selectPagesByFolderId(rootId, pageNum, pageSize);
-        return Result.success(pageInfo);
+//        PageInfo<FileMeta> pageInfo = fileService.selectPagesByFolderId(rootId, pageNum, pageSize);
+        List<FileMeta> fileMetas = fileService.selectByParentFolderId(rootId);
+        return Result.success(fileMetas);
     }
 
-    @GetMapping("/page/folder/{folderId}")
+//    @GetMapping("/page/folder/{folderId}")
+    @GetMapping("/folder/{folderId}")
     public Result selectFolderFiles(@PathVariable Integer folderId,
                                     @RequestParam(defaultValue = "1") Integer pageNum,
-                                    @RequestParam(defaultValue = "10") Integer pageSize){
+                                    @RequestParam(defaultValue = "10") Integer pageSize) {
         User user = currentUserCache.getCurrentUser();
         FileMeta folder = fileService.selectById(folderId);
         if (folder == null) {
@@ -76,8 +79,9 @@ public class FileController {
             return Result.error(CodeMessage.CANNOT_ACCESS_ERROR);
         }
         logger.info("获取用户:" + user.getId() + "的文件夹:" + folder.getName() + "的文件，文件夹ID: " + folderId);
-        PageInfo<FileMeta> pageInfo = fileService.selectPagesByFolderId(folderId, pageNum, pageSize);
-        return Result.success(pageInfo);
+//        PageInfo<FileMeta> pageInfo = fileService.selectPagesByFolderId(folderId, pageNum, pageSize);
+        List<FileMeta> fileMetas = fileService.selectByParentFolderId(folderId);
+        return Result.success(fileMetas);
     }
 
 
@@ -129,15 +133,17 @@ public class FileController {
 //    }
 
     /**
-     * 分页查询
+     * 条件查询
      */
-    @GetMapping("/page/all")
+//    @GetMapping("/page/all")
+    @GetMapping("/all")
     public Result selectPage(FileMeta fileMeta,
-                              @RequestParam(defaultValue = "1") Integer pageNum,
-                              @RequestParam(defaultValue = "10") Integer pageSize) {
+                             @RequestParam(defaultValue = "1") Integer pageNum,
+                             @RequestParam(defaultValue = "10") Integer pageSize) {
         fileMeta.setUserId(currentUserCache.getCurrentUser().getId());
-        PageInfo<FileMeta> page = fileService.selectPage(fileMeta, pageNum, pageSize);
-        return Result.success(page);
+//        PageInfo<FileMeta> page = fileService.selectPage(fileMeta, pageNum, pageSize);
+        List<FileMeta> fileMetas = fileService.selectAll(fileMeta);
+        return Result.success(fileMetas);
     }
 
 }

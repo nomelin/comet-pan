@@ -1,6 +1,8 @@
 package top.nomelin.cometpan.controller;
 
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import top.nomelin.cometpan.common.Result;
 import top.nomelin.cometpan.pojo.User;
@@ -17,6 +19,7 @@ public class UserController {
 
 
     private final UserService userService;
+    public static final Logger logger= LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -86,5 +89,4 @@ public class UserController {
         PageInfo<User> page = userService.selectPage(user, pageNum, pageSize);
         return Result.success(page);
     }
-
 }

@@ -98,7 +98,7 @@ export default {
             if (res.data.role === 1) {
               this.$router.push('/manager/home');
             } else if (res.data.role === 2) {
-              this.$router.push('/home');
+              this.$router.push('/files');
             }
           }, 100);
         } else {
@@ -177,7 +177,7 @@ export default {
 .login-box {
   width: 50vh;
   max-width: 500px;
-  padding: 60px 20px;
+  padding: 60px 30px;
   box-shadow: 0 20px 80px #e6e2ff;
   background-color: white;
   border-radius: 50px;
@@ -194,9 +194,13 @@ export default {
   color: #242830;
 }
 
-.input-field {
-
-
+::v-deep .input-field .el-input__inner {
+  width:100%;
+  text-align: left;
+  border: 0 !important;
+  outline: none;
+  font-weight: bold;
+  font-size: 16px;
 }
 
 .custom-input {

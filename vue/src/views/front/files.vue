@@ -1,9 +1,6 @@
 <template>
   <div class="main-container">
-    <div class="blank">
-
-    </div>
-
+    <div class="blank"></div>
     <div class="operation">
       <el-input class="search-input" placeholder="搜索全部文件" style="width: 200px" v-model="name"
                 @keyup.enter.native="selectAll(1)">
@@ -17,27 +14,37 @@
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
       <el-button type="primary" plain style="margin-left: 10px" @click="addFolder">新建文件夹</el-button>
       <el-button type="danger" plain @click="delBatch">批量删除</el-button>
+    </div>
+    <div class="blank"></div>
+    <div class="backAndForward">
       <el-button type="primary" plain @click="backNavigation" icon="el-icon-back"
                  circle :disabled="cacheIndex <= 0"></el-button>
       <el-button type="primary" plain @click="forwardNavigation" icon="el-icon-right"
                  circle :disabled="cacheIndex >= requestCache.length - 1"></el-button>
-
     </div>
-
     <div class="table">
       <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
-      <el-skeleton :rows="16" animated v-if="loading"/>
+      <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
-                height="70vh" empty-text="">
-        <template slot="empty">
+                height="70vh" class="table-style" empty-text="">
+        <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
           </el-empty>
           <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">上传文件</el-button>
         </template>
+        <template v-else slot="empty">
+          <el-empty description=" ">
+            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>没有找到相关文件</span></p>
+          </el-empty>
+        </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
-        <el-table-column prop="name" label="文件名称" sortable></el-table-column>
+        <el-table-column prop="name" label="文件名称" sortable>
+          <template slot-scope="scope">
+            <span v-html="highlightText(scope.row.name)"></span>
+          </template>
+        </el-table-column>
         <el-table-column label="是否文件夹">
           <template v-slot="scope">
             <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
@@ -47,8 +54,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
-        <!--        <el-table-column prop="userId" label="创建人ID"></el-table-column>-->
-        <!--        <el-table-column prop="userName" label="创建人"></el-table-column>-->
         <el-table-column prop="type" label="文件类型"></el-table-column>
         <el-table-column prop="size" label="文件大小"></el-table-column>
         <el-table-column label="创建时间">
@@ -80,7 +85,7 @@
 
       <div class="pagination">
         <el-pagination
-            v-if="isSearch"
+            v-if="false"
             background
             @current-change="handleCurrentChange"
             @size-change="handleSizeChange"
@@ -115,6 +120,8 @@ export default {
       maxCacheSize: 10, // 最大缓存大小
 
       isSearch: false,//当前是否处于查询模式
+      searchText: "", // 搜索的关键字
+
       loading: true, // 控制加载动画的显示与隐藏
       folderId: 0, // 当前的文件夹的id
     }
@@ -126,7 +133,22 @@ export default {
     // 计算属性，过滤出属性 delete 为 false 的数据
     filteredData() {
       return this.tableData.filter(item => !item.delete);
-    }
+    },
+    // 计算属性，根据 isSearch 属性和 searchText 动态生成高亮文本
+    highlightText() {
+      console.log(this.isSearch, this.searchText)
+      return (name) => {
+        if (this.isSearch && this.searchText) {
+          // 使用正则表达式替换匹配的文本为带有样式的高亮文本
+          return name.replace(new RegExp(this.searchText, 'gi'), match => {
+            return `<span class="highlight">${match}</span>`;
+          });
+        } else {
+          // 如果不是搜索状态，直接返回原始文本
+          return name;
+        }
+      };
+    },
   },
   methods: {
     del(id) {   // 单个删除
@@ -164,14 +186,23 @@ export default {
     },
     load(pageNum) {  // 分页查询
       if (pageNum) this.pageNum = pageNum
-      this.handleCacheAndGetFileRequest('/files/page')
+      this.handleCacheAndGetFileRequest('/files')
     },
     selectAll(pageNum) {
       this.isSearch = true;
+      this.searchText = this.name;
       //根据条件查询所有数据
       if (pageNum) this.pageNum = pageNum
       this.loading = true;
-      this.$request.get("/files/page/all", {
+      this.requestCache = [];
+      this.cacheIndex = 0;
+      if (this.name === "") {
+
+        this.getFileRequest("/files")
+        return;
+      }
+      // this.requestCache = this.requestCache.slice(0, this.cacheIndex + 1)
+      this.$request.get("/files/all", {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
@@ -182,35 +213,36 @@ export default {
         if (res.code !== '200') {
           this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
         } else {
-          this.tableData = res.data?.list
-          this.total = res.data?.total
+          this.tableData = res.data
+          this.total = res.data.length
         }
       })
     },
     reset() {
       this.name = null
       this.isSearch = false;
+      this.searchText = "";
       this.load(1)
     },
     reload() {
       this.getFileRequest(this.requestCache[this.cacheIndex])
     },
-    handleCurrentChange(pageNum) {
-      if (this.isSearch) {
-        this.selectAll(pageNum)
-      } else {
-        this.load(pageNum)
-      }
-
-    },
-    handleSizeChange(pageSize) {
-      this.pageSize = pageSize;
-      if (this.isSearch) {
-        this.selectAll(1)
-      } else {
-        this.load(1)
-      }
-    },
+    // handleCurrentChange(pageNum) {
+    //   if (this.isSearch) {
+    //     this.selectAll(pageNum)
+    //   } else {
+    //     // this.load(pageNum)
+    //   }
+    //
+    // },
+    // handleSizeChange(pageSize) {
+    //   this.pageSize = pageSize;
+    //   if (this.isSearch) {
+    //     this.selectAll(1)
+    //   } else {
+    //     // this.load(1)
+    //   }
+    // },
     formatTime(timestamp) {
       let date = new Date(parseInt(timestamp));
       // 获取年、月、日、时、分
@@ -227,6 +259,7 @@ export default {
       // 用于封装getFileRequest和addToCache方法，统一处理
       // 丢弃索引之后的缓存(因为用户已经重新点击了新的路径)
       this.requestCache = this.requestCache.slice(0, this.cacheIndex + 1)
+      this.isSearch = false;
       this.addToCache(url)
       this.getFileRequest(url)
     },
@@ -243,8 +276,8 @@ export default {
         if (res.code !== '200') {
           this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
         } else {
-          this.tableData = res.data?.list
-          this.total = res.data?.total
+          this.tableData = res.data
+          this.total = res.data.length
         }
       })
     },
@@ -260,7 +293,7 @@ export default {
     },
     handleFolderClick(row) {
       if (row.folder) {
-        this.handleCacheAndGetFileRequest('/files/page/folder/' + row.id)
+        this.handleCacheAndGetFileRequest('/files/folder/' + row.id)
         this.folderId = row.id
       }
     },
@@ -302,24 +335,30 @@ export default {
 .main-container {
   border-radius: 50px;
   background-color: #ffffff;
-  height: 95%;
+  height: 100%;
+  width: 100%;
 }
 
 .table {
   background-color: #ffffff;
-  height: 100%;
+  height: 80%;
 }
 
 .blank {
-  height: 6vh;
+  height: 3%
 }
 
 .operation {
-  margin-left: 2vw;
+  /*position: absolute;*/
+  margin-left: 3%;
+}
+
+.backAndForward {
+  margin-left: 5%;
 }
 
 ::v-deep .search-input .el-input__inner {
-  width:100%;
+  width: 100%;
   height: 5vh;
   background-color: #EBEEF5;
   text-align: center;
@@ -327,11 +366,24 @@ export default {
   outline: none;
   font-weight: bold;
   font-size: 14px;
+  border-radius: 15px;
 }
 
-/*::v-deep .search-input .el-textarea__inner {*/
-/*  border: 0 !important;*/
-/*  resize: none;*/
-/*  font-weight: bold;*/
-/*}*/
+.table-skeleton {
+  width: 80%;
+  margin-left: 10%;
+  margin-top: 5%;
+}
+
+::v-deep .highlight {
+  /*background-color: yellow;*/
+  color: #0d53ff;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.table-style {
+  /*font-weight: bold;*/
+  font-size: 14px;
+}
 </style>

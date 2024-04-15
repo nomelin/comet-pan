@@ -4,7 +4,7 @@
     <!--头部-->
     <div class="front-header">
       <div class="front-header-left">
-        <a href="/front/home">
+        <a href="/files">
           <img class="logo" src="@/assets/imgs/logo.svg" alt="logo">
         </a>
       </div>
@@ -42,12 +42,15 @@
     <!--主体-->
     <div class="main-body">
       <div class="main-left">
-        <el-menu :default-openeds="['info', 'user']" router style="border: none" :default-active="$route.path">
-          <el-menu-item index="/files">
+        <el-menu text-color="#565757" active-text-color="#0d53ff" router class="el-menu" :default-active="$route.path">
+          <el-menu-item class="el-menu-item" index="/files">
             <i class="el-icon-s-home"></i>
-            <span slot="title">全部文件</span>
+            <span class="words" slot="title">全部文件</span>
           </el-menu-item>
-
+          <el-menu-item class="el-menu-item" index="/garbage">
+            <i class="el-icon-bangzhu"></i>
+            <span class="words" slot="title">回收站</span>
+          </el-menu-item>
         </el-menu>
       </div>
       <div class="main-right">
@@ -112,35 +115,38 @@ export default {
 .main-body {
   display: flex;
   /*height: 100%;*/
-  height: 85vh;
+  height: 90vh;
   /*flex-grow: 1;*/
 }
 
 .main-left {
   width: 15vw;
+  height: 100%;
 }
 
 .main-right {
   width: 100%;
+  height: 100%;
 }
 .front-layout{
   background: #f5f6f7;
 }
-.front-notice {
-  height: 5vh;
-  padding: 5px 20px;
-  color: #666;
-  font-size: 12px
-}
+/*.front-notice {*/
+/*  height: 0;*/
+/*  padding: 5px 20px;*/
+/*  color: #666;*/
+/*  font-size: 12px*/
+/*}*/
 .logo {
   width: 150px;
-  margin-top: 20px;
+  margin-top: 30px;
 }
 .front-header {
   display: flex;
   height: 10vh;
-  line-height: 60px;
-  border-bottom: 1px solid #eee;
+  width: 100vw;
+  /*line-height: 60px;*/
+  /*border-bottom: 1px solid #eee;*/
   background: #f5f6f7;
 }
 .front-header-left {
@@ -178,8 +184,25 @@ export default {
   margin: 5px auto;
 }
 /* ElementUI 样式覆盖 */
-.el-menu.el-menu--horizontal {
-  border: none !important;
-  height: 80px;
+/*.el-menu.el-menu--horizontal {*/
+/*  border: none !important;*/
+/*  height: 80px;*/
+/*  border-radius: 10px;*/
+/*}*/
+.el-menu{
+  border: none ;
+  border-radius: 20px;
+  height: 80%;
+  width: 80%;
+  margin-left: 10%;
+  margin-top: 20%;
 }
+
+.words{
+  font-weight: bold;
+}
+/*::v-deep .el-menu-item .is-active {*/
+/*  background-color: #3370ff !important;*/
+/*  color: #fff;*/
+/*}*/
 </style>
