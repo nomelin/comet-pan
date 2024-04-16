@@ -21,12 +21,16 @@
                  circle :disabled="cacheIndex <= 0"></el-button>
       <el-button type="primary" plain @click="forwardNavigation" icon="el-icon-right"
                  circle :disabled="cacheIndex >= requestCache.length - 1"></el-button>
+
+    </div>
+    <div class="path">
+      <span>全部文件</span><span>{{ this.path }} 共{{ this.total }}</span>
     </div>
     <div class="table">
       <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
-                height="70vh" class="table-style" empty-text="">
+                height="70vh" class="table-style" empty-text=""  @row-contextmenu="rightClick">
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
@@ -38,8 +42,9 @@
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>没有找到相关文件</span></p>
           </el-empty>
         </template>
+
         <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
+<!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
         <el-table-column prop="name" label="文件名称" sortable>
           <template slot-scope="scope">
             <span v-html="highlightText(scope.row.name)"></span>
@@ -53,7 +58,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
+<!--        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>-->
         <el-table-column prop="type" label="文件类型"></el-table-column>
         <el-table-column prop="size" label="文件大小"></el-table-column>
         <el-table-column label="创建时间">
@@ -70,35 +75,43 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="delete" label="是否删除">
-          <template v-slot="scope">
-            <span v-if="scope.row.delete">是</span>
-            <span v-else>否</span>
-          </template>
-        </el-table-column>
+        <!--        <el-table-column prop="delete" label="是否删除">-->
+        <!--          <template v-slot="scope">-->
+        <!--            <span v-if="scope.row.delete">是</span>-->
+        <!--            <span v-else>否</span>-->
+        <!--          </template>-->
+        <!--        </el-table-column>-->
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
+            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>
             <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <div class="pagination">
-        <el-pagination
-            v-if="false"
-            background
-            @current-change="handleCurrentChange"
-            @size-change="handleSizeChange"
-            :current-page="pageNum"
-            :page-sizes="[5, 10, 20]"
-            :page-size="pageSize"
-            layout="total, prev, pager, next, sizes, jumper"
-            :total="total">
-        </el-pagination>
-      </div>
+      <!--      <div class="pagination">-->
+      <!--        <el-pagination-->
+      <!--            v-if="false"-->
+      <!--            background-->
+      <!--            @current-change="handleCurrentChange"-->
+      <!--            @size-change="handleSizeChange"-->
+      <!--            :current-page="pageNum"-->
+      <!--            :page-sizes="[5, 10, 20]"-->
+      <!--            :page-size="pageSize"-->
+      <!--            layout="total, prev, pager, next, sizes, jumper"-->
+      <!--            :total="total">-->
+      <!--        </el-pagination>-->
+      <!--      </div>-->
     </div>
 
-
+    <div id="contextmenu"
+         v-show="menuVisible"
+         class="menu">
+      <div class="contextmenu__item"
+           @click="ShowView(CurrentRow)">查看</div>
+      <div class="contextmenu__item"
+           @click="del(CurrentRow.id)">删除</div>
+    </div>
   </div>
 </template>
 
@@ -123,20 +136,27 @@ export default {
       searchText: "", // 搜索的关键字
 
       loading: true, // 控制加载动画的显示与隐藏
-      folderId: 0, // 当前的文件夹的id
+      folderId: -1, // 当前的文件夹的id
+      path: "", // 当前路径
+
+      menuVisible: false, // 右键菜单是否显示
     }
   },
   created() {
     this.load(1)
+    this.folderId = this.user.rootId
   },
   computed: {
-    // 计算属性，过滤出属性 delete 为 false 的数据
+    // 计算属性，过滤出属性 delete 为 false 的数据,data变化以后自动更新
     filteredData() {
-      return this.tableData.filter(item => !item.delete);
+      let data = this.tableData.filter(item => !item.delete)
+      this.total = data.length
+      this.getPath(this.folderId)
+      return data;
     },
     // 计算属性，根据 isSearch 属性和 searchText 动态生成高亮文本
     highlightText() {
-      console.log(this.isSearch, this.searchText)
+      // console.log(this.isSearch, this.searchText)
       return (name) => {
         if (this.isSearch && this.searchText) {
           // 使用正则表达式替换匹配的文本为带有样式的高亮文本
@@ -187,8 +207,11 @@ export default {
     load(pageNum) {  // 分页查询
       if (pageNum) this.pageNum = pageNum
       this.handleCacheAndGetFileRequest('/files')
+      this.folderId = this.user.rootId
     },
     selectAll(pageNum) {
+      this.folderId = this.user.rootId
+
       this.isSearch = true;
       this.searchText = this.name;
       //根据条件查询所有数据
@@ -196,8 +219,7 @@ export default {
       this.loading = true;
       this.requestCache = [];
       this.cacheIndex = 0;
-      if (this.name === "") {
-
+      if (this.name === null || this.name === "") {
         this.getFileRequest("/files")
         return;
       }
@@ -214,7 +236,15 @@ export default {
           this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
         } else {
           this.tableData = res.data
-          this.total = res.data.length
+        }
+      })
+    },
+    getPath(id) {
+      this.$request.get('/files/file/' + id).then(res => {
+        if (res.code === '200') {
+          this.path = res.data.path.replace(/\//g, '>'); // 使用正则表达式替换所有匹配到的 /
+        } else {
+          this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
         }
       })
     },
@@ -301,13 +331,26 @@ export default {
       // 判断是否有可后退的请求
       if (this.cacheIndex > 0) {
         this.cacheIndex--
+        let folderId = this.requestCache[this.cacheIndex].split('/')[3]
+        if (!isNaN(folderId)) {
+          this.folderId = folderId//如果是数字，则更新文件夹id
+        } else {
+          this.folderId = this.user.rootId//如果不是数字，则说明回到根目录
+        }
         this.getFileRequest(this.requestCache[this.cacheIndex])
+
       }
     },
     forwardNavigation() {
       // 判断是否有可前进的请求
       if (this.cacheIndex < this.requestCache.length - 1) {
         this.cacheIndex++
+        let folderId = this.requestCache[this.cacheIndex].split('/')[3]
+        if (!isNaN(folderId)) {
+          this.folderId = folderId//如果是数字，则更新文件夹id
+        } else {
+          this.folderId = this.user.rootId//如果不是数字，则说明回到根目录
+        }
         this.getFileRequest(this.requestCache[this.cacheIndex])
       }
     },
@@ -327,6 +370,34 @@ export default {
     handleAdd() {
 
     },
+    // 右键菜单
+    rightClick(row, column, event) {
+      this.testModeCode = row.testModeCode
+      this.menuVisible = false // 先把模态框关死，目的是 第二次或者第n次右键鼠标的时候 它默认的是true
+      this.menuVisible = true // 显示模态窗口，跳出自定义菜单栏
+      event.preventDefault() //关闭浏览器右键默认事件
+      this.CurrentRow = row
+      var menu = document.querySelector('.menu')
+      this.styleMenu(menu)
+    },
+    foo() {
+      // 取消鼠标监听事件 菜单栏
+      this.menuVisible = false
+      document.removeEventListener('click', this.foo) // 关掉监听，
+    },
+    styleMenu(menu) {
+      if (event.clientX > 1800) {
+        menu.style.left = event.clientX - 100 + 'px'
+      } else {
+        menu.style.left = event.clientX + 1 + 'px'
+      }
+      document.addEventListener('click', this.foo) // 给整个document新增监听鼠标事件，点击任何位置执行foo方法
+      if (event.clientY > 700) {
+        menu.style.top = event.clientY - 30 + 'px'
+      } else {
+        menu.style.top = event.clientY - 10 + 'px'
+      }
+    },
   }
 }
 </script>
@@ -341,7 +412,7 @@ export default {
 
 .table {
   background-color: #ffffff;
-  height: 80%;
+  height: 75%;
 }
 
 .blank {
@@ -355,8 +426,22 @@ export default {
 
 .backAndForward {
   margin-left: 5%;
+  width: 80%;
 }
-
+.path{
+  font-weight: bold;
+  font-size: 16px;
+  color:#999999;
+  margin-left: 3%;
+  display: flex;
+  align-items: center; /* 垂直居中 */
+  /*text-align: left;*/
+  /*display: flex;*/
+  height: 5%;
+  /*text-align: center;*/
+  /*background-color: #f5f6f7;*/
+  /*border-radius: 5px;*/
+}
 ::v-deep .search-input .el-input__inner {
   width: 100%;
   height: 5vh;
@@ -385,5 +470,38 @@ export default {
 .table-style {
   /*font-weight: bold;*/
   font-size: 14px;
+}
+
+/*右键菜单*/
+.contextmenu__item {
+  display: block;
+  line-height: 34px;
+  text-align: center;
+}
+/*分割线*/
+.contextmenu__item:not(:last-child) {
+  border-bottom: 0px solid #00ffff;
+}
+.menu {
+  position: absolute;
+  background-color: #fff;
+  width: 10%;
+  /*height: 106px;*/
+  font-size: 14px;
+  font-weight: bold;
+  color: #52565e;
+  border-radius: 10px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  border: 1px solid #DCDFE6;
+  /*box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);*/
+  white-space: nowrap;
+  z-index: 1000;
+}
+.contextmenu__item:hover {
+  cursor: pointer;
+  background: #e6f1ff;
+  border-color:#e6f1ff;
+  /*color: #52565e;*/
 }
 </style>

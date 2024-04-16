@@ -1,6 +1,5 @@
 package top.nomelin.cometpan.controller;
 
-import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +64,7 @@ public class FileController {
         return Result.success(fileMetas);
     }
 
-//    @GetMapping("/page/folder/{folderId}")
+    //    @GetMapping("/page/folder/{folderId}")
     @GetMapping("/folder/{folderId}")
     public Result selectFolderFiles(@PathVariable Integer folderId,
                                     @RequestParam(defaultValue = "1") Integer pageNum,
@@ -84,6 +83,11 @@ public class FileController {
         return Result.success(fileMetas);
     }
 
+    @PutMapping("/rename")
+    public Result updateName(@RequestBody FileMeta fileMeta) {
+        fileService.updateName(fileMeta.getId(), fileMeta.getName());
+        return Result.success();
+    }
 
     /**
      * 删除
@@ -144,6 +148,11 @@ public class FileController {
 //        PageInfo<FileMeta> page = fileService.selectPage(fileMeta, pageNum, pageSize);
         List<FileMeta> fileMetas = fileService.selectAll(fileMeta);
         return Result.success(fileMetas);
+    }
+
+    @GetMapping("/space")
+    public Result getUsedSpace() {
+        return Result.success(fileService.getUsedSpace(currentUserCache.getCurrentUser().getId()));
     }
 
 }

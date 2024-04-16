@@ -42,6 +42,11 @@
     <!--主体-->
     <div class="main-body">
       <div class="main-left">
+        <div class="main-left-upper">
+          <el-progress
+              :text-inside="true" :stroke-width="24" :percentage="100" status="success"
+          class="progress"></el-progress>
+        </div>
         <el-menu text-color="#565757" active-text-color="#0d53ff" router class="el-menu" :default-active="$route.path">
           <el-menu-item class="el-menu-item" index="/files">
             <i class="el-icon-s-home"></i>
@@ -119,11 +124,35 @@ export default {
   /*flex-grow: 1;*/
 }
 
+
 .main-left {
   width: 15vw;
   height: 100%;
 }
-
+.main-left-upper{
+  background-color: #ffffff;
+  border: none ;
+  border-radius: 20px;
+  height: 15%;
+  width: 80%;
+  margin-left: 10%;
+  margin-top: 10%;
+  position: relative; /* 设置相对定位，为了让进度条容器相对于该 div 定位 */
+}
+.progress {
+  position: absolute; /* 设置绝对定位 */
+  bottom: 30%; /* 设置底部对齐 */
+  left: 10%; /* 设置左侧对齐 */
+  width: 80%; /* 设置宽度 */
+}
+.el-menu{
+  border: none ;
+  border-radius: 20px;
+  height: 70%;
+  width: 80%;
+  margin-left: 10%;
+  margin-top: 10%;
+}
 .main-right {
   width: 100%;
   height: 100%;
@@ -189,14 +218,7 @@ export default {
 /*  height: 80px;*/
 /*  border-radius: 10px;*/
 /*}*/
-.el-menu{
-  border: none ;
-  border-radius: 20px;
-  height: 80%;
-  width: 80%;
-  margin-left: 10%;
-  margin-top: 20%;
-}
+
 
 .words{
   font-weight: bold;
@@ -205,4 +227,6 @@ export default {
 /*  background-color: #3370ff !important;*/
 /*  color: #fff;*/
 /*}*/
+
+
 </style>

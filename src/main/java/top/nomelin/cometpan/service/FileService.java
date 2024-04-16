@@ -2,6 +2,7 @@ package top.nomelin.cometpan.service;
 
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.transaction.annotation.Transactional;
 import top.nomelin.cometpan.pojo.FileMeta;
 
 import java.util.List;
@@ -17,6 +18,9 @@ public interface FileService {
      * 在当前用户空间新增文件夹
      */
     int addFolder(String folderName, Integer parentFolderId);
+
+    @Transactional
+    void updateName(Integer id, String name);
 
     /**
      * 在当前用户空间新增文件
@@ -64,6 +68,8 @@ public interface FileService {
      * 标记批量删除
      */
     void setDeleteBatch(List<Integer> ids);
+
+    int getUsedSpace(Integer userId);
 
     /**
      * 标记删除节点，包括子节点

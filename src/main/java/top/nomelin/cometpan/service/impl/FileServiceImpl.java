@@ -1,6 +1,7 @@
 package top.nomelin.cometpan.service.impl;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -48,6 +49,17 @@ public class FileServiceImpl implements FileService {
     public int add(FileMeta fileMeta) {
         fileMapper.insert(fileMeta);
         return fileMeta.getId();
+    }
+
+    /**
+     * 得到用户所用的空间
+     */
+    @Override
+    public int getUsedSpace(Integer userId){
+        User user = userMapper.selectById(userId);
+        FileMeta root = fileMapper.selectById(user.getRootId());
+        return root.getSize();
+
     }
 
     @Transactional
@@ -141,9 +153,47 @@ public class FileServiceImpl implements FileService {
 
     @Transactional
     @Override
+    public void updateName(Integer id, String name) {
+        FileMeta fileMeta = selectById(id);
+        if (ObjectUtil.isNull(fileMeta) || fileMeta.getDelete()) {
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
+        if (ObjectUtil.isNotNull(name) && StrUtil.isEmpty(name)) {
+            throw new BusinessException(CodeMessage.INVALID_NAME_ERROR);
+        }
+        if (fileMeta.getName().equals(name)) {
+            return;// 如果名字没有变化，则不用更新
+        }
+        // 检查同名文件或文件夹
+        name = checkSameNameAndUpdate(name, fileMeta.getFolderId(), fileMeta.getFolder());
+        fileMeta.setName(name);
+        // 更新路径
+        String path = fileMeta.getPath();
+        int index = path.lastIndexOf("/");
+        String newPath = path.substring(0, index) + "/" + name;
+        fileMeta.setPath(newPath);
+        // 更新类型
+        String type = fileMeta.getType();
+        String newType;
+        if (ObjectUtil.isNull(type)) {
+            newType = null;//文件夹没有类型，不用更新
+        } else if (type.lastIndexOf(".") == -1 || type.lastIndexOf(".") == type.length() - 1) {
+            newType = "";
+        } else {
+            newType = type.substring(type.lastIndexOf(".") + 1);
+        }
+        fileMeta.setType(newType);
+        // 更新
+        fileMapper.updateById(fileMeta);
+        // 更新父目录时间
+        updateTimeById(id);
+    }
+
+    @Transactional
+    @Override
     public int addFile(String fileName, Integer parentFolderId, int size, String type) {
         FileMeta file = new FileMeta();
-        fileName = checkSameName(fileName, parentFolderId, false);
+        fileName = checkSameNameAndUpdate(fileName, parentFolderId, false);
         file.setName(fileName);
         file.setFolderId(parentFolderId);
         file.setSize(size);
@@ -199,9 +249,10 @@ public class FileServiceImpl implements FileService {
             }
             fileMeta = fileMapper.selectById(folderId); // 获取父目录
             int newSize = add ? fileMeta.getSize() + size : fileMeta.getSize() - size;
-            fileMeta.setSize(newSize); // 更新父目录大小
-            //logger.info("更新目录{}的大小为{}", folderId, newSize);
-            fileMapper.updateById(fileMeta); // 更新父目录
+            FileMeta updatedFolder = new FileMeta(); // 创建一个新的对象来保存更新后的父目录信息
+            updatedFolder.setId(fileMeta.getId());
+            updatedFolder.setSize(newSize);
+            fileMapper.updateById(updatedFolder); // 更新父目录
         }
     }
 
@@ -235,7 +286,7 @@ public class FileServiceImpl implements FileService {
      * @param isFolder       是否为文件夹
      * @return 修改后的名字，加上(1)或(2)等后缀
      */
-    public String checkSameName(String fileName, Integer parentFolderId, boolean isFolder) {
+    public String checkSameNameAndUpdate(String fileName, Integer parentFolderId, boolean isFolder) {
         List<FileMeta> fileMetas = selectByParentFolderId(parentFolderId);
         int num = 0;
         boolean hasSameName = false;
@@ -283,7 +334,7 @@ public class FileServiceImpl implements FileService {
         if (parent.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
-        folderName = checkSameName(folderName, parentFolderId, true);
+        folderName = checkSameNameAndUpdate(folderName, parentFolderId, true);
         folder.setName(folderName);
         // 路径为父路径加上文件夹名
         folder.setPath(parent.getFolderId() == 0 ? "/" + folderName : parent.getPath() + "/" + folderName);

@@ -33,6 +33,7 @@ public enum CodeMessage {
     PARENT_IS_NOT_FOLDER_ERROR("602", "父节点不是文件夹"),
     INVALID_FILE_ID_ERROR("603", "操作的节点id不合法"),
     INVALID_DELETE_ERROR("604", "要彻底删除的节点不在回收站中"),
+    INVALID_NAME_ERROR("604", "文件名不合法"),
 
     CANNOT_ACCESS_ERROR("700", "没有权限访问此资源"),
 
