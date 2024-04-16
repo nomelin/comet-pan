@@ -33,6 +33,7 @@ const routes = [
       // { path: 'home', name: 'Home', meta: { name: '系统首页' }, component: () => import('../views/front/Home') },
       { path: 'person', name: 'Person', meta: { name: '个人信息' }, component: () => import('../views/front/Person') },
       { path: 'files', name: 'files', meta: { name: '网盘文件' }, component: () => import('../views/front/files') },
+      { path: 'trash', name: 'trash', meta: { name: '回收站' }, component: () => import('../views/front/trash') },
     ]
   },
   { path: '/login', name: 'Login', meta: { name: '登录' }, component: () => import('../views/Login.vue') },

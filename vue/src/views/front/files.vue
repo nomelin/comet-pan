@@ -30,7 +30,8 @@
       <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
-                height="70vh" class="table-style" empty-text=""  @row-contextmenu="rightClick">
+                height="70vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
+                 ref="table">
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
@@ -44,7 +45,7 @@
         </template>
 
         <el-table-column type="selection" width="55" align="center"></el-table-column>
-<!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
+        <!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
         <el-table-column prop="name" label="文件名称" sortable>
           <template slot-scope="scope">
             <span v-html="highlightText(scope.row.name)"></span>
@@ -58,20 +59,20 @@
             </span>
           </template>
         </el-table-column>
-<!--        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>-->
+        <!--        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>-->
         <el-table-column prop="type" label="文件类型"></el-table-column>
-        <el-table-column prop="size" label="文件大小"></el-table-column>
+        <el-table-column prop="size" label="文件大小" :formatter="formatSize"></el-table-column>
         <el-table-column label="创建时间">
           <template slot-scope="scope">
             <span v-if="scope.row.createTime != null">
-            	{{ formatTime(scope.row.createTime) }}
+            	{{ scope.row.createTime | formatTime }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="修改时间">
+        <el-table-column label="修改时间" sortable>
           <template slot-scope="scope">
             <span v-if="scope.row.updateTime != null">
-            	{{ formatTime(scope.row.updateTime) }}
+            	{{ scope.row.updateTime | formatTime }}
             </span>
           </template>
         </el-table-column>
@@ -88,29 +89,16 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <!--      <div class="pagination">-->
-      <!--        <el-pagination-->
-      <!--            v-if="false"-->
-      <!--            background-->
-      <!--            @current-change="handleCurrentChange"-->
-      <!--            @size-change="handleSizeChange"-->
-      <!--            :current-page="pageNum"-->
-      <!--            :page-sizes="[5, 10, 20]"-->
-      <!--            :page-size="pageSize"-->
-      <!--            layout="total, prev, pager, next, sizes, jumper"-->
-      <!--            :total="total">-->
-      <!--        </el-pagination>-->
-      <!--      </div>-->
     </div>
-
     <div id="contextmenu"
          v-show="menuVisible"
          class="menu">
       <div class="contextmenu__item"
-           @click="ShowView(CurrentRow)">查看</div>
+           @click="rename(CurrentRow)">重命名
+      </div>
       <div class="contextmenu__item"
-           @click="del(CurrentRow.id)">删除</div>
+           @click="del(CurrentRow.id)">删除
+      </div>
     </div>
   </div>
 </template>
@@ -130,7 +118,7 @@ export default {
 
       requestCache: [], // 存储发送的请求 URL
       cacheIndex: -1,  // 缓存数组的当前索引
-      maxCacheSize: 10, // 最大缓存大小
+      maxCacheSize: 50, // 最大缓存大小
 
       isSearch: false,//当前是否处于查询模式
       searchText: "", // 搜索的关键字
@@ -142,6 +130,8 @@ export default {
       menuVisible: false, // 右键菜单是否显示
     }
   },
+  mounted() {
+  },
   created() {
     this.load(1)
     this.folderId = this.user.rootId
@@ -149,7 +139,8 @@ export default {
   computed: {
     // 计算属性，过滤出属性 delete 为 false 的数据,data变化以后自动更新
     filteredData() {
-      let data = this.tableData.filter(item => !item.delete)
+      // let data = this.tableData.filter(item => !item.delete)
+      let data = this.tableData
       this.total = data.length
       this.getPath(this.folderId)
       return data;
@@ -172,10 +163,15 @@ export default {
   },
   methods: {
     del(id) {   // 单个删除
-      this.$confirm('您确定删除吗？', '确认删除', {type: "warning"}).then(response => {
+      this.$confirm('确定要删除选中的文件吗？', '确认删除', {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(response => {
         this.$request.delete('/files/' + id).then(res => {
           if (res.code === '200') {   // 表示操作成功
-            this.$message.success('操作成功')
+            this.$message.success('删除成功')
             this.reload()
           } else {
             this.$message.error(res.msg)  // 弹出错误的信息
@@ -192,10 +188,15 @@ export default {
         this.$message.warning('请选择数据')
         return
       }
-      this.$confirm('您确定要删除选中的所有文件吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('files', {data: this.ids}).then(res => {
+      this.$confirm('确定要删除选中的文件吗？', '确认删除', {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }).then(response => {
+        this.$request.delete('/files', {data: this.ids}).then(res => {
           if (res.code === '200') {   // 表示操作成功
-            this.$message.success('操作成功')
+            this.$message.success('删除成功')
             this.reload()
           } else {
             this.$message.error(res.msg)  // 弹出错误的信息
@@ -256,34 +257,6 @@ export default {
     },
     reload() {
       this.getFileRequest(this.requestCache[this.cacheIndex])
-    },
-    // handleCurrentChange(pageNum) {
-    //   if (this.isSearch) {
-    //     this.selectAll(pageNum)
-    //   } else {
-    //     // this.load(pageNum)
-    //   }
-    //
-    // },
-    // handleSizeChange(pageSize) {
-    //   this.pageSize = pageSize;
-    //   if (this.isSearch) {
-    //     this.selectAll(1)
-    //   } else {
-    //     // this.load(1)
-    //   }
-    // },
-    formatTime(timestamp) {
-      let date = new Date(parseInt(timestamp));
-      // 获取年、月、日、时、分
-      let year = date.getFullYear();
-      let month = (date.getMonth() + 1).toString().padStart(2, '0');
-      let day = date.getDate().toString().padStart(2, '0');
-      let hour = date.getHours().toString().padStart(2, '0');
-      let minute = date.getMinutes().toString().padStart(2, '0');
-
-      // 拼接成你需要的格式，比如：YYYY-MM-DD HH:mm
-      return `${year}-${month}-${day} ${hour}:${minute}`;
     },
     handleCacheAndGetFileRequest(url) {
       // 用于封装getFileRequest和addToCache方法，统一处理
@@ -372,6 +345,12 @@ export default {
     },
     // 右键菜单
     rightClick(row, column, event) {
+      // 判断当前行是否已经被选中
+      let isSelected = this.$refs.table.selection.includes(row);
+      // 如果当前行未被选中，则添加到选中行列表中
+      if (!isSelected) {
+        this.$refs.table.toggleRowSelection(row);
+      }
       this.testModeCode = row.testModeCode
       this.menuVisible = false // 先把模态框关死，目的是 第二次或者第n次右键鼠标的时候 它默认的是true
       this.menuVisible = true // 显示模态窗口，跳出自定义菜单栏
@@ -398,6 +377,12 @@ export default {
         menu.style.top = event.clientY - 10 + 'px'
       }
     },
+    formatSize(row, column) {
+      // row 是当前行的数据对象
+      // column 是当前列的属性配置对象
+      // 调用过滤器来格式化文件大小
+      return this.$options.filters.sizeFormat(row[column.property], 1);
+    },
   }
 }
 </script>
@@ -415,6 +400,11 @@ export default {
   height: 75%;
 }
 
+/*.el-table .el-table__row--selected {*/
+/*  background-color: blue; !* 修改被选中行的底色为蓝色 *!*/
+/*  color: white; !* 修改被选中行的文字颜色为白色 *!*/
+/*}*/
+
 .blank {
   height: 3%
 }
@@ -428,10 +418,11 @@ export default {
   margin-left: 5%;
   width: 80%;
 }
-.path{
+
+.path {
   font-weight: bold;
   font-size: 16px;
-  color:#999999;
+  color: #999999;
   margin-left: 3%;
   display: flex;
   align-items: center; /* 垂直居中 */
@@ -442,6 +433,7 @@ export default {
   /*background-color: #f5f6f7;*/
   /*border-radius: 5px;*/
 }
+
 ::v-deep .search-input .el-input__inner {
   width: 100%;
   height: 5vh;
@@ -478,10 +470,12 @@ export default {
   line-height: 34px;
   text-align: center;
 }
+
 /*分割线*/
 .contextmenu__item:not(:last-child) {
   border-bottom: 0px solid #00ffff;
 }
+
 .menu {
   position: absolute;
   background-color: #fff;
@@ -498,10 +492,11 @@ export default {
   white-space: nowrap;
   z-index: 1000;
 }
+
 .contextmenu__item:hover {
   cursor: pointer;
   background: #e6f1ff;
-  border-color:#e6f1ff;
+  border-color: #e6f1ff;
   /*color: #52565e;*/
 }
 </style>

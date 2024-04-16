@@ -106,6 +106,8 @@ public interface FileService {
      */
     List<FileMeta> selectByParentFolderId(Integer parentFolderId);
 
+    List<FileMeta> selectAllTrash(Integer rootId);
+
     /**
      * 分页查询
      */

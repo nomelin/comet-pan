@@ -93,12 +93,12 @@ class FileServiceTest {
 
     @Test
     void addFolder() {
-        fileService.addFolder("demo文件夹2333", 15);
+        //fileService.addFolder("测试", 5);
     }
 
     @Test
     void addFile() {
-        fileService.addFile("de文", 15, 2000 ,"mp4");
+        fileService.addFile("一个文本文件", 108, 3000 ,"txt");
     }
 
 

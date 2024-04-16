@@ -47,7 +47,7 @@ public class FileController {
     }
 
     /**
-     * 获取一个用户的根目录文件
+     * 获取一个用户的根目录文件,不包括回收站的文件
      */
 //    @GetMapping("/page")
     @GetMapping("")
@@ -58,11 +58,15 @@ public class FileController {
             return Result.error(CodeMessage.USER_NOT_LOGIN_ERROR);
         }
         Integer rootId = user.getRootId();
-        logger.info("获取用户:" + user.getId() + "的根目录文件，用户根目录ID: " + rootId);
+//        logger.info("获取用户:" + user.getId() + "的根目录文件，用户根目录ID: " + rootId);
 //        PageInfo<FileMeta> pageInfo = fileService.selectPagesByFolderId(rootId, pageNum, pageSize);
         List<FileMeta> fileMetas = fileService.selectByParentFolderId(rootId);
         return Result.success(fileMetas);
     }
+
+    /**
+     * 获取一个文件夹的子文件,不包括回收站的文件
+     */
 
     //    @GetMapping("/page/folder/{folderId}")
     @GetMapping("/folder/{folderId}")
@@ -77,7 +81,7 @@ public class FileController {
         if (!Objects.equals(folder.getUserId(), user.getId())) {
             return Result.error(CodeMessage.CANNOT_ACCESS_ERROR);
         }
-        logger.info("获取用户:" + user.getId() + "的文件夹:" + folder.getName() + "的文件，文件夹ID: " + folderId);
+//        logger.info("获取用户:" + user.getId() + "的文件夹:" + folder.getName() + "的文件，文件夹ID: " + folderId);
 //        PageInfo<FileMeta> pageInfo = fileService.selectPagesByFolderId(folderId, pageNum, pageSize);
         List<FileMeta> fileMetas = fileService.selectByParentFolderId(folderId);
         return Result.success(fileMetas);
@@ -109,6 +113,34 @@ public class FileController {
         return Result.success();
     }
 
+    @PutMapping("/restore/{id}")
+    public Result restoreById(@PathVariable Integer id) {
+        fileService.cancelDeleteNode(id);
+        return Result.success();
+    }
+
+    @PutMapping("/restore/batch")
+    public Result restoreBatch(@RequestBody List<Integer> ids) {
+        for (Integer id : ids) {
+            fileService.cancelDeleteNode(id);
+        }
+        return Result.success();
+    }
+
+    @DeleteMapping("/completely/{id}")
+    public Result deleteByIdCompletely(@PathVariable Integer id) {
+        fileService.deleteNode(id);
+        return Result.success();
+    }
+
+    @DeleteMapping("/completely/batch")
+    public Result deleteBatchCompletely(@RequestBody List<Integer> ids) {
+        for (Integer id : ids) {
+            fileService.deleteNode(id);
+        }
+        return Result.success();
+    }
+
     /**
      * 修改
      */
@@ -127,27 +159,28 @@ public class FileController {
         return Result.success(fileMeta);
     }
 
-//    /**
-//     * 查询所有
-//     */
-//    @GetMapping("")
-//    private Result selectAll(FileMeta fileMeta) {
-//        List<FileMeta> list = fileService.selectAll(fileMeta);
-//        return Result.success(list);
-//    }
 
     /**
-     * 条件查询
+     * 条件查询,不包括回收站的文件
      */
 //    @GetMapping("/page/all")
     @GetMapping("/all")
-    public Result selectPage(FileMeta fileMeta,
-                             @RequestParam(defaultValue = "1") Integer pageNum,
-                             @RequestParam(defaultValue = "10") Integer pageSize) {
+    public Result selectAll(FileMeta fileMeta,
+                            @RequestParam(defaultValue = "1") Integer pageNum,
+                            @RequestParam(defaultValue = "10") Integer pageSize) {
         fileMeta.setUserId(currentUserCache.getCurrentUser().getId());
 //        PageInfo<FileMeta> page = fileService.selectPage(fileMeta, pageNum, pageSize);
         List<FileMeta> fileMetas = fileService.selectAll(fileMeta);
         return Result.success(fileMetas);
+    }
+
+    /**
+     * 查询回收站文件,只查询垃圾森林的根节点,不查询出垃圾文件夹嵌套的子节点。
+     */
+    @GetMapping("/trash")
+    public Result selectAllTrash() {
+        User user = currentUserCache.getCurrentUser();
+        return Result.success(fileService.selectAllTrash(user.getRootId()));
     }
 
     @GetMapping("/space")

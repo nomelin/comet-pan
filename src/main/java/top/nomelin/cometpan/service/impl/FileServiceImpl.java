@@ -20,10 +20,7 @@ import top.nomelin.cometpan.pojo.User;
 import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.util.Util;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * 网盘文件信息表业务处理
@@ -55,7 +52,7 @@ public class FileServiceImpl implements FileService {
      * 得到用户所用的空间
      */
     @Override
-    public int getUsedSpace(Integer userId){
+    public int getUsedSpace(Integer userId) {
         User user = userMapper.selectById(userId);
         FileMeta root = fileMapper.selectById(user.getRootId());
         return root.getSize();
@@ -78,7 +75,7 @@ public class FileServiceImpl implements FileService {
         while (!queue.isEmpty()) {
             FileMeta current = queue.poll();
             setDeleteById(current.getId());
-            List<FileMeta> children = selectByParentFolderId(current.getId());
+            List<FileMeta> children = selectAllByParentFolderId(current.getId());
             for (FileMeta child : children) {
                 if (child.getFolder()) { // 如果是文件夹，将其加入队列
                     queue.offer(child);
@@ -110,7 +107,7 @@ public class FileServiceImpl implements FileService {
         while (!queue.isEmpty()) {
             FileMeta current = queue.poll();
             cancelDeleteById(current.getId());
-            List<FileMeta> children = selectByParentFolderId(current.getId());
+            List<FileMeta> children = selectAllByParentFolderId(current.getId());
             for (FileMeta child : children) {
                 if (child.getFolder()) { // 如果是文件夹，将其加入队列
                     queue.offer(child);
@@ -130,6 +127,7 @@ public class FileServiceImpl implements FileService {
             throw new BusinessException(CodeMessage.INVALID_DELETE_ERROR);//如果文件没有被标记删除，则不能删除
         }
         if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
+            logger.info("delete file id: " + id);
             deleteById(id);
             return;
         }
@@ -137,10 +135,14 @@ public class FileServiceImpl implements FileService {
         List<Integer> ids = new ArrayList<>();//直接删除会导致记录已经删除，导致查询不到子节点，所以需要记录一下id
         Queue<FileMeta> queue = new LinkedList<>();
         queue.offer(root);
+        logger.info("delete folder id: " + id);
         while (!queue.isEmpty()) {
             FileMeta current = queue.poll();
+            if(ObjectUtil.isNull(current)){
+                throw new BusinessException(CodeMessage.UNKNOWN_ERROR);
+            }
             ids.add(current.getId());
-            List<FileMeta> children = selectByParentFolderId(current.getId());
+            List<FileMeta> children = selectAllByParentFolderId(current.getId());
             for (FileMeta child : children) {
                 if (child.getFolder()) { // 如果是文件夹，将其加入队列
                     queue.offer(child);
@@ -148,6 +150,7 @@ public class FileServiceImpl implements FileService {
                 ids.add(child.getId());// 不管是文件还是文件夹，都删除子节点
             }
         }
+        logger.info("delete file ids: " + ids);
         deleteBatch(ids);
     }
 
@@ -287,7 +290,7 @@ public class FileServiceImpl implements FileService {
      * @return 修改后的名字，加上(1)或(2)等后缀
      */
     public String checkSameNameAndUpdate(String fileName, Integer parentFolderId, boolean isFolder) {
-        List<FileMeta> fileMetas = selectByParentFolderId(parentFolderId);
+        List<FileMeta> fileMetas = selectAllByParentFolderId(parentFolderId);
         int num = 0;
         boolean hasSameName = false;
         // 找到同名文件或文件夹
@@ -358,16 +361,28 @@ public class FileServiceImpl implements FileService {
     public List<FileMeta> selectByParentFolderId(Integer parentFolderId) {
         FileMeta fileMeta = new FileMeta();
         fileMeta.setFolderId(parentFolderId);
+        fileMeta.setDelete(false);
         fileMeta.setUserId(fileMapper.selectById(parentFolderId).getUserId());// 限制用户只能看到自己的文件
         return fileMapper.selectAll(fileMeta);
     }
+
+
+    public List<FileMeta> selectAllByParentFolderId(Integer parentFolderId) {
+        FileMeta fileMeta = new FileMeta();
+        fileMeta.setFolderId(parentFolderId);
+        fileMeta.setUserId(fileMapper.selectById(parentFolderId).getUserId());// 限制用户只能看到自己的文件
+        return fileMapper.selectAll(fileMeta);
+    }
+
+
 
     /**
      * 根据父文件夹ID分页查询文件，文件夹
      */
     @Override
+    @Deprecated(forRemoval = true)
     public PageInfo<FileMeta> selectPagesByFolderId(Integer folderId, Integer pageNum, Integer pageSize) {
-        List<FileMeta> list = selectByParentFolderId(folderId);
+        List<FileMeta> list = selectAllByParentFolderId(folderId);
         return Util.listToPage(list, pageNum, pageSize);
     }
 
@@ -435,10 +450,31 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 查询所有
+     * 查询所有,不包括删除的文件
      */
-    public List<FileMeta> selectAll(FileMeta diskFiles) {
-        return fileMapper.selectAll(diskFiles);
+    public List<FileMeta> selectAll(FileMeta fileMeta) {
+        fileMeta.setDelete(false);
+        return fileMapper.selectAll(fileMeta);
+    }
+
+    /**
+     * 查询回收站文件,只查询垃圾森林的根节点,不查询出垃圾文件夹嵌套的子节点。
+     */
+    @Override
+    public List<FileMeta> selectAllTrash(Integer rootId) {
+        FileMeta fileMeta = new FileMeta();
+        fileMeta.setRootFolderId(rootId);
+        fileMeta.setDelete(true);
+        List<FileMeta> list = fileMapper.selectAll(fileMeta);
+        Iterator<FileMeta> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            FileMeta file = iterator.next();
+            FileMeta parent = fileMapper.selectById(file.getFolderId());
+            if (parent != null && parent.getDelete()) {// 如果父节点是垃圾文件，则删除当前节点
+                iterator.remove(); // 使用迭代器的 remove 方法来安全地删除元素
+            }
+        }
+        return list;
     }
 
     /**

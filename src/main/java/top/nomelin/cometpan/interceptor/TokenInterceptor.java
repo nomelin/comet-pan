@@ -45,8 +45,8 @@ public class TokenInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         HttpSession session = request.getSession();
-        logger.info("session id:"+session.getId()+",请求路径："+request.getRequestURI());
-        if(!ObjectUtil.isNull(currentUserCache.getCurrentUser())){
+//        logger.info("session id:"+session.getId()+",请求路径："+request.getRequestURI());
+        if (!ObjectUtil.isNull(currentUserCache.getCurrentUser())) {
             logger.info("从session缓存bean中取到用户信息，跳过token解析。");
             return true;
         }
@@ -68,7 +68,7 @@ public class TokenInterceptor implements HandlerInterceptor {
             String userRole = JWT.decode(token).getAudience().get(0);// 获取用户
             userId = userRole.split("-")[0];
             role = Integer.parseInt(userRole.split("-")[1]);
-            logger.info("token解析成功，用户id:" + userId + ",角色:" + role);
+//            logger.info("token解析成功，用户id:" + userId + ",角色:" + role);
         } catch (Exception e) {
             throw new BusinessException(CodeMessage.TOKEN_PARSING_ERROR);
         }
@@ -84,10 +84,10 @@ public class TokenInterceptor implements HandlerInterceptor {
         } catch (TokenExpiredException e) {
             // Token过期异常处理
             throw new BusinessException(CodeMessage.TOKEN_EXPIRED_ERROR);
-        }catch (JWTVerificationException e) {
+        } catch (JWTVerificationException e) {
             throw new BusinessException(CodeMessage.TOKEN_CHECK_ERROR);
         }
-        logger.info("token验证通过，用户:" + account);
+//        logger.info("token验证通过，用户:" + account);
         //request.setAttribute("currentUser", account);// 将用户信息存储到request中,以便下一个拦截器使用
         currentUserCache.setCurrentUser(account);// 将用户信息存储到缓存中,以便使用
         return true;
