@@ -31,7 +31,7 @@
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
                 height="70vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
-                 ref="table">
+                ref="table">
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
@@ -48,7 +48,13 @@
         <!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
         <el-table-column prop="name" label="文件名称" sortable>
           <template slot-scope="scope">
-            <span v-html="highlightText(scope.row.name)"></span>
+            <template v-if="!scope.row.isEditing">
+              <span v-html="highlightText(scope.row.name)"></span>
+            </template>
+            <template v-else>
+              <el-input v-model="scope.row.name" @keyup.enter.native="saveRename(scope.row)"
+                        @blur="cancelRename(scope.row)"></el-input>
+            </template>
           </template>
         </el-table-column>
         <el-table-column label="是否文件夹">
@@ -82,12 +88,11 @@
         <!--            <span v-else>否</span>-->
         <!--          </template>-->
         <!--        </el-table-column>-->
-        <el-table-column label="操作" align="center" width="180">
-          <template v-slot="scope">
-            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>
-            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>
-          </template>
-        </el-table-column>
+<!--        <el-table-column label="操作" align="center" width="180">-->
+<!--          <template v-slot="scope">-->
+<!--            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>-->
+<!--          </template>-->
+<!--        </el-table-column>-->
       </el-table>
     </div>
     <div id="contextmenu"
@@ -382,6 +387,40 @@ export default {
       // column 是当前列的属性配置对象
       // 调用过滤器来格式化文件大小
       return this.$options.filters.sizeFormat(row[column.property], 1);
+    },
+    // 重命名操作
+    rename(row) {
+      // 将当前行设置为正在编辑状态
+      this.$set(row, 'isEditing', true);
+    },
+    // 保存重命名后的名称
+    saveRename(row) {
+      // 发送后端接口请求保存重命名后的名称
+      this.$request.put('/files/rename', {id: row.id, name: row.name}).then(res => {
+        if (res.code === '200') {
+          this.$message.success('重命名成功')
+          this.reload()
+        } else {
+          this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
+        }
+      })
+      this.$set(row, 'isEditing', false);
+      this.reload();
+    },
+    // 取消重命名操作
+    cancelRename(row) {
+      if (row.isEditing) {
+        // 取消编辑状态，恢复原始名称
+        this.$set(row, 'isEditing', false);
+        this.$message.info('取消重命名')
+        this.reload();
+      }
+    },
+    testEnter() {
+      console.log('Enter key pressed');
+    },
+    testBlur() {
+      console.log('Blur event triggered');
     },
   }
 }
