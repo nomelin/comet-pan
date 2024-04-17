@@ -14,6 +14,7 @@
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
       <el-button type="primary" plain style="margin-left: 10px" @click="addFolder">新建文件夹</el-button>
       <el-button type="danger" plain @click="delBatch">批量删除</el-button>
+      <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">按钮仍在开发中</span>
     </div>
     <div class="blank"></div>
     <div class="backAndForward">
@@ -31,7 +32,7 @@
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
                 height="70vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
-                ref="table">
+                ref="table" :default-sort="{prop: 'name', order: 'ascending'}">
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
@@ -44,9 +45,18 @@
           </el-empty>
         </template>
 
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <el-table-column type="selection" width="60" align="center"></el-table-column>
         <!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
-        <el-table-column prop="name" label="文件名称" sortable>
+        <el-table-column prop="folder" label="">
+          <template v-slot="scope">
+            <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
+              <i v-if="scope.row.folder" class="el-icon-folder"></i>
+              <span v-else>文件</span>
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="文件名称"
+                         sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
           <template slot-scope="scope">
             <template v-if="!scope.row.isEditing">
               <span v-html="highlightText(scope.row.name)"></span>
@@ -57,30 +67,20 @@
             </template>
           </template>
         </el-table-column>
-        <el-table-column label="是否文件夹">
-          <template v-slot="scope">
-            <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
-              <i v-if="scope.row.folder" class="el-icon-folder"></i>
-              <span v-else>文件</span>
-            </span>
-          </template>
-        </el-table-column>
+
         <!--        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>-->
         <el-table-column prop="type" label="文件类型"></el-table-column>
-        <el-table-column prop="size" label="文件大小" :formatter="formatSize"></el-table-column>
-        <el-table-column label="创建时间">
-          <template slot-scope="scope">
-            <span v-if="scope.row.createTime != null">
-            	{{ scope.row.createTime | formatTime }}
-            </span>
-          </template>
+        <el-table-column prop="size" label="文件大小" :formatter="formatSize"
+                         sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
         </el-table-column>
-        <el-table-column label="修改时间" sortable>
-          <template slot-scope="scope">
-            <span v-if="scope.row.updateTime != null">
-            	{{ scope.row.updateTime | formatTime }}
-            </span>
-          </template>
+        <el-table-column prop="createTime" :formatter="formatTime" label="创建时间"></el-table-column>
+        <el-table-column prop="updateTime" :formatter="formatTime" label="修改时间"
+                         sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
+          <!--          <template slot-scope="scope">-->
+          <!--            <span v-if="scope.row.updateTime != null">-->
+          <!--            	{{ scope.row.updateTime | formatTime }}-->
+          <!--            </span>-->
+          <!--          </template>-->
         </el-table-column>
         <!--        <el-table-column prop="delete" label="是否删除">-->
         <!--          <template v-slot="scope">-->
@@ -88,11 +88,11 @@
         <!--            <span v-else>否</span>-->
         <!--          </template>-->
         <!--        </el-table-column>-->
-<!--        <el-table-column label="操作" align="center" width="180">-->
-<!--          <template v-slot="scope">-->
-<!--            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>-->
-<!--          </template>-->
-<!--        </el-table-column>-->
+        <!--        <el-table-column label="操作" align="center" width="180">-->
+        <!--          <template v-slot="scope">-->
+        <!--            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>-->
+        <!--          </template>-->
+        <!--        </el-table-column>-->
       </el-table>
     </div>
     <div id="contextmenu"
@@ -167,6 +167,38 @@ export default {
     },
   },
   methods: {
+    customSortMethod(a, b) {
+      let table = this.$refs.table
+      // 获取排序状态对象
+      let sortState = table.store.states;
+      // 获取当前的排序字段
+      let currentSortProp = sortState.sortProp;
+      // 获取当前的排序顺序
+      let currentSortOrder = sortState.sortOrder;
+      // console.log(currentSortProp, currentSortOrder)
+      if (a.folder === b.folder) {
+        // 如果两个值相等，按照要排序的字段排序
+        if (currentSortProp === 'name') {
+          return a.name.localeCompare(b.name);
+        } else if (currentSortProp === 'updateTime') {
+          return a.updateTime - b.updateTime
+        } else if (currentSortProp === 'size') {
+          return a.size - b.size
+        }
+      } else if (a.folder) {
+        if (currentSortOrder === 'ascending') {
+          return -1;
+        } else if (currentSortOrder === 'descending') {
+          return 1;
+        }
+      } else if (b.folder) {
+        if (currentSortOrder === 'ascending') {
+          return 1;
+        } else if (currentSortOrder === 'descending') {
+          return -1;
+        }
+      }
+    },
     del(id) {   // 单个删除
       this.$confirm('确定要删除选中的文件吗？', '确认删除', {
         confirmButtonText: '删除',
@@ -387,6 +419,9 @@ export default {
       // column 是当前列的属性配置对象
       // 调用过滤器来格式化文件大小
       return this.$options.filters.sizeFormat(row[column.property], 1);
+    },
+    formatTime(row, column) {
+      return this.$options.filters.formatTime(row[column.property]);
     },
     // 重命名操作
     rename(row) {
