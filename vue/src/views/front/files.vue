@@ -45,9 +45,9 @@
           </el-empty>
         </template>
 
-        <el-table-column type="selection" width="60" align="center"></el-table-column>
+        <el-table-column type="selection" min-width="30" align="center"></el-table-column>
         <!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
-        <el-table-column prop="folder" label="">
+        <el-table-column prop="folder" label="" width="50">
           <template v-slot="scope">
             <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
               <i v-if="scope.row.folder" class="el-icon-folder"></i>
@@ -59,14 +59,24 @@
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
           <template slot-scope="scope">
             <template v-if="!scope.row.isEditing">
-              <span v-html="highlightText(scope.row.name)"></span>
+              <!-- 如果type为空，则只显示name -->
+              <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"></span>
+              <!-- 如果type不为空，则显示完整名称 -->
+              <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"></span>
             </template>
             <template v-else>
-              <el-input v-model="scope.row.name" @keyup.enter.native="saveRename(scope.row)"
-                        @blur="cancelRename(scope.row)"></el-input>
+              <div style="display: flex; align-items: center;">
+                <el-input class="rename-input" v-if="!scope.row.type" v-model="editedName" @keyup.enter.native="saveRename(scope.row)"
+                          @blur="cancelRename(scope.row)"></el-input>
+                <el-input class="rename-input" v-else v-model="editedName" @keyup.enter.native="saveRename(scope.row)"
+                          @blur="cancelRename(scope.row)"></el-input>
+                <!-- 取消按钮 -->
+                <el-button @click="cancelRename(scope.row)" size="mini" style="margin-left: 5px;">取消</el-button>
+              </div>
             </template>
           </template>
         </el-table-column>
+
 
         <!--        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>-->
         <el-table-column prop="type" label="文件类型"></el-table-column>
@@ -133,6 +143,8 @@ export default {
       path: "", // 当前路径
 
       menuVisible: false, // 右键菜单是否显示
+
+      editedName: '',// 编辑文件的名称
     }
   },
   mounted() {
@@ -427,11 +439,21 @@ export default {
     rename(row) {
       // 将当前行设置为正在编辑状态
       this.$set(row, 'isEditing', true);
+      this.editedName = row.name + (row.type ? '.' + row.type : '');
     },
     // 保存重命名后的名称
     saveRename(row) {
+      console.log(row.name, row.type)
+      console.log(this.editedName)
+      const [name, type] = this.editedName.split('.');
+      row.name = name;
+      row.type = type;
       // 发送后端接口请求保存重命名后的名称
-      this.$request.put('/files/rename', {id: row.id, name: row.name}).then(res => {
+      let newName = row.name;
+      if (!row.folder) {
+        newName = newName + "." + row.type;
+      }
+      this.$request.put('/files/rename', {id: row.id, name: newName}).then(res => {
         if (res.code === '200') {
           this.$message.success('重命名成功')
           this.reload()
@@ -473,11 +495,6 @@ export default {
   background-color: #ffffff;
   height: 75%;
 }
-
-/*.el-table .el-table__row--selected {*/
-/*  background-color: blue; !* 修改被选中行的底色为蓝色 *!*/
-/*  color: white; !* 修改被选中行的文字颜色为白色 *!*/
-/*}*/
 
 .blank {
   height: 3%
@@ -572,5 +589,14 @@ export default {
   background: #e6f1ff;
   border-color: #e6f1ff;
   /*color: #52565e;*/
+}
+
+::v-deep .rename-input .el-input__inner {
+  width:100%;
+  text-align: left;
+  border: 0 !important;
+  outline: none;
+  font-size: 15px;
+  font-weight: bold;
 }
 </style>

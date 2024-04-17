@@ -98,7 +98,10 @@ class FileServiceTest {
 
     @Test
     void addFile() {
-        fileService.addFile("一个文本文件", 108, 3000 ,"txt");
+        fileService.addFile("文本文件", 131, 3000 ,"txt");
+        fileService.addFile("文本文件", 131, 3000 ,"txt");
+        fileService.addFile("文本文件", 131, 3000 ,"txt");
+        fileService.addFile("文本文件", 132, 3000 ,"txt");
     }
 
 

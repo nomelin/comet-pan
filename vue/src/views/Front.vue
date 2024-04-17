@@ -159,8 +159,17 @@ export default {
     },
     // 退出登录
     logout() {
-      localStorage.removeItem("user");
-      this.$router.push("/login");
+      this.$confirm('确定要退出吗？', '确认退出', {
+        confirmButtonText: '退出',
+        cancelButtonText: '取消',
+        type: 'success',
+        center: true
+      }).then(response => {
+        localStorage.removeItem("user");
+        this.$router.push("/login");
+      }).catch(error => {
+        // 用户点击了取消按钮，可以在这里处理取消事件，比如关闭对话框
+      });
     },
     goToUserProfile() {
       this.$router.push('/person');

@@ -138,7 +138,7 @@ public class FileServiceImpl implements FileService {
         logger.info("delete folder id: " + id);
         while (!queue.isEmpty()) {
             FileMeta current = queue.poll();
-            if(ObjectUtil.isNull(current)){
+            if (ObjectUtil.isNull(current)) {
                 throw new BusinessException(CodeMessage.UNKNOWN_ERROR);
             }
             ids.add(current.getId());
@@ -154,42 +154,47 @@ public class FileServiceImpl implements FileService {
         deleteBatch(ids);
     }
 
+    /**
+     * 重命名
+     *
+     * @param id       文件ID
+     * @param fullName 带有后缀的文件名
+     */
     @Transactional
     @Override
-    public void updateName(Integer id, String name) {
+    public void updateName(Integer id, String fullName) {
         FileMeta fileMeta = selectById(id);
         if (ObjectUtil.isNull(fileMeta) || fileMeta.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
-        if (ObjectUtil.isNotNull(name) && StrUtil.isEmpty(name)) {
+        if (ObjectUtil.isNotNull(fullName) && StrUtil.isEmpty(fullName)) {
             throw new BusinessException(CodeMessage.INVALID_NAME_ERROR);
         }
-        if (fileMeta.getName().equals(name)) {
-            return;// 如果名字没有变化，则不用更新
+        logger.info("update file id: " + id + " name: " + fullName);
+        String oldName = fileMeta.getName();
+        if (!fileMeta.getFolder()) {
+            oldName = oldName + "." + fileMeta.getType();
         }
-        // 检查同名文件或文件夹
-        name = checkSameNameAndUpdate(name, fileMeta.getFolderId(), fileMeta.getFolder());
-        fileMeta.setName(name);
-        // 更新路径
-        String path = fileMeta.getPath();
-        int index = path.lastIndexOf("/");
-        String newPath = path.substring(0, index) + "/" + name;
-        fileMeta.setPath(newPath);
-        // 更新类型
-        String type = fileMeta.getType();
-        String newType;
-        if (ObjectUtil.isNull(type)) {
-            newType = null;//文件夹没有类型，不用更新
-        } else if (type.lastIndexOf(".") == -1 || type.lastIndexOf(".") == type.length() - 1) {
-            newType = "";
+        if (StrUtil.equals(oldName, fullName)) {
+            return;//如果文件名没有变化，则直接返回
+        }
+        if (fileMeta.getFolder()) {
+            // 如果是文件夹,不需要考虑类型
+            fullName = checkSameNameAndUpdate(fullName, fileMeta.getFolderId(), true);
+            fileMeta.setName(fullName);
+            fileMeta.setPath(fileMeta.getPath().substring(0, fileMeta.getPath().lastIndexOf("/")) + "/" + fullName);
+            fileMapper.updateById(fileMeta);
         } else {
-            newType = type.substring(type.lastIndexOf(".") + 1);
+            String newType = Util.getType(fullName);
+            String newName = Util.removeType(fullName);
+            newName = checkSameNameAndUpdate(newName, fileMeta.getFolderId(), false);
+            fileMeta.setName(newName);
+            fileMeta.setPath(fileMeta.getPath().substring(0, fileMeta.getPath().lastIndexOf("/"))
+                    + "/" + newName + "." + newType);
+            fileMeta.setType(newType);
+            fileMapper.updateById(fileMeta);
         }
-        fileMeta.setType(newType);
-        // 更新
-        fileMapper.updateById(fileMeta);
-        // 更新父目录时间
-        updateTimeById(id);
+        updateTimeById(id);// 更新父目录时间
     }
 
     @Transactional
@@ -284,7 +289,7 @@ public class FileServiceImpl implements FileService {
     /**
      * 检查同名文件或文件夹
      *
-     * @param fileName       文件名或文件夹名
+     * @param fileName       文件名或文件夹名（不包括后缀）
      * @param parentFolderId 父文件夹ID
      * @param isFolder       是否为文件夹
      * @return 修改后的名字，加上(1)或(2)等后缀
@@ -373,7 +378,6 @@ public class FileServiceImpl implements FileService {
         fileMeta.setUserId(fileMapper.selectById(parentFolderId).getUserId());// 限制用户只能看到自己的文件
         return fileMapper.selectAll(fileMeta);
     }
-
 
 
     /**
