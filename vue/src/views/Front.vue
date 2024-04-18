@@ -269,7 +269,7 @@ export default {
 /*  font-size: 12px*/
 /*}*/
 .logo {
-  width: 150px;
+  width: 10vw;
   margin-top: 30px;
 }
 

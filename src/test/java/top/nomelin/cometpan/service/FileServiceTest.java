@@ -98,16 +98,21 @@ class FileServiceTest {
 
     @Test
     void addFile() {
-        fileService.addFile("文本文件", 131, 3000 ,"txt");
-        fileService.addFile("文本文件", 131, 3000 ,"txt");
-        fileService.addFile("文本文件", 131, 3000 ,"txt");
-        fileService.addFile("文本文件", 132, 3000 ,"txt");
+//        fileService.addFile("文本文件", 131, 3000 ,"txt");
+//        fileService.addFile("文本文件", 131, 3000 ,"txt");
+//        fileService.addFile("文本文件", 131, 3000 ,"txt");
+//        fileService.addFile("文本文件", 132, 3000 ,"txt");
     }
 
 
     @Test
     void selectByParentFolderId() {
         fileService.selectByParentFolderId(5).forEach(System.out::println);
+    }
+
+    @Test
+    void moveFile() {
+        fileService.moveNode(131, 154);
     }
 
 }

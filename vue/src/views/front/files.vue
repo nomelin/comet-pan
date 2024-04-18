@@ -11,9 +11,13 @@
       </el-input>
 
 
-      <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
-      <el-button type="primary" plain style="margin-left: 10px" @click="addFolder">新建文件夹</el-button>
-      <el-button type="danger" plain @click="delBatch">批量删除</el-button>
+      <el-button class="normal-button" plain style="margin-left: 10px" @click="reset">重置</el-button>
+      <!--      <img class="little-icon" src="@/assets/imgs/folder-add.svg" alt="">-->
+      <el-button class="primary-button" type="primary" plain style="margin-left: 10px" @click="addFolder">
+        + 新建文件夹
+      </el-button>
+      <el-button class="normal-button" type="danger" plain @click="delBatch">删除</el-button>
+
       <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">按钮仍在开发中</span>
     </div>
     <div class="blank"></div>
@@ -22,16 +26,16 @@
                  circle :disabled="cacheIndex <= 0"></el-button>
       <el-button type="primary" plain @click="forwardNavigation" icon="el-icon-right"
                  circle :disabled="cacheIndex >= requestCache.length - 1"></el-button>
+      <div class="path">
+        <span>全部文件</span><span>{{ this.path }} 共{{ this.total }}</span>
+      </div>
+    </div>
 
-    </div>
-    <div class="path">
-      <span>全部文件</span><span>{{ this.path }} 共{{ this.total }}</span>
-    </div>
     <div class="table">
       <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
-                height="70vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
+                height="66vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
                 ref="table" :default-sort="{prop: 'name', order: 'ascending'}">
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
@@ -47,26 +51,33 @@
 
         <el-table-column type="selection" min-width="30" align="center"></el-table-column>
         <!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
-        <el-table-column prop="folder" label="" width="50">
+        <el-table-column prop="folder" label="" width="60">
           <template v-slot="scope">
             <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
-              <i v-if="scope.row.folder" class="el-icon-folder"></i>
-              <span v-else>文件</span>
+              <i v-if="scope.row.folder">
+                <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
+              </i>
+              <span v-else>
+                <img class="folder-icon" src="@/assets/imgs/文件.svg" alt="文件">
+              </span>
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="name" label="文件名称"
+        <el-table-column prop="name" label="文件名称" min-width="200" show-overflow-tooltip
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
           <template slot-scope="scope">
             <template v-if="!scope.row.isEditing">
               <!-- 如果type为空，则只显示name -->
-              <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"></span>
+              <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"
+                    @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
               <!-- 如果type不为空，则显示完整名称 -->
-              <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"></span>
+              <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"
+                    @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
             </template>
             <template v-else>
               <div style="display: flex; align-items: center;">
-                <el-input class="rename-input" v-if="!scope.row.type" v-model="editedName" @keyup.enter.native="saveRename(scope.row)"
+                <el-input class="rename-input" v-if="!scope.row.type" v-model="editedName"
+                          @keyup.enter.native="saveRename(scope.row)"
                           @blur="cancelRename(scope.row)"></el-input>
                 <el-input class="rename-input" v-else v-model="editedName" @keyup.enter.native="saveRename(scope.row)"
                           @blur="cancelRename(scope.row)"></el-input>
@@ -77,8 +88,7 @@
           </template>
         </el-table-column>
 
-
-        <!--        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>-->
+        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
         <el-table-column prop="type" label="文件类型"></el-table-column>
         <el-table-column prop="size" label="文件大小" :formatter="formatSize"
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
@@ -86,23 +96,12 @@
         <el-table-column prop="createTime" :formatter="formatTime" label="创建时间"></el-table-column>
         <el-table-column prop="updateTime" :formatter="formatTime" label="修改时间"
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
-          <!--          <template slot-scope="scope">-->
-          <!--            <span v-if="scope.row.updateTime != null">-->
-          <!--            	{{ scope.row.updateTime | formatTime }}-->
-          <!--            </span>-->
-          <!--          </template>-->
+          <!--                    <template slot-scope="scope">
+                                <span v-if="scope.row.updateTime != null">
+                                  {{ scope.row.updateTime | formatTime }}
+                                </span>
+                              </template>-->
         </el-table-column>
-        <!--        <el-table-column prop="delete" label="是否删除">-->
-        <!--          <template v-slot="scope">-->
-        <!--            <span v-if="scope.row.delete">是</span>-->
-        <!--            <span v-else>否</span>-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
-        <!--        <el-table-column label="操作" align="center" width="180">-->
-        <!--          <template v-slot="scope">-->
-        <!--            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
       </el-table>
     </div>
     <div id="contextmenu"
@@ -114,13 +113,27 @@
       <div class="contextmenu__item"
            @click="del(CurrentRow.id)">删除
       </div>
+      <div class="contextmenu__item"
+           @click="move(CurrentRow.id)">移动到
+      </div>
     </div>
+    <template>
+      <div class="dialog-files">
+        <file-table-dialog :dialog-files-visible.sync="dialogFilesVisible" :src-id.sync="srcId"/>
+        <!-- .sync 是 Vue.js 中的一种特殊语法，用于实现子组件和父组件之间双向绑定数据的功能。
+        它可以简化父子组件之间的通信，特别是用于修改父组件中的 prop 数据。-->
+      </div>
+    </template>
+
   </div>
 </template>
 
 <script>
+import FileTableDialog from "@/views/front/fileTableDialog";
+
 export default {
   name: "DiskFiles",
+  components: {FileTableDialog},
   data() {
     return {
       tableData: [],  // 所有的数据
@@ -145,6 +158,11 @@ export default {
       menuVisible: false, // 右键菜单是否显示
 
       editedName: '',// 编辑文件的名称
+
+      dialogFilesVisible: false, // 打开文件夹选择框的Dialog
+      srcId: -1, // 移动的源文件夹id
+
+
     }
   },
   mounted() {
@@ -156,6 +174,7 @@ export default {
   computed: {
     // 计算属性，过滤出属性 delete 为 false 的数据,data变化以后自动更新
     filteredData() {
+      // console.log(this.folderId)
       // let data = this.tableData.filter(item => !item.delete)
       let data = this.tableData
       this.total = data.length
@@ -177,6 +196,16 @@ export default {
         }
       };
     },
+  },
+  watch: {
+    dialogFilesVisible(newVal, oldVal) {
+      if (oldVal && !newVal) {
+        // 当 dialogFilesVisible 从 true 变为 false 时执行的逻辑
+        // console.log("dialogFilesVisible 从 true 变为 false")
+        // 刷新当前页面
+        location.reload();
+      }
+    }
   },
   methods: {
     customSortMethod(a, b) {
@@ -395,11 +424,12 @@ export default {
     // 右键菜单
     rightClick(row, column, event) {
       // 判断当前行是否已经被选中
-      let isSelected = this.$refs.table.selection.includes(row);
+      //let isSelected = this.$refs.table.selection.includes(row);
       // 如果当前行未被选中，则添加到选中行列表中
-      if (!isSelected) {
-        this.$refs.table.toggleRowSelection(row);
-      }
+      this.$refs.table.clearSelection();//清空选中行列表
+      //if (!isSelected) {
+      this.$refs.table.toggleRowSelection(row);
+      //}
       this.testModeCode = row.testModeCode
       this.menuVisible = false // 先把模态框关死，目的是 第二次或者第n次右键鼠标的时候 它默认的是true
       this.menuVisible = true // 显示模态窗口，跳出自定义菜单栏
@@ -437,6 +467,10 @@ export default {
     },
     // 重命名操作
     rename(row) {
+      // 遍历数据源中的每一行，将其 isEditing 属性设为 false
+      this.tableData.forEach(item => {
+        this.$set(item, 'isEditing', false);
+      });
       // 将当前行设置为正在编辑状态
       this.$set(row, 'isEditing', true);
       this.editedName = row.name + (row.type ? '.' + row.type : '');
@@ -473,12 +507,68 @@ export default {
         this.reload();
       }
     },
-    testEnter() {
-      console.log('Enter key pressed');
+    move(id) {
+      this.srcId = id
+      this.dialogFilesVisible = true
+    }
+    /*loadNode(node, resolve) {
+      if (node.level === 0) {
+        // 根节点的加载
+        this.loadRootFolders(resolve);
+      } else {
+        // 子节点的加载
+        const folderId = node.data ? node.data.id : null; // 获取文件夹ID
+        console.log("loadnode"+folderId)
+        if (folderId) {
+          this.loadSubFolders(folderId, resolve);
+        } else {
+          resolve([]); // 如果没有文件夹ID，则返回空数组
+        }
+      }
     },
-    testBlur() {
-      console.log('Blur event triggered');
+    loadRootFolders(resolve) {
+      this.$request.get('/files').then(res => {
+        if (res.code === '200') {
+          const folders = res.data.filter(item => item.folder);
+          const treeNodes = folders.map(folder => ({
+            id: folder.id,
+            name: folder.name,
+            children: [] // 子节点暂时为空，将在需要时懒加载
+          }));
+          resolve(treeNodes);
+        } else {
+          this.$message.error(res.code + ": " + res.msg);
+          resolve([]);
+        }
+      }).catch(error => {
+        console.error('加载根目录失败:', error);
+        resolve([]);
+      });
     },
+    loadSubFolders(folderId, resolve) {
+      this.$request.get('/files/folder/' + folderId).then(res => {
+        if (res.code === '200') {
+          const folders = res.data.filter(item => item.folder);
+          const treeNodes = folders.map(folder => ({
+            id: folder.id,
+            name: folder.name,
+            children: [] // 子节点暂时为空，将在需要时懒加载
+          }));
+          resolve(treeNodes);
+        } else {
+          this.$message.error(res.code + ": " + res.msg);
+          resolve([]);
+        }
+      }).catch(error => {
+        console.error('加载子目录失败:', error);
+        resolve([]);
+      });
+    },
+    handleNodeClick(node) {
+      let folderId = node.data ? node.data.id : null
+      console.log(folderId)
+    },*/
+
   }
 }
 </script>
@@ -496,6 +586,11 @@ export default {
   height: 75%;
 }
 
+/* 设置 el-table 每一行的高度 */
+::v-deep .el-table .el-table__body .el-table__row {
+  height: 60px; /* 设置每一行的高度 */
+}
+
 .blank {
   height: 3%
 }
@@ -508,7 +603,10 @@ export default {
 .backAndForward {
   margin-left: 5%;
   width: 80%;
+  display: flex;
+  justify-content: flex-start; /* 靠左对齐 */
 }
+
 
 .path {
   font-weight: bold;
@@ -551,7 +649,7 @@ export default {
 }
 
 .table-style {
-  /*font-weight: bold;*/
+  font-weight: bold;
   font-size: 14px;
 }
 
@@ -592,11 +690,46 @@ export default {
 }
 
 ::v-deep .rename-input .el-input__inner {
-  width:100%;
+  overflow: visible;
+  width: 100%;
   text-align: left;
   border: 0 !important;
   outline: none;
   font-size: 15px;
   font-weight: bold;
+}
+
+.dialog-files {
+  z-index: 999;
+}
+
+.folder-icon {
+  width: 100%;
+}
+
+.little-icon {
+  width: 50px;
+  vertical-align: middle;
+}
+
+
+.primary-button {
+  background-color: #0d53ff;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  width: 120px;
+  height: 40px;
+}
+
+.normal-button {
+  background-color: #ffffff;
+  color: #606266;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  width: 80px;
+  height: 40px;
 }
 </style>

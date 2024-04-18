@@ -233,7 +233,8 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 更新节点大小,直到根目录
+     * 从这个节点的父文件夹开始，更新节点大小,直到根目录
+     * 更新的大小就是这个节点的大小
      *
      * @param id  节点ID
      * @param add true为增加，false为减少
@@ -241,14 +242,11 @@ public class FileServiceImpl implements FileService {
     @Transactional
     @Override
     public void updateSizeById(Integer id, boolean add) {
-        FileMeta fileMeta = new FileMeta();
-        fileMeta.setId(id);
-        fileMeta = fileMapper.selectById(id);
+        FileMeta fileMeta = fileMapper.selectById(id);
         int size = fileMeta.getSize();
         if (fileMeta.getFolderId() == 0) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
-
         int folderId;
         while (true) {
             folderId = fileMeta.getFolderId();
@@ -264,6 +262,9 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * 从这个节点开始（包括），更新节点时间，直到根目录
+     */
     @Transactional
     @Override
     public void updateTimeById(Integer id) {
@@ -287,7 +288,7 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 检查同名文件或文件夹
+     * 检查同名文件或文件夹,没有重名，则返回原名字，有重名，则加上(1)或(2)等后缀
      *
      * @param fileName       文件名或文件夹名（不包括后缀）
      * @param parentFolderId 父文件夹ID
@@ -377,6 +378,113 @@ public class FileServiceImpl implements FileService {
         fileMeta.setFolderId(parentFolderId);
         fileMeta.setUserId(fileMapper.selectById(parentFolderId).getUserId());// 限制用户只能看到自己的文件
         return fileMapper.selectAll(fileMeta);
+    }
+
+    /**
+     * 移动节点（文件或文件夹）到目标文件夹
+     *
+     * @param id             节点ID
+     * @param targetFolderId 目标文件夹ID
+     */
+    @Transactional
+    @Override
+    public void moveNode(Integer id, Integer targetFolderId) {
+        FileMeta fileMeta = selectById(id);
+        if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0 || fileMeta.getDelete()) {
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
+        if (ObjectUtil.equals(targetFolderId, id) || ObjectUtil.equals(targetFolderId, fileMeta.getFolderId())) {
+            throw new BusinessException(CodeMessage.SAME_FOLDER_ERROR);
+            // 如果目标文件夹和当前文件夹相同或是其父文件夹，则不能移动
+        }
+        FileMeta targetFolder = fileMapper.selectById(targetFolderId);
+        if (ObjectUtil.isNull(targetFolder) || targetFolder.getDelete()) {
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
+        if (!targetFolder.getFolder()) {
+            throw new BusinessException(CodeMessage.PARENT_IS_NOT_FOLDER_ERROR);
+        }
+        if (!ObjectUtil.equals(targetFolder.getUserId(), fileMeta.getUserId())) {
+            throw new BusinessException(CodeMessage.CANNOT_ACCESS_ERROR); // 如果目标文件夹不是自己的
+        }
+        //如果目标文件夹是当前文件夹的子文件夹，则不能移动
+        int targetFolderIdCopy = targetFolderId;
+        while (true) {
+            FileMeta target = fileMapper.selectById(targetFolderIdCopy);
+            if (ObjectUtil.isNull(target) || target.getDelete()) {
+                throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+            }
+            if (target.getFolderId() == 0) {
+                break; // 到达根目录
+            }
+            if (ObjectUtil.equals(target.getFolderId(), id)) {
+                throw new BusinessException(CodeMessage.SUB_FOLDER_ERROR); // 如果目标文件夹是当前文件夹的子文件夹
+            }
+            targetFolderIdCopy = target.getFolderId();
+        }
+        updateSizeById(id, false);// 更新当前节点的父目录大小
+        updateTimeById(id);// 更新旧目录时间
+        fileMeta.setFolderId(targetFolderId);
+        String newName = checkSameNameAndUpdate(fileMeta.getName(), targetFolderId, fileMeta.getFolder());
+        fileMeta.setName(newName);// 更新文件名
+        fileMapper.updateById(fileMeta);// 更新节点
+        updateSubFolderPath(id, targetFolder.getPath(), newName);// 如果有重名，更新所有子节点的路径
+        updateSizeById(id, true);// 更新目标文件夹的父目录大小
+        updateTimeById(id);// 更新新目录时间
+    }
+
+    /**
+     * 更新所有子文件夹的路径。自动处理根节点（只有一个/，以/结尾）的特殊情况。
+     * 例如：将/demo/folder1移动到/下，则变成/folder1，/demo/folder1/file1.txt的路径变成/folder1/file1.txt，依此类推。
+     * 又如，/demo/folder1移动到/folder2下，则变成/folder2/folder1，
+     * /demo/folder1/file1.txt的路径变成/folder2/folder1/file1.txt，依此类推。
+     * 同时，如果要更改此文件夹的名字，请传入newName参数，会自动更改所有子节点路径。
+     * 否则，传入原名
+     *
+     * @param folderId 要更新的文件树的根目录ID, 【也可以是一个文件】
+     * @param path     要更新的路径，不包括根目录文件名，以/开头。
+     * @param newName  要更新的文件名，如果为原名，则不更新文件名。
+     */
+    @Transactional
+    public void updateSubFolderPath(Integer folderId, String path, String newName) {
+        FileMeta fileMeta = fileMapper.selectById(folderId);
+        if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0 || fileMeta.getDelete()) {
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
+        if (ObjectUtil.isNull(path) || !path.startsWith("/")) {
+            throw new BusinessException(CodeMessage.PARAM_ERROR);
+        }
+        String oldName = fileMeta.getName();
+        if (path.equals("/")) {
+            path = "";// 根目录特殊处理
+        }
+        // 如果是文件，则只更新自己的路径
+        if (!fileMeta.getFolder()) {
+            if (StrUtil.isEmpty(fileMeta.getType())) {
+                fileMeta.setPath(path + "/" + newName); // 更新文件路径
+            } else {
+                fileMeta.setPath(path + "/" + newName + "." + fileMeta.getType()); // 更新文件路径
+            }
+            fileMapper.updateById(fileMeta);// 更新当前文件路径
+            return;
+        }
+        // 当前文件夹的完整路径
+        path = path + "/" + newName;
+        fileMeta.setPath(path);
+        fileMapper.updateById(fileMeta);// 更新当前文件夹路径
+        List<FileMeta> children = selectByParentFolderId(folderId);// 获取当前文件夹的子节点，不包括删除的文件
+        for (FileMeta child : children) {
+            if (child.getFolder()) {
+                updateSubFolderPath(child.getId(), path, child.getName());// 递归更新子文件夹路径
+            } else {
+                if (StrUtil.isEmpty(child.getType())) {
+                    child.setPath(path + "/" + child.getName()); // 更新文件路径,叶子
+                } else {
+                    child.setPath(path + "/" + child.getName() + "." + child.getType()); // 更新文件路径,叶子
+                }
+                fileMapper.updateById(child);
+            }
+        }
     }
 
 

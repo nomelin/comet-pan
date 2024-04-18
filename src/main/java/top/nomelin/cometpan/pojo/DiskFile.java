@@ -9,6 +9,8 @@ public class DiskFile {
     private int id;
     private int count;
     private String path;
+    private String hash;
+    private String length;
 
     public int getId() {
         return id;
@@ -32,5 +34,21 @@ public class DiskFile {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    public String getLength() {
+        return length;
+    }
+
+    public void setLength(String length) {
+        this.length = length;
     }
 }

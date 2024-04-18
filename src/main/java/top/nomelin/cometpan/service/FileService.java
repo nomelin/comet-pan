@@ -41,6 +41,9 @@ public interface FileService {
      */
     void updateTimeById(Integer id);
 
+    @Transactional
+    void moveNode(Integer id, Integer targetFolderId);
+
     PageInfo<FileMeta> selectPagesByFolderId(Integer folderId, Integer pageNum, Integer pageSize);
 
     /**

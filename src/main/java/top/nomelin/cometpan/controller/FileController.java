@@ -188,4 +188,10 @@ public class FileController {
         return Result.success(fileService.getUsedSpace(currentUserCache.getCurrentUser().getId()));
     }
 
+    @PostMapping("/move/{id}/{targetFolderId}")
+    public Result moveNode(@PathVariable Integer id, @PathVariable Integer targetFolderId) {
+        fileService.moveNode(id, targetFolderId);
+        return Result.success();
+    }
+
 }
