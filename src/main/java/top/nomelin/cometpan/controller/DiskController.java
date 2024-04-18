@@ -40,7 +40,7 @@ public class DiskController {
         if (!Files.exists(avatarPath)) {
             avatarPath = Paths.get(Constants.AVATAR_FOLDER, "default.jpg");//默认头像文件
         }
-        logger.info("avatarPath: " + avatarPath);
+//        logger.info("avatarPath: " + avatarPath);
         Resource resource = new FileSystemResource(avatarPath);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG) // 设置响应内容类型
@@ -56,7 +56,7 @@ public class DiskController {
         logger.info("userId: " + userId + "更新头像");
         Resource resource = file.getResource();
         diskService.uploadAvatar(resource, userId);
-        logger.info("userId: "+userId+"头像上传成功");
+        logger.info("userId: " + userId + "头像上传成功");
         return Result.success(CodeMessage.SUCCESS);
     }
 

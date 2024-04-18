@@ -1,14 +1,17 @@
 package top.nomelin.cometpan.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import top.nomelin.cometpan.common.Constants;
+import org.springframework.web.multipart.MultipartFile;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.BusinessException;
 import top.nomelin.cometpan.service.DiskService;
+import top.nomelin.cometpan.util.Util;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,6 +24,8 @@ import java.util.Objects;
 @Service
 public class DiskServiceImpl implements DiskService {
     private static final Logger logger = LoggerFactory.getLogger(DiskServiceImpl.class);
+    @Value("${avatar.folder}")
+    private static String AVATAR_FOLDER;
 
     @Override
     public void uploadAvatar(Resource resource, int userId) throws IOException {
@@ -30,21 +35,26 @@ public class DiskServiceImpl implements DiskService {
         }
         // 获取文件名和后缀名
         filename = StringUtils.cleanPath(filename);
-        String extension = filename.substring(filename.lastIndexOf("."));
-        if (extension.equals(".jpg") || extension.equals(".png") || extension.equals(".jpeg")) {
+        String extension = Util.getType(filename);
+        if (StrUtil.equals(extension, ".jpg") || StrUtil.equals(extension, ".png") || StrUtil.equals(extension, ".jpeg")) {
             extension = ".jpg";
         } else {
             throw new BusinessException(CodeMessage.INVALID_AVATAR_ERROR);
         }
         // 创建目录
-        Path directory = Paths.get(Constants.AVATAR_FOLDER);
+        Path directory = Paths.get(AVATAR_FOLDER);
         Path filePath = directory.resolve(userId + extension);
-        logger.info("filepath:"+ filePath);
+        logger.info("filepath:" + filePath);
         Files.copy(resource.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);// 上传文件, 覆盖已存在的文件
     }
 
     @Override
-    public void uploadFile(Resource resource) {
+    public void uploadFile(MultipartFile file) {
+        String filename = file.getName();
+        // 获取文件名和后缀名
+        filename = StringUtils.cleanPath(filename);
+        String extension = Util.getType(filename);
+        logger.info("文件名:" + filename + ",后缀名:" + extension);
 
     }
 

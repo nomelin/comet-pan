@@ -198,7 +198,7 @@ export default {
 }
 .password-btn{
   margin-right: 12%;
-  background-color:#409eff;
+  background-color:#0d53ff;
   color: #fff;
   border-radius: 10px;
   font-weight: bold;
@@ -227,7 +227,7 @@ export default {
   text-align: center;
 }
 .btn{
-  background-color:#409eff;
+  background-color:#0d53ff;
   color: #fff;
   border-radius: 10px;
   font-weight: bold;

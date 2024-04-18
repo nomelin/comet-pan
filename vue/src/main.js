@@ -7,7 +7,8 @@ import '@/assets/css/global.css'
 import '@/assets/css/theme/index.css'
 import request from "@/utils/request";
 import SlideVerify from 'vue-monoplasty-slide-verify';
-
+import uploader from 'vue-simple-uploader'
+Vue.use(uploader)
 Vue.use(SlideVerify);
 Vue.config.productionTip = false // 关闭生产模式下给出的提示
 

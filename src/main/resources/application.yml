@@ -20,6 +20,13 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  data:
+    redis:
+      database: 0    # Redis数据库索引（默认为0）
+      host: 127.0.0.1
+      timeout: 0
+      password:
+      port: 6379
 
 # 配置mybatis实体和xml映射
 mybatis:
@@ -42,3 +49,9 @@ pagehelper:
   params: count=countSql
 
 ip: localhost
+
+avatar:
+  folder: ./avatar
+
+upload:
+  folder: ./DiskFiles

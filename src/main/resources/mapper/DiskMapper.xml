@@ -6,18 +6,20 @@
 
     <select id="selectAll" resultType="DiskFile">
         select
-        id, `count`, `path`
+        id, count, path, hash, length
         from disk_files
         <where>
             <if test="id != null">and id= #{id}</if>
             <if test="count != null">and `count`= #{count}</if>
             <if test="path != null">and `path`= #{path}</if>
+            <if test="hash != null">and `hash`= #{hash}</if>
+            <if test="length != null">and `length`= #{length}</if>
         </where>
     </select>
 
     <select id="selectById" resultType="DiskFile">
         select
-        id, count, path
+        id, count, path, hash, length
         from disk_files
         <where>
             and id = #{id}
@@ -35,13 +37,17 @@
         insert into disk_files
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">id,</if>
-            <if test="count != null" >`count`,</if>
+            <if test="count != null">`count`,</if>
             <if test="path != null">`path`,</if>
+            <if test="hash != null">`hash`,</if>
+            <if test="length != null">`length`,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">#{id},</if>
             <if test="count != null">#{count},</if>
             <if test="path != null">#{path},</if>
+            <if test="hash != null">#{hash},</if>
+            <if test="length != null">#{length},</if>
         </trim>
     </insert>
 
@@ -50,6 +56,8 @@
         <set>
             <if test="count != null">`count` = #{count},</if>
             <if test="path != null">`path` = #{path},</if>
+            <if test="hash != null">`hash` = #{hash},</if>
+            <if test="length != null">`length` = #{length},</if>
         </set>
         where id = #{id}
     </update>

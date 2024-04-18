@@ -203,7 +203,9 @@ export default {
         // 当 dialogFilesVisible 从 true 变为 false 时执行的逻辑
         // console.log("dialogFilesVisible 从 true 变为 false")
         // 刷新当前页面
-        location.reload();
+        setTimeout(() => {
+          location.reload();
+        }, 200); // 延迟200毫秒
       }
     }
   },
