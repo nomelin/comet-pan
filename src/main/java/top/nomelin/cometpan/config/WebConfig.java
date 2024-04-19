@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import top.nomelin.cometpan.interceptor.AdminInterceptor;
+import top.nomelin.cometpan.interceptor.DebugInterceptor;
 import top.nomelin.cometpan.interceptor.TokenInterceptor;
 import top.nomelin.cometpan.interceptor.UserInterceptor;
 
@@ -14,16 +15,19 @@ public class WebConfig implements WebMvcConfigurer {
     private final TokenInterceptor tokenInterceptor;
     private final AdminInterceptor adminInterceptor;
     private final UserInterceptor userInterceptor;
+    private final DebugInterceptor debugInterceptor;
 
-    public WebConfig(TokenInterceptor tokenInterceptor, AdminInterceptor adminInterceptor, UserInterceptor userInterceptor) {
+    public WebConfig(TokenInterceptor tokenInterceptor, AdminInterceptor adminInterceptor, UserInterceptor userInterceptor, DebugInterceptor debugInterceptor) {
         this.tokenInterceptor = tokenInterceptor;
         this.adminInterceptor = adminInterceptor;
         this.userInterceptor = userInterceptor;
+        this.debugInterceptor = debugInterceptor;
     }
 
     // 加自定义拦截器,设置拦截规则
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(debugInterceptor).addPathPatterns("/**");
         registry.addInterceptor(tokenInterceptor).addPathPatterns("/**")
                 .excludePathPatterns("/")
                 .excludePathPatterns("/login")

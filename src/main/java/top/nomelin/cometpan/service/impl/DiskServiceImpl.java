@@ -25,7 +25,7 @@ import java.util.Objects;
 public class DiskServiceImpl implements DiskService {
     private static final Logger logger = LoggerFactory.getLogger(DiskServiceImpl.class);
     @Value("${avatar.folder}")
-    private static String AVATAR_FOLDER;
+    private String AVATAR_FOLDER;
 
     @Override
     public void uploadAvatar(Resource resource, int userId) throws IOException {
@@ -36,7 +36,7 @@ public class DiskServiceImpl implements DiskService {
         // 获取文件名和后缀名
         filename = StringUtils.cleanPath(filename);
         String extension = Util.getType(filename);
-        if (StrUtil.equals(extension, ".jpg") || StrUtil.equals(extension, ".png") || StrUtil.equals(extension, ".jpeg")) {
+        if (StrUtil.equals(extension, "jpg") || StrUtil.equals(extension, "png") || StrUtil.equals(extension, "jpeg")) {
             extension = ".jpg";
         } else {
             throw new BusinessException(CodeMessage.INVALID_AVATAR_ERROR);

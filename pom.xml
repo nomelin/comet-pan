@@ -77,11 +77,11 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <!-- 开发热启动 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-devtools</artifactId>-->
+<!--            <optional>true</optional>-->
+<!--        </dependency>-->
 
 
     </dependencies>

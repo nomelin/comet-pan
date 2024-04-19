@@ -13,8 +13,7 @@
               :headers="{ token: user.token }"
               :show-file-list="false"
               :on-success="handleAvatarSuccess">
-            <img v-if=true :src="$baseUrl + '/avatar/'+user.id" class="avatar" alt="头像"/>
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            <img :src="$baseUrl + '/avatar/'+user.id" class="avatar" alt="头像"/>
           </el-upload>
         </div>
         <el-form-item label="用户名" prop="username">
@@ -105,16 +104,18 @@ export default {
       })
     },
     handleAvatarSuccess(response, file, fileList) {
-      // 把user的头像属性换成上传的图片的链接
-      //沒有回传数据。
-      //this.$set(this.user, 'avatar', response.data)
-      this.$message.success("头像上传成功")
-      location.reload()
+      this.$message.success('头像上传成功')
+      location.reload();
+      return;
+      if(response.code === '200'){
+        this.$message.success('头像上传成功')
+      }else {
+        this.$message.error(response.code + ": " + response.msg)
+      }
+      setTimeout(() => {
+        location.reload();
+      }, 500);
 
-    },
-    avatarError(error, file, fileList) {
-      console.log(error, file, fileList)
-      this.$message.error("头像上传失败")
     },
     // 修改密码
     updatePassword() {
