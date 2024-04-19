@@ -4,7 +4,7 @@
         :autoStart="false"
         :options="options"
         :file-status-text="statusText"
-        class="uploader-example"
+        class="uploader"
         @file-complete="fileComplete"
         @complete="complete"
         @file-success="fileSuccess"
@@ -13,10 +13,11 @@
       <uploader-unsupport></uploader-unsupport>
       <uploader-drop>
         <p>将文件拖放到此处以上传</p>
-        <uploader-btn>选择文件</uploader-btn>
-        <uploader-btn :attrs="attrs">选择图片</uploader-btn>
-        <uploader-btn :directory="true">选择文件夹</uploader-btn>
+
+        <!--        <uploader-btn :directory="true">选择文件夹</uploader-btn>-->
       </uploader-drop>
+      <uploader-btn class="primary-button">选择文件</uploader-btn>
+      <uploader-btn :attrs="attrs">选择图片</uploader-btn>
       <!-- <uploader-list></uploader-list> -->
       <uploader-files></uploader-files>
     </uploader>
@@ -38,6 +39,7 @@ export default {
     return {
       skip: false,
       options: {
+        chunkSize: 1024 * 1024 * 10, // 10MB
         target: "//localhost:12345/upload/chunk",
         // 开启服务端分片校验功能
         testChunks: true,
@@ -58,10 +60,10 @@ export default {
           }
           return (result.data.uploaded || []).indexOf(chunk.offset + 1) >= 0;
         },
-        // headers: {
-        //   // 在header中添加的验证，请根据实际业务来
-        //   "Access-Token": storage.get(ACCESS_TOKEN),
-        // },
+        headers: {
+          // 在header中添加的验证，请根据实际业务来
+          "token": localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).token : "none",
+        },
       },
       attrs: {
         accept: "image/*",
@@ -84,68 +86,41 @@ export default {
     },
   },
   methods: {
-    // fileSuccess(rootFile, file, response, chunk) {
-    //   // console.log(rootFile);
-    //   // console.log(file);
-    //   // console.log(message);
-    //   // console.log(chunk);
-    //   const result = JSON.parse(response);
-    //   console.log(result.success, this.skip);
-    //
-    //   if (result.success && !this.skip) {
-    //     axios
-    //         .post(
-    //             "http://127.0.0.1:12345/upload/merge",
-    //             {
-    //               identifier: file.uniqueIdentifier,
-    //               filename: file.name,
-    //               totalChunks: chunk.offset,
-    //             },
-    //             // {
-    //             //   headers: { "Access-Token": storage.get(ACCESS_TOKEN) }
-    //             // }
-    //         )
-    //         .then((res) => {
-    //           if (res.data.success) {
-    //             console.log("上传成功");
-    //           } else {
-    //             console.log(res);
-    //           }
-    //         })
-    //         .catch(function (error) {
-    //           console.log(error);
-    //         });
-    //   } else {
-    //     console.log("上传成功，不需要合并");
-    //   }
-    //   if (this.skip) {
-    //     this.skip = false;
-    //   }
-    // },
     fileSuccess(rootFile, file, response, chunk) {
-      // console.log(rootFile);
-      // console.log(file);
-      // console.log(message);
-      // console.log(chunk);
+      console.log(rootFile);
+      console.log(file);
+      console.log(response);
+      console.log(chunk);
       const result = JSON.parse(response);
-      console.log(result.code, this.skip);
-      const user = {
+      console.log(result);
+      const merge = {
         identifier: file.uniqueIdentifier,
         filename: file.name,
         totalChunks: chunk.offset,
       }
-      console.log(result.code === 200 && !this.skip)
+      if (merge.totalChunks === 0 && result.data.skipUpload === false && result.data.uploaded.length === file.chunks.length) {
+        //这是因为分片全部上传以后由于网络中断，所以前端重新请求，
+        // 后端返回了已经上传的分片，前端发现分片已经全部上传，就直接调用合并请求，导致chunk不是最后一个分片数据。
+        // 由于chunk.offset为0，导致无法合并
+        //这里直接获取了file.chunks.length.
+        //merge.totalChunks === 0 代表由于某种问题，导致这里获取不到最后一个分片
+        //也可能是总共只有一个分片，那正常情况也是0，但是不影响。
+        //skipUpload === false说明文件没有真正合并，还是缓存中
+        //result.data.uploaded.length === file.chunks.length代表分片全部上传成功
+        merge.totalChunks = file.chunks.length - 1;
+      }
       if (result.code === '200' && !this.skip) {
         console.log("开始合并文件");
-        // upload(user).then((res) => {
-        //   if (res.code === 200) {
-        //     console.log("上传成功");
-        //   } else {
-        //     console.log(res);
-        //   }
-        // }).catch(function (error) {
-        //   console.log(error);
-        // });
+        this.$request.post("/upload/merge", merge).then((res) => {
+          if (res.code === '200') {
+            this.$message.success("上传成功");
+          } else {
+            this.$message.error(res.code + "：" + res.msg);
+            return false;
+          }
+        }).catch(function (error) {
+          console.log(error);
+        });
       } else {
         console.log("上传成功，不需要合并");
       }
@@ -177,7 +152,7 @@ export default {
           File.prototype.mozSlice ||
           File.prototype.webkitSlice;
       let currentChunk = 0;
-      const chunkSize = 1024 * 1024;
+      const chunkSize = this.options.chunkSize;
       let chunks = Math.ceil(file.size / chunkSize);
       console.log(`开始计算${file.name}的MD5，分片数：${chunks}`);
       let spark = new SparkMD5.ArrayBuffer();
@@ -247,22 +222,40 @@ export default {
 </script>
 
 <style>
-.uploader-example {
+.uploader {
   width: 100%;
   padding: 15px;
   margin: 0px auto 0;
   font-size: 12px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
-.uploader-example .uploader-btn {
+.uploader .uploader-btn {
   margin-right: 4px;
 }
 
-.uploader-example .uploader-list {
+.uploader .uploader-list {
   max-height: 440px;
   overflow: auto;
   overflow-x: hidden;
-  overflow-y: auto;
+}
+
+.primary-button {
+  background-color: #0d53ff;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  width: 120px;
+  height: 40px;
+}
+
+.normal-button {
+  background-color: #ffffff;
+  color: #606266;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  width: 80px;
+  height: 40px;
 }
 </style>

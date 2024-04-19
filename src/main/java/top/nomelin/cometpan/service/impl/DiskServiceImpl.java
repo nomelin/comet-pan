@@ -50,11 +50,6 @@ public class DiskServiceImpl implements DiskService {
 
     @Override
     public void uploadFile(MultipartFile file) {
-        String filename = file.getName();
-        // 获取文件名和后缀名
-        filename = StringUtils.cleanPath(filename);
-        String extension = Util.getType(filename);
-        logger.info("文件名:" + filename + ",后缀名:" + extension);
 
     }
 

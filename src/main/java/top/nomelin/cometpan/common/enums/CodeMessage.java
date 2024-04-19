@@ -40,6 +40,7 @@ public enum CodeMessage {
     CANNOT_ACCESS_ERROR("700", "没有权限访问此资源"),
 
     FILE_UPLOAD_ERROR("701", "文件上传失败"),
+    CHUNK_NOT_FULL_ERROR("702", "分块上传不完整，无法合并"),
 
     SYSTEM_ERROR("800", "系统异常"),
     UNKNOWN_ERROR("900", "未知异常"),
