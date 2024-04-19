@@ -65,6 +65,10 @@
             <i class="el-icon-folder-opened"></i>
             <span class="words" slot="title">全部文件</span>
           </el-menu-item>
+          <el-menu-item class="el-menu-item" index="/upload">
+            <i class="el-icon-upload"></i>
+            <span class="words" slot="title">上传文件</span>
+          </el-menu-item>
           <el-menu-item class="el-menu-item" index="/person">
             <i class="el-icon-user-solid"></i>
             <span class="words" slot="title">个人中心</span>

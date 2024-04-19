@@ -33,7 +33,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/login")
                 .excludePathPatterns("/register")
                 .excludePathPatterns("/avatar/**")
-                .excludePathPatterns("/valid/*");
+                .excludePathPatterns("/valid/*")
+                .excludePathPatterns("/upload/**");
         registry.addInterceptor(adminInterceptor).addPathPatterns("/users/**");// 管理后台
 
         registry.addInterceptor(userInterceptor).addPathPatterns("/files/**");// 用户文件空间

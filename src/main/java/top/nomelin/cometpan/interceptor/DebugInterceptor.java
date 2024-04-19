@@ -8,17 +8,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Map;
-
 @Component
 public class DebugInterceptor implements HandlerInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(DebugInterceptor.class);
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
-        logger.info("请求"+request.getRequestURI() + " is accessed.");
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        logger.info("请求{}---{}---访问。",request.getMethod(),request.getRequestURI());
         return true;
     }
 

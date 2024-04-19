@@ -23,7 +23,7 @@ public class UploaderController {
      * 检查分片是否存在
      *
      */
-    @GetMapping("chunk")
+    @GetMapping("/chunk")
     public Result checkChunkExist(FileChunk chunkDTO) {
         FileChunkResult fileChunkCheckDTO;
         try {
@@ -39,7 +39,7 @@ public class UploaderController {
      * 上传文件分片
      *
      */
-    @PostMapping("chunk")
+    @PostMapping("/chunk")
     public Result uploadChunk(FileChunk chunkDTO) {
         try {
             uploadService.uploadChunk(chunkDTO);
@@ -53,7 +53,7 @@ public class UploaderController {
      * 请求合并文件分片
      *
      */
-    @PostMapping("merge")
+    @PostMapping("/merge")
     public Result mergeChunks(@RequestBody FileChunk chunkDTO) {
         try {
             boolean success = uploadService.mergeChunk(chunkDTO.getIdentifier(), chunkDTO.getFilename(), chunkDTO.getTotalChunks());

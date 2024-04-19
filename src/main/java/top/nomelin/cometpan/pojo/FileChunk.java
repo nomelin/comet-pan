@@ -2,7 +2,12 @@ package top.nomelin.cometpan.pojo;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public class FileChunk {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class FileChunk implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     /**
      * 文件 md5
      */

@@ -512,65 +512,7 @@ export default {
     move(id) {
       this.srcId = id
       this.dialogFilesVisible = true
-    }
-    /*loadNode(node, resolve) {
-      if (node.level === 0) {
-        // 根节点的加载
-        this.loadRootFolders(resolve);
-      } else {
-        // 子节点的加载
-        const folderId = node.data ? node.data.id : null; // 获取文件夹ID
-        console.log("loadnode"+folderId)
-        if (folderId) {
-          this.loadSubFolders(folderId, resolve);
-        } else {
-          resolve([]); // 如果没有文件夹ID，则返回空数组
-        }
-      }
     },
-    loadRootFolders(resolve) {
-      this.$request.get('/files').then(res => {
-        if (res.code === '200') {
-          const folders = res.data.filter(item => item.folder);
-          const treeNodes = folders.map(folder => ({
-            id: folder.id,
-            name: folder.name,
-            children: [] // 子节点暂时为空，将在需要时懒加载
-          }));
-          resolve(treeNodes);
-        } else {
-          this.$message.error(res.code + ": " + res.msg);
-          resolve([]);
-        }
-      }).catch(error => {
-        console.error('加载根目录失败:', error);
-        resolve([]);
-      });
-    },
-    loadSubFolders(folderId, resolve) {
-      this.$request.get('/files/folder/' + folderId).then(res => {
-        if (res.code === '200') {
-          const folders = res.data.filter(item => item.folder);
-          const treeNodes = folders.map(folder => ({
-            id: folder.id,
-            name: folder.name,
-            children: [] // 子节点暂时为空，将在需要时懒加载
-          }));
-          resolve(treeNodes);
-        } else {
-          this.$message.error(res.code + ": " + res.msg);
-          resolve([]);
-        }
-      }).catch(error => {
-        console.error('加载子目录失败:', error);
-        resolve([]);
-      });
-    },
-    handleNodeClick(node) {
-      let folderId = node.data ? node.data.id : null
-      console.log(folderId)
-    },*/
-
   }
 }
 </script>
