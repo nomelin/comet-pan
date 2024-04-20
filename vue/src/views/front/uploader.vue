@@ -17,8 +17,8 @@
         <!--        <uploader-btn :directory="true">选择文件夹</uploader-btn>-->
       </uploader-drop>
       <div class="uploader-btns">
-        <uploader-btn class="uploader-btn">选择文件</uploader-btn>
-        <uploader-btn class="uploader-btn" :attrs="attrs">选择图片</uploader-btn>
+        <uploader-btn class="uploader-btn" :single="false">选择文件</uploader-btn>
+        <uploader-btn class="uploader-btn" :attrs="attrs" :single="true">选择图片</uploader-btn>
       </div>
       <uploader-list class="uploader-list">
         <uploader-files class="uploader-files"></uploader-files>
@@ -69,6 +69,7 @@ export default {
           // 在header中添加的验证
           "token": localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).token : "none",
         },
+        simultaneousUploads: 3, // 并发上传的最大数量
       },
       attrs: {
         accept: "image/*",
@@ -85,6 +86,8 @@ export default {
       disabled: true,
 
       fileTarget: [],// 上传文件目标文件夹id，{id:xxx,srcId:xxx}
+
+      computingMd5: [], // 正在计算md5的文件列表,还有计算的文件时，禁止上传
     };
   },
   props: {
@@ -98,9 +101,9 @@ export default {
     }
   },
   watch: {
-    fileList(o, n) {
-      this.disabled = false;
-    },
+    // fileList(o, n) {
+    //   this.disabled = false;
+    // },
   },
   methods: {
     fileSuccess(rootFile, file, response, chunk) {
@@ -158,8 +161,10 @@ export default {
       console.log("complete");
     },
     filesAdded(file, fileList, event) {
+      this.disabled = true;
       // console.log(file);
       file.forEach((e) => {
+        this.disabled = true;
         // console.log(e);
         this.fileTarget.push({"id": e.id, "srcId": this.srcId});
         this.fileList.push(e);
@@ -167,7 +172,6 @@ export default {
       });
     },
     computeMD5(file) {
-      this.disabled = true;
       let fileReader = new FileReader();
       let time = new Date().getTime();
       let blobSlice =

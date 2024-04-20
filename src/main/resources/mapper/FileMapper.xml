@@ -20,9 +20,9 @@
             <if test="folder != null">and folder like concat('%', #{folder}, '%')</if>
             <if test="path != null">and `path` like concat('%', #{path}, '%')</if>
             and folder_id != 0
-
         </where>
-        order by folder_id desc
+        for update
+        # order by folder_id desc
     </select>
 
     <select id="selectById" resultType="FileMeta">
@@ -43,7 +43,7 @@
         <where>
             and id = #{id}
         </where>
-
+        for update
     </select>
 
     <delete id="deleteById">

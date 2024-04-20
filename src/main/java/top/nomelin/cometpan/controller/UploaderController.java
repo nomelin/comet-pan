@@ -5,10 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import top.nomelin.cometpan.common.Result;
-import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.pojo.FileChunk;
 import top.nomelin.cometpan.pojo.FileChunkResult;
 import top.nomelin.cometpan.service.UploaderService;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/upload")
@@ -28,12 +29,10 @@ public class UploaderController {
     @GetMapping("/chunk")
     public Result checkChunkExist(FileChunk chunkDTO) {
         FileChunkResult fileChunkCheckDTO;
-        try {
-            fileChunkCheckDTO = uploadService.checkChunkExist(chunkDTO);
-            return Result.success(fileChunkCheckDTO);
-        } catch (Exception e) {
-            return Result.error(CodeMessage.UNKNOWN_ERROR);
-        }
+
+        fileChunkCheckDTO = uploadService.checkChunkExist(chunkDTO);
+        return Result.success(fileChunkCheckDTO);
+
     }
 
 
@@ -41,28 +40,24 @@ public class UploaderController {
      * 上传文件分片
      */
     @PostMapping("/chunk")
-    public Result uploadChunk(FileChunk chunkDTO) {
-        try {
-            uploadService.uploadChunk(chunkDTO);
-            return Result.success(chunkDTO.getIdentifier());
-        } catch (Exception e) {
-            return Result.error(CodeMessage.UNKNOWN_ERROR);
-        }
+    public Result uploadChunk(FileChunk chunkDTO) throws IOException {
+
+        uploadService.uploadChunk(chunkDTO);
+        return Result.success(chunkDTO.getIdentifier());
+
     }
 
     /**
      * 请求合并文件分片
      */
     @PostMapping("/merge")
-    public Result mergeChunks(@RequestBody FileChunk chunk) {
-        try {
-            boolean success = uploadService.mergeChunkAndUpdateDatabase(
-                    chunk.getIdentifier(), chunk.getFilename(), chunk.getTotalChunks(), chunk.getTargetFolderId());
-            logger.info("mergeChunks 成功: " + success);
-            return Result.success(success);
-        } catch (Exception e) {
-            return Result.error(CodeMessage.UNKNOWN_ERROR);
-        }
+    public Result mergeChunks(@RequestBody FileChunk chunk) throws IOException {
+
+        boolean success = uploadService.mergeChunkAndUpdateDatabase(
+                chunk.getIdentifier(), chunk.getFilename(), chunk.getTotalChunks(), chunk.getTargetFolderId());
+        logger.info("mergeChunks 成功: " + success);
+        return Result.success(success);
+
     }
 
 }

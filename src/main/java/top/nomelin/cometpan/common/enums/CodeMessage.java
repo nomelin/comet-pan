@@ -36,6 +36,8 @@ public enum CodeMessage {
     INVALID_NAME_ERROR("605", "文件名不合法"),
     SAME_FOLDER_ERROR("606", "不能移动到相同的目录下"),
     SUB_FOLDER_ERROR("607", "不能移动到自己的子目录下"),
+    INVALID_DISK_ID_ERROR("608", "操作的磁盘id不合法"),
+    DELETE_FILE_ERROR("608", "文件删除失败"),
 
     CANNOT_ACCESS_ERROR("700", "没有权限访问此资源"),
 
@@ -43,6 +45,7 @@ public enum CodeMessage {
     CHUNK_NOT_FULL_ERROR("702", "分块上传不完整，无法合并"),
 
     SYSTEM_ERROR("800", "系统异常"),
+    BEAN_ERROR("801", "Bean代理异常"),
     UNKNOWN_ERROR("900", "未知异常"),
     ;
 

@@ -11,12 +11,5 @@ import java.io.OutputStream;
 public interface DiskService {
     void uploadAvatar(Resource resource, int userId) throws IOException;
 
-
-    void uploadFile(MultipartFile file);
-
-    void deleteFile(String filePath);
-
-    void downloadFile(String filePath, OutputStream outputStream);
-
-    void updateFile(String filePath, Resource resource);
+    void decDiskCount(int diskId);
 }

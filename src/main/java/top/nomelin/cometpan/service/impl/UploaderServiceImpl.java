@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Transactional
 public class UploaderServiceImpl implements UploaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(UploaderServiceImpl.class);
@@ -151,7 +152,7 @@ public class UploaderServiceImpl implements UploaderService {
      */
     @Override
     @Transactional
-    public boolean mergeChunkAndUpdateDatabase(String identifier, String filename, Integer totalChunks, Integer targetFolderId) throws IOException {
+    public boolean mergeChunkAndUpdateDatabase(String identifier, String filename, Integer totalChunks, Integer targetFolderId) {
         logger.info("开始合并分片,identifier:{},filename:{},totalChunks:{},targetFolderId:{}", identifier, filename, totalChunks, targetFolderId);
         String chunkFileFolderPath = getChunkFileFolderPath(identifier); // 获取分片文件夹路径
 
@@ -181,25 +182,35 @@ public class UploaderServiceImpl implements UploaderService {
 
         Path path = Paths.get(filePath);// 创建文件路径对象
         Path directoryPath = path.getParent();// 获取文件所在的文件夹路径
-        Files.createDirectories(directoryPath);// 创建文件夹（包括必要的父文件夹）
-        File mergeFile = new File(filePath); // 创建合并后的文件对象
+        try {
+            Files.createDirectories(directoryPath);// 创建文件夹（包括必要的父文件夹）
+            File mergeFile = new File(filePath); // 创建合并后的文件对象
 
-        List<File> fileList = Arrays.asList(chunks); // 将分片文件数组转换为列表
-        fileList.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName()))); // 按文件名进行升序排序
+            List<File> fileList = Arrays.asList(chunks); // 将分片文件数组转换为列表
+            fileList.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName()))); // 按文件名进行升序排序
 
-        RandomAccessFile randomAccessFileWriter = new RandomAccessFile(mergeFile, "rw"); // 创建合并后文件的随机访问文件对象
-        byte[] bytes = new byte[bufferSize]; // 创建字节数组缓冲区
-        // 遍历分片文件列表
-        for (File chunk : chunks) {
-            RandomAccessFile randomAccessFileReader = new RandomAccessFile(chunk, "r"); // 创建分片文件的随机访问文件对象
-            int len;
-            while ((len = randomAccessFileReader.read(bytes)) != -1) { // 读取分片文件内容到缓冲区
-                randomAccessFileWriter.write(bytes, 0, len); // 将缓冲区内容写入合并后的文件
-            }
-            randomAccessFileReader.close(); // 关闭分片文件对象
+            logger.info("准备合并分片");
+            // 使用 try-with-resources 语句创建随机访问文件对象
+            try (RandomAccessFile randomAccessFileWriter = new RandomAccessFile(mergeFile, "rw")) {
+                byte[] bytes = new byte[bufferSize]; // 创建字节数组缓冲区
+                // 遍历分片文件列表
+                for (File chunk : chunks) {
+                    // 使用 try-with-resources 语句创建分片文件的随机访问文件对象
+                    try (RandomAccessFile randomAccessFileReader = new RandomAccessFile(chunk, "r")) {
+                        int len;
+                        // 读取分片文件内容到缓冲区，并写入合并后的文件
+                        while ((len = randomAccessFileReader.read(bytes)) != -1) {
+                            randomAccessFileWriter.write(bytes, 0, len);
+                        }
+                    }//// try-with-resources 语句结束，自动关闭随机访问文件对象
+                }
+                logger.info("合并分片成功,identifier:{},filename:{},totalChunks:{}", identifier, filename, totalChunks);
+            } // try-with-resources 语句结束，自动关闭随机访问文件对象
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new SystemException(CodeMessage.FILE_UPLOAD_ERROR);
         }
-        randomAccessFileWriter.close(); // 关闭合并后文件对象
-        logger.info("合并分片成功,identifier:{},filename:{},totalChunks:{}", identifier, filename, totalChunks);
+
         // 清空分片
         clearCacheFolder(chunkFileFolderPath);
 

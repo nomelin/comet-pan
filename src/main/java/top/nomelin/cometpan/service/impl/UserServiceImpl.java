@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import top.nomelin.cometpan.common.Constants;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.enums.Role;
@@ -26,6 +27,7 @@ import java.util.List;
  * @author nomelin
  */
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
 

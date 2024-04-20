@@ -29,14 +29,14 @@ public interface FileService {
      */
     int addFolder(String folderName, Integer parentFolderId);
 
-    @Transactional
+
     void updateName(Integer id, String name);
 
 
     /**
      * 在当前用户空间新增文件
      */
-    @Transactional
+
     int addFile(String fileName, Integer parentFolderId, int size, int disk_id);
 
     /**
@@ -53,8 +53,11 @@ public interface FileService {
      */
     void updateTimeById(Integer id);
 
-    @Transactional
+
     void moveNode(Integer id, Integer targetFolderId);
+
+
+    void updateSubFolderPath(Integer folderId, String path, String newName);
 
     PageInfo<FileMeta> selectPagesByFolderId(Integer folderId, Integer pageNum, Integer pageSize);
 
@@ -90,6 +93,8 @@ public interface FileService {
      * 标记删除节点，包括子节点
      */
     void setDeleteNode(Integer id);
+
+    void cancelDeleteById(Integer id);
 
     /**
      * 取消标记删除节点，包括子节点

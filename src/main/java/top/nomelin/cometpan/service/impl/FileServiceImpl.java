@@ -13,11 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 import top.nomelin.cometpan.cache.CurrentUserCache;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.BusinessException;
+import top.nomelin.cometpan.common.exception.SystemException;
 import top.nomelin.cometpan.dao.FileMapper;
 import top.nomelin.cometpan.dao.UserMapper;
 import top.nomelin.cometpan.pojo.FileMeta;
 import top.nomelin.cometpan.pojo.User;
+import top.nomelin.cometpan.service.DiskService;
 import top.nomelin.cometpan.service.FileService;
+import top.nomelin.cometpan.util.SpringBeanUtil;
 import top.nomelin.cometpan.util.Util;
 
 import java.util.*;
@@ -26,16 +29,19 @@ import java.util.*;
  * 网盘文件信息表业务处理
  **/
 @Service
+@Transactional
 public class FileServiceImpl implements FileService {
     private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
     private final FileMapper fileMapper;
     private final UserMapper userMapper;
+    private final DiskService diskService;
 
     @Autowired
-    public FileServiceImpl(FileMapper fileMapper, UserMapper userMapper, CurrentUserCache currentUserCache) {
+    public FileServiceImpl(FileMapper fileMapper, UserMapper userMapper, CurrentUserCache currentUserCache, DiskService diskService) {
         this.fileMapper = fileMapper;
         this.userMapper = userMapper;
+        this.diskService = diskService;
     }
 
 
@@ -62,11 +68,15 @@ public class FileServiceImpl implements FileService {
     @Transactional
     @Override
     public void setDeleteNode(Integer id) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         FileMeta root = fileMapper.selectById(id);
-        updateSizeById(id, false);// 更新全部父目录大小
-        updateTimeById(id);// 更新全部父目录时间
+        bean.updateSizeById(id, false);// 更新全部父目录大小
+        bean.updateTimeById(id);// 更新全部父目录时间
         if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
-            setDeleteById(id);
+            bean.setDeleteById(id);
             return;
         }
         //bfs遍历删除，相当于层序遍历
@@ -74,17 +84,18 @@ public class FileServiceImpl implements FileService {
         queue.offer(root);
         while (!queue.isEmpty()) {
             FileMeta current = queue.poll();
-            setDeleteById(current.getId());
+            bean.setDeleteById(current.getId());
             List<FileMeta> children = selectAllByParentFolderId(current.getId());
             for (FileMeta child : children) {
                 if (child.getFolder()) { // 如果是文件夹，将其加入队列
                     queue.offer(child);
                 }
-                setDeleteById(child.getId());// 不管是文件还是文件夹，都删除子节点
+                bean.setDeleteById(child.getId());// 不管是文件还是文件夹，都删除子节点
             }
         }
     }
 
+    @Override
     public void cancelDeleteById(Integer id) {
         FileMeta fileMeta = new FileMeta();
         fileMeta.setId(id);
@@ -95,24 +106,28 @@ public class FileServiceImpl implements FileService {
     @Transactional
     @Override
     public void cancelDeleteNode(Integer id) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         FileMeta root = fileMapper.selectById(id);
-        updateSizeById(id, true);// 更新全部父目录大小
-        updateTimeById(id);// 更新全部父目录时间
+        bean.updateSizeById(id, true);// 更新全部父目录大小
+        bean.updateTimeById(id);// 更新全部父目录时间
         if (!root.getFolder()) {
-            cancelDeleteById(id);
+            bean.cancelDeleteById(id);
             return;
         }
         Queue<FileMeta> queue = new LinkedList<>();
         queue.offer(root);
         while (!queue.isEmpty()) {
             FileMeta current = queue.poll();
-            cancelDeleteById(current.getId());
+            bean.cancelDeleteById(current.getId());
             List<FileMeta> children = selectAllByParentFolderId(current.getId());
             for (FileMeta child : children) {
                 if (child.getFolder()) { // 如果是文件夹，将其加入队列
                     queue.offer(child);
                 }
-                cancelDeleteById(child.getId());
+                bean.cancelDeleteById(child.getId());
             }
         }
     }
@@ -120,6 +135,10 @@ public class FileServiceImpl implements FileService {
     @Transactional
     @Override
     public void deleteNode(Integer id) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         FileMeta root = fileMapper.selectById(id);
         //删除首先要标记删除，所以不用再更新父目录大小了，因为已经更新过了
         //不用更新时间，因为删除回收站文件不会改变时间
@@ -128,7 +147,7 @@ public class FileServiceImpl implements FileService {
         }
         if (!root.getFolder()) { // 如果不是文件夹，直接删除然后返回
             logger.info("delete file id: " + id);
-            deleteById(id);
+            bean.deleteById(id);
             return;
         }
         //bfs遍历删除，相当于层序遍历
@@ -151,7 +170,7 @@ public class FileServiceImpl implements FileService {
             }
         }
         logger.info("delete file ids: " + ids);
-        deleteBatch(ids);
+        bean.deleteBatch(ids);
     }
 
     /**
@@ -163,6 +182,10 @@ public class FileServiceImpl implements FileService {
     @Transactional
     @Override
     public void updateName(Integer id, String fullName) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         FileMeta fileMeta = selectById(id);
         if (ObjectUtil.isNull(fileMeta) || fileMeta.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
@@ -194,20 +217,25 @@ public class FileServiceImpl implements FileService {
             fileMeta.setType(newType);
             fileMapper.updateById(fileMeta);
         }
-        updateTimeById(id);// 更新父目录时间
+        bean.updateTimeById(id);// 更新父目录时间
     }
 
     /**
      * 写入文件数据库信息
-     * @param fileName 文件名，全名，包含后缀
+     *
+     * @param fileName       文件名，全名，包含后缀
      * @param parentFolderId 父文件夹ID
-     * @param size 文件大小，单位字节
-     * @param disk_id 磁盘文件ID
+     * @param size           文件大小，单位字节
+     * @param disk_id        磁盘文件ID
      * @return 插入的文件ID
      */
     @Transactional
     @Override
     public int addFile(String fileName, Integer parentFolderId, int size, int disk_id) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         logger.info("add file name: " + fileName + " parentFolderId: " + parentFolderId + " size: " + size);
         String name = Util.removeType(fileName);
         String type = Util.getType(fileName);
@@ -240,8 +268,9 @@ public class FileServiceImpl implements FileService {
         file.setUpdateTime(time);
         file.setDiskId(disk_id);
         fileMapper.insert(file);
-        updateSizeById(file.getId(), true);// 更新全部父目录大小
-        updateTimeById(file.getId());// 更新全部父目录时间
+//        logger.info("增加大小:" + size + "，文件id:" + file.getId());
+        bean.updateSizeById(file.getId(), true);// 更新全部父目录大小
+        bean.updateTimeById(file.getId());// 更新全部父目录时间
         return file.getId();
     }
 
@@ -270,6 +299,12 @@ public class FileServiceImpl implements FileService {
             int newSize = add ? fileMeta.getSize() + size : fileMeta.getSize() - size;
             FileMeta updatedFolder = new FileMeta(); // 创建一个新的对象来保存更新后的父目录信息
             updatedFolder.setId(fileMeta.getId());
+//            if (newSize < 0) {
+//                newSize = 0;
+//                logger.error("【事务异常】出现了负值空间大小，文件id:" + fileMeta.getId());
+//            }
+            logger.info("子id：{}，更新父目录id:{} 大小:{}->{}，差值：{}",
+                    id, fileMeta.getId(), fileMeta.getSize(), newSize, size);
             updatedFolder.setSize(newSize);
             fileMapper.updateById(updatedFolder); // 更新父目录
         }
@@ -345,6 +380,10 @@ public class FileServiceImpl implements FileService {
     @Transactional
     @Override
     public int addFolder(String folderName, Integer parentFolderId) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         FileMeta folder = new FileMeta();
         folder.setFolderId(parentFolderId);
         FileMeta parent = fileMapper.selectById(parentFolderId);
@@ -369,7 +408,7 @@ public class FileServiceImpl implements FileService {
         folder.setCreateTime(time);
         folder.setUpdateTime(time);
         fileMapper.insert(folder);
-        updateTimeById(folder.getId());// 更新父目录时间
+        bean.updateTimeById(folder.getId());// 更新父目录时间
         //不更新父目录大小，因为文件夹大小为0
         return folder.getId();
     }
@@ -403,6 +442,10 @@ public class FileServiceImpl implements FileService {
     @Transactional
     @Override
     public void moveNode(Integer id, Integer targetFolderId) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         FileMeta fileMeta = selectById(id);
         if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0 || fileMeta.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
@@ -436,15 +479,15 @@ public class FileServiceImpl implements FileService {
             }
             targetFolderIdCopy = target.getFolderId();
         }
-        updateSizeById(id, false);// 更新当前节点的父目录大小
-        updateTimeById(id);// 更新旧目录时间
+        bean.updateSizeById(id, false);// 更新当前节点的父目录大小
+        bean.updateTimeById(id);// 更新旧目录时间
         fileMeta.setFolderId(targetFolderId);
         String newName = checkSameNameAndUpdate(fileMeta.getName(), targetFolderId, fileMeta.getFolder());
         fileMeta.setName(newName);// 更新文件名
         fileMapper.updateById(fileMeta);// 更新节点
-        updateSubFolderPath(id, targetFolder.getPath(), newName);// 如果有重名，更新所有子节点的路径
-        updateSizeById(id, true);// 更新目标文件夹的父目录大小
-        updateTimeById(id);// 更新新目录时间
+        bean.updateSubFolderPath(id, targetFolder.getPath(), newName);// 如果有重名，更新所有子节点的路径
+        bean.updateSizeById(id, true);// 更新目标文件夹的父目录大小
+        bean.updateTimeById(id);// 更新新目录时间
     }
 
     /**
@@ -460,7 +503,12 @@ public class FileServiceImpl implements FileService {
      * @param newName  要更新的文件名，如果为原名，则不更新文件名。
      */
     @Transactional
+    @Override
     public void updateSubFolderPath(Integer folderId, String path, String newName) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         FileMeta fileMeta = fileMapper.selectById(folderId);
         if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0 || fileMeta.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
@@ -489,7 +537,7 @@ public class FileServiceImpl implements FileService {
         List<FileMeta> children = selectByParentFolderId(folderId);// 获取当前文件夹的子节点，不包括删除的文件
         for (FileMeta child : children) {
             if (child.getFolder()) {
-                updateSubFolderPath(child.getId(), path, child.getName());// 递归更新子文件夹路径
+                bean.updateSubFolderPath(child.getId(), path, child.getName());// 递归更新子文件夹路径
             } else {
                 if (StrUtil.isEmpty(child.getType())) {
                     child.setPath(path + "/" + child.getName()); // 更新文件路径,叶子
@@ -533,19 +581,28 @@ public class FileServiceImpl implements FileService {
     /**
      * 删除
      */
+    @Transactional
     public void deleteById(Integer id) {
+        FileMeta fileMeta = fileMapper.selectById(id);
+        if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0) {
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
+
+        diskService.decDiskCount(fileMeta.getDiskId());
         fileMapper.deleteById(id);
     }
 
     /**
      * 批量删除
      */
+    @Transactional
     public void deleteBatch(List<Integer> ids) {
         for (Integer id : ids) {
             fileMapper.deleteById(id);
         }
     }
 
+    @Transactional
     @Override
     public void setDeleteById(Integer id) {
         FileMeta fileMeta = new FileMeta();
@@ -554,10 +611,15 @@ public class FileServiceImpl implements FileService {
         fileMapper.updateById(fileMeta);
     }
 
+    @Transactional
     @Override
     public void setDeleteBatch(List<Integer> ids) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
         for (Integer id : ids) {
-            setDeleteById(id);
+            bean.setDeleteById(id);
         }
     }
 
