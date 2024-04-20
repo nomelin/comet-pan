@@ -25,6 +25,7 @@
       </uploader-list>
 
     </uploader>
+    <span v-if="disabled" class="uploader-tip">正在处理文件，请不要点击上传，稍加等候...</span>
     <div class="uploader-footer">
       <el-button class="primary-button" @click="allStart()" :disabled="disabled">全部开始</el-button>
       <el-button class="normal-button" @click="allStop()">全部暂停</el-button>
@@ -83,7 +84,7 @@ export default {
         cmd5: "计算文件MD5中...",
       },
       fileList: [],// 上传的文件列表
-      disabled: true,
+      // disabled: true,
 
       fileTarget: [],// 上传文件目标文件夹id，{id:xxx,srcId:xxx}
 
@@ -105,6 +106,12 @@ export default {
     //   this.disabled = false;
     // },
   },
+  computed: {
+    disabled() {
+      return this.computingMd5.length > 0 && this.fileList.length > 0;
+    },
+  },
+
   methods: {
     fileSuccess(rootFile, file, response, chunk) {
       // console.log(rootFile);
@@ -114,7 +121,7 @@ export default {
       console.log(result);
       // console.log("合并：file name=[" + file.name + "]src id=[" + this.srcId + "]")
       let target = this.fileTarget.find(item => item.id === rootFile.id)
-      console.log("上传目文件夹：" + target.id + "，目标目录: " + target.srcId)
+      console.log("上传目的文件夹：" + target.id + "，目标目录: " + target.srcId)
       const merge = {
         identifier: file.uniqueIdentifier,
         filename: file.name,
@@ -161,13 +168,13 @@ export default {
       console.log("complete");
     },
     filesAdded(file, fileList, event) {
-      this.disabled = true;
+      // this.disabled = true;
       // console.log(file);
       file.forEach((e) => {
-        this.disabled = true;
         // console.log(e);
         this.fileTarget.push({"id": e.id, "srcId": this.srcId});
         this.fileList.push(e);
+        this.addToSet(e.id)
         this.computeMD5(e);
       });
     },
@@ -210,7 +217,8 @@ export default {
           file.cmd5 = false; //取消计算md5状态
           // file.resume(); //开始上传,
           // 计算完md5后，也是暂停
-          this.disabled = false;
+          // this.disabled = false;
+          this.removeFromSet(file.id);
         }
       };
       fileReader.onerror = function () {
@@ -245,6 +253,19 @@ export default {
         e.cancel();
       });
       this.fileList = [];
+    },
+    // 向数组尾部添加元素
+    addToSet(element) {
+      if (!this.computingMd5.includes(element)) {
+        this.computingMd5.push(element);
+      }
+    },
+    // 从数组中删除指定元素
+    removeFromSet(element) {
+      const index = this.computingMd5.indexOf(element);
+      if (index !== -1) {
+        this.computingMd5.splice(index, 1);
+      }
     },
   },
 };
@@ -316,14 +337,23 @@ export default {
   margin-top: 20px;
 }
 
+.uploader-tip {
+  font-size: 18px;
+  color: #606266;
+  font-weight: bold;
+  display: inline-block;
+  text-align: center;
+  width: 100%; /* 如果需要让span占据其父元素的宽度，可以设置为100% */
+}
+
 .primary-button {
   background-color: #0d53ff;
-  color: #fff;
+  color: #ffffff;
   border-radius: 10px;
   font-weight: bold;
   font-size: 16px;
   width: 10%;
-  min-width: 120px;
+  min-width: 100px;
   height: 40px;
 }
 
@@ -336,6 +366,5 @@ export default {
   width: 10%;
   min-width: 100px;
   height: 40px;
-  margin-right: 20px;
 }
 </style>

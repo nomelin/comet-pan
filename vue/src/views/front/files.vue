@@ -135,7 +135,7 @@
             title="上传文件"
             :visible.sync="uploaderVisible"
             :close-on-press-escape="false"
-            size="50%"
+            size="40%"
             @close="uploaderClose"
         >
           <span><uploader :src-id.sync="uploaderSrcId"/></span>

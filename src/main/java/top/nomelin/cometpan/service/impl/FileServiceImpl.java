@@ -303,8 +303,8 @@ public class FileServiceImpl implements FileService {
 //                newSize = 0;
 //                logger.error("【事务异常】出现了负值空间大小，文件id:" + fileMeta.getId());
 //            }
-            logger.info("子id：{}，更新父目录id:{} 大小:{}->{}，差值：{}",
-                    id, fileMeta.getId(), fileMeta.getSize(), newSize, size);
+//            logger.info("子id：{}，更新父目录id:{} 大小:{}->{}，差值：{}",
+//                    id, fileMeta.getId(), fileMeta.getSize(), newSize, size);
             updatedFolder.setSize(newSize);
             fileMapper.updateById(updatedFolder); // 更新父目录
         }
