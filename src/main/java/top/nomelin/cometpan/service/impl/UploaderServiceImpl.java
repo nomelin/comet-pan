@@ -34,6 +34,11 @@ public class UploaderServiceImpl implements UploaderService {
 
     @Value("${upload.folder}")
     private String UPLOAD_FOLDER;
+    @Value("${upload.chunks.timeout}")
+    private long redisChunksTimeout;
+
+    @Value("${upload.buffer-size}")
+    private int bufferSize;
 
     public UploaderServiceImpl(CurrentUserCache currentUserCache, RedisTemplate<String, Object> redisTemplate, DiskMapper diskMapper) {
         this.currentUserCache = currentUserCache;
@@ -95,6 +100,7 @@ public class UploaderServiceImpl implements UploaderService {
             boolean mkdirs = fileFolder.mkdirs(); // 创建文件夹
             logger.info("准备工作,创建文件夹,fileFolderPath:{},mkdirs:{}", fileFolderPath, mkdirs); // 记录文件夹创建信息
         }
+        logger.info("fileFolderPath:{},exists:{},chunks:{},totalChunks:{}", fileFolderPath, exists, uploaded, chunkDTO.getTotalChunks()); // 记录文件路径和文件是否存在信息
         // 断点续传，返回已上传的分片
         return new FileChunkResult(false, uploaded); // 返回未完成上传的文件分片信息
     }
@@ -133,22 +139,21 @@ public class UploaderServiceImpl implements UploaderService {
         }
     }
 
-    @Override
-    public boolean mergeChunk(String identifier, String fileName, Integer totalChunks) throws IOException {
-        boolean result = mergeChunks(identifier, fileName, totalChunks);
-        if (!result) {
-            throw new SystemException(CodeMessage.CHUNK_NOT_FULL_ERROR); // 抛出合并分片异常
-        }
-        logger.info("合并分片成功,identifier:{},filename:{},totalChunks:{}", identifier, fileName, totalChunks);
-        //清空缓存
-
-        return true;
-    }
+//    @Override
+//    public boolean mergeChunk(String identifier, String fileName, Integer totalChunks) throws IOException {
+//        boolean result = mergeChunks(identifier, fileName, totalChunks);
+//        if (!result) {
+//            throw new SystemException(CodeMessage.CHUNK_NOT_FULL_ERROR); // 抛出合并分片异常
+//        }
+//        logger.info("合并分片成功,identifier:{},filename:{},totalChunks:{}", identifier, fileName, totalChunks);
+//
+//        return true;
+//    }
 
     /**
      * 合并分片
      */
-    private boolean mergeChunks(String identifier, String filename, Integer totalChunks) throws IOException {
+    public boolean mergeChunk(String identifier, String filename, Integer totalChunks) throws IOException {
         logger.info("开始合并分片,identifier:{},filename:{},totalChunks:{}", identifier, filename, totalChunks);
         String chunkFileFolderPath = getChunkFileFolderPath(identifier); // 获取分片文件夹路径
         String filePath = getFilePath(identifier, filename); // 获取文件路径
@@ -175,7 +180,7 @@ public class UploaderServiceImpl implements UploaderService {
             List<File> fileList = Arrays.asList(chunks); // 将文件数组转换为列表
             fileList.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName()))); // 按文件名进行升序排序
             RandomAccessFile randomAccessFileWriter = new RandomAccessFile(mergeFile, "rw"); // 创建合并后文件的随机访问文件对象
-            byte[] bytes = new byte[1024]; // 创建字节数组缓冲区
+            byte[] bytes = new byte[bufferSize]; // 创建字节数组缓冲区
             for (File chunk : chunks) { // 遍历分片文件列表
                 RandomAccessFile randomAccessFileReader = new RandomAccessFile(chunk, "r"); // 创建分片文件的随机访问文件对象
                 int len;
@@ -225,7 +230,7 @@ public class UploaderServiceImpl implements UploaderService {
             hashMap.put("path", chunkDTO.getFilename()); // 将文件名（路径）放入HashMap中
             redisTemplate.opsForHash().putAll(chunkDTO.getIdentifier(), hashMap); // 将HashMap中的信息保存到Redis中
             // 设置过期时间
-            redisTemplate.expire(chunkDTO.getIdentifier(), 2, TimeUnit.DAYS); // 设置键的过期时间
+            redisTemplate.expire(chunkDTO.getIdentifier(), redisChunksTimeout, TimeUnit.HOURS); // 设置键的过期时间
         } else { // 如果已上传分片信息存在
             uploaded.add(chunkDTO.getChunkNumber()); // 将当前分片编号添加到已上传分片信息中
             redisTemplate.opsForHash().put(chunkDTO.getIdentifier(), "uploaded", uploaded); // 更新Redis中的已上传分片信息

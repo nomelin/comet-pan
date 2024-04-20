@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div class="uploader-container">
+    <div class="uploader-title"></div>
     <uploader
         :autoStart="false"
         :options="options"
@@ -11,20 +12,24 @@
         @files-added="filesAdded"
     >
       <uploader-unsupport></uploader-unsupport>
-      <uploader-drop>
-        <p>将文件拖放到此处以上传</p>
-
+      <uploader-drop class="drop">
+        <span class="drop-text"><i class="el-icon-circle-plus"></i> 将文件拖到此处以上传</span>
         <!--        <uploader-btn :directory="true">选择文件夹</uploader-btn>-->
       </uploader-drop>
-      <uploader-btn class="primary-button">选择文件</uploader-btn>
-      <uploader-btn :attrs="attrs">选择图片</uploader-btn>
-      <!-- <uploader-list></uploader-list> -->
-      <uploader-files></uploader-files>
+      <div class="uploader-btns">
+        <uploader-btn class="uploader-btn">选择文件</uploader-btn>
+        <uploader-btn class="upload-btn" :attrs="attrs">选择图片</uploader-btn>
+      </div>
+      <uploader-list class="uploader-list">
+        <uploader-files class="uploader-files"></uploader-files>
+      </uploader-list>
+
     </uploader>
-    <br/>
-    <el-button @click="allStart()" :disabled="disabled">全部开始</el-button>
-    <el-button @click="allStop()" style="margin-left: 4px">全部暂停</el-button>
-    <el-button @click="allRemove()" style="margin-left: 4px">全部移除</el-button>
+    <div class="uploader-footer">
+      <el-button class="primary-button" @click="allStart()" :disabled="disabled">全部开始</el-button>
+      <el-button class="normal-button" @click="allStop()">全部暂停</el-button>
+      <el-button class="normal-button" @click="allRemove()">全部移除</el-button>
+    </div>
   </div>
 </template>
 
@@ -71,7 +76,7 @@ export default {
       statusText: {
         success: "上传成功",
         error: "上传出错了",
-        uploading: "上传中...",
+        uploading: "正在上传...",
         paused: "暂停中...",
         waiting: "等待中...",
         cmd5: "计算文件MD5中...",
@@ -181,7 +186,8 @@ export default {
           spark.destroy(); //释放缓存
           file.uniqueIdentifier = md5; //将文件md5赋值给文件唯一标识
           file.cmd5 = false; //取消计算md5状态
-          file.resume(); //开始上传
+          // file.resume(); //开始上传,
+          // 计算完md5后，也是暂停
         }
       };
       fileReader.onerror = function () {
@@ -222,30 +228,75 @@ export default {
 </script>
 
 <style>
-.uploader {
-  width: 100%;
-  padding: 15px;
-  margin: 0px auto 0;
-  font-size: 12px;
+.uploader-container {
+  width: 80%;
+  height: 80%;
+  margin-left: 10%;
+  border-radius: 20px;
+  background-color: #ffffff;
 }
 
-.uploader .uploader-btn {
+.uploader-title {
+  height: 50px;
+}
+
+.uploader {
+  width: 100%;
+  font-size: 14px;
+  background-color: #ffffff;
+
+}
+
+.drop {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  width: 80%;
+  margin-left: 10%;
+}
+
+.drop-text {
+  font-size: 18px;
+  color: #606266;
+  font-weight: bold;
+}
+
+.uploader-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.uploader-btn {
+  margin-top: 12px;
   margin-right: 4px;
 }
 
-.uploader .uploader-list {
-  max-height: 440px;
-  overflow: auto;
-  overflow-x: hidden;
+.uploader-list {
+  background-color: #ffffff;
+  overflow-y: auto; /* 垂直方向超出时显示滚动条 */
+  max-height: 50vh; /* 设置容器的最大高度，超过此高度时将显示滚动条 */
+
 }
 
+.uploader-files {
+  margin: 10px;
+  padding: 10px;
+}
+.uploader-footer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
 .primary-button {
   background-color: #0d53ff;
   color: #fff;
   border-radius: 10px;
   font-weight: bold;
   font-size: 16px;
-  width: 120px;
+  width: 10%;
   height: 40px;
 }
 
@@ -255,7 +306,8 @@ export default {
   border-radius: 10px;
   font-weight: bold;
   font-size: 16px;
-  width: 80px;
+  width: 10%;
   height: 40px;
+  margin-right: 20px;
 }
 </style>

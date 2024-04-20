@@ -56,10 +56,13 @@ pagehelper:
   support-methods-arguments: true
   params: count=countSql
 
-ip: localhost
+#ip: localhost
 
 avatar:
   folder: ./avatar
 
 upload:
   folder: ./DiskFiles
+  chunks:
+    timeout: 24 # redis的分片缓存过期时间，单位：小时
+  buffer-size: 2048 # 合并分片时的内存缓冲区大小，单位：字节

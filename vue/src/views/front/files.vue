@@ -14,7 +14,7 @@
       <el-button class="normal-button" plain style="margin-left: 10px" @click="reset">重置</el-button>
       <!--      <img class="little-icon" src="@/assets/imgs/folder-add.svg" alt="">-->
       <el-button class="primary-button" type="primary" plain style="margin-left: 10px" @click="addFolder">
-        + 新建文件夹
+        <i class="el-icon-plus"></i> 新建文件夹
       </el-button>
       <el-button class="normal-button" type="danger" plain @click="delBatch">删除</el-button>
 
@@ -27,7 +27,9 @@
       <el-button type="primary" plain @click="forwardNavigation" icon="el-icon-right"
                  circle :disabled="cacheIndex >= requestCache.length - 1"></el-button>
       <div class="path">
-        <span>全部文件</span><span>{{ this.path }} 共{{ this.total }}</span>
+        <span v-if="!isSearch">全部文件</span>
+        <span v-else>搜索结果</span>
+        <span>{{ this.path }} 共{{ this.total }}</span>
       </div>
     </div>
 
@@ -300,7 +302,9 @@ export default {
       this.loading = true;
       this.requestCache = [];
       this.cacheIndex = 0;
+      //如果搜素条件为空，则相当于重置
       if (this.name === null || this.name === "") {
+        this.isSearch = false;
         this.getFileRequest("/files")
         return;
       }
@@ -663,7 +667,7 @@ export default {
   border-radius: 10px;
   font-weight: bold;
   font-size: 16px;
-  width: 120px;
+  width: 130px;
   height: 40px;
 }
 
