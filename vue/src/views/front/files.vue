@@ -17,6 +17,9 @@
         <i class="el-icon-plus"></i> 新建文件夹
       </el-button>
       <el-button class="normal-button" type="danger" plain @click="delBatch">删除</el-button>
+      <el-button class="primary-button" type="primary" plain style="margin-left: 10px" @click="uploadFile">
+        <i class="el-icon-upload"></i> 上传文件
+      </el-button>
 
       <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">按钮仍在开发中</span>
     </div>
@@ -52,7 +55,7 @@
         </template>
 
         <el-table-column type="selection" min-width="30" align="center"></el-table-column>
-        <!--        <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>-->
+        <el-table-column prop="id" label="序号" width="70" align="center"></el-table-column>
         <el-table-column prop="folder" label="" width="60">
           <template v-slot="scope">
             <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
@@ -126,16 +129,31 @@
         它可以简化父子组件之间的通信，特别是用于修改父组件中的 prop 数据。-->
       </div>
     </template>
+    <template>
+      <div class="uploader">
+        <el-drawer
+            title="上传文件"
+            :visible.sync="uploaderVisible"
+            :close-on-press-escape="false"
+            size="50%"
+
+        >
+          <span><uploader :src-id.sync="uploaderSrcId"/></span>
+        </el-drawer>
+
+      </div>
+    </template>
 
   </div>
 </template>
 
 <script>
 import FileTableDialog from "@/views/front/fileTableDialog";
+import Uploader from "@/views/front/uploader";
 
 export default {
   name: "DiskFiles",
-  components: {FileTableDialog},
+  components: {FileTableDialog, Uploader},
   data() {
     return {
       tableData: [],  // 所有的数据
@@ -163,6 +181,9 @@ export default {
 
       dialogFilesVisible: false, // 打开文件夹选择框的Dialog
       srcId: -1, // 移动的源文件夹id
+
+      uploaderVisible: false, // 上传文件对话框是否显示
+      uploaderSrcId: -1, // 上传文件的目标文件夹id
 
 
     }
@@ -517,13 +538,18 @@ export default {
       this.srcId = id
       this.dialogFilesVisible = true
     },
+    uploadFile() {
+      this.uploaderVisible = true
+      this.uploaderSrcId = parseInt(this.folderId)
+    },
   }
 }
 </script>
 
 <style scoped>
 .main-container {
-  border-radius: 50px;
+  /*border-radius: 50px;*/
+  border-top-left-radius: 50px;
   background-color: #ffffff;
   height: 100%;
   width: 100%;

@@ -32,8 +32,12 @@ public class UploaderServiceImpl implements UploaderService {
 
     private final DiskMapper diskMapper;
 
-    @Value("${upload.folder}")
+    @Value("${upload.folder.root}")
     private String UPLOAD_FOLDER;
+
+    @Value("${upload.folder.cache}")
+    private String UPLOAD_CACHE_FOLDER;
+
     @Value("${upload.chunks.timeout}")
     private long redisChunksTimeout;
 
@@ -61,12 +65,7 @@ public class UploaderServiceImpl implements UploaderService {
                 }
             }
         }
-        //删除chunks文件夹
-        if (!folder.delete()) {
-            logger.warn("删除文件失败,file:{}", folder.getAbsolutePath());
-        }
-        //删除【md5】文件夹
-        folder = folder.getParentFile();
+        //删除[md5]文件夹
         if (!folder.delete()) {
             logger.warn("删除文件失败,file:{}", folder.getAbsolutePath());
         }
@@ -85,7 +84,7 @@ public class UploaderServiceImpl implements UploaderService {
     public FileChunkResult checkChunkExist(FileChunk chunkDTO) {
         //1.检查文件是否已上传过
         //1.1)检查在磁盘中是否存在
-        String fileFolderPath = getFileFolderPath(chunkDTO.getIdentifier()); // 获取文件夹路径
+        String fileFolderPath = getChunkFileFolderPath(chunkDTO.getIdentifier()); // 获取文件夹路径
         logger.info("fileFolderPath-->{}", fileFolderPath); // 记录文件夹路径
         String filePath = getFilePath(chunkDTO.getIdentifier(), chunkDTO.getFilename()); // 获取文件路径
         File file = new File(filePath); // 根据文件路径创建文件对象
@@ -139,22 +138,12 @@ public class UploaderServiceImpl implements UploaderService {
         }
     }
 
-//    @Override
-//    public boolean mergeChunk(String identifier, String fileName, Integer totalChunks) throws IOException {
-//        boolean result = mergeChunks(identifier, fileName, totalChunks);
-//        if (!result) {
-//            throw new SystemException(CodeMessage.CHUNK_NOT_FULL_ERROR); // 抛出合并分片异常
-//        }
-//        logger.info("合并分片成功,identifier:{},filename:{},totalChunks:{}", identifier, fileName, totalChunks);
-//
-//        return true;
-//    }
 
     /**
      * 合并分片
      */
-    public boolean mergeChunk(String identifier, String filename, Integer totalChunks) throws IOException {
-        logger.info("开始合并分片,identifier:{},filename:{},totalChunks:{}", identifier, filename, totalChunks);
+    public boolean mergeChunkAndUpdateDatabase(String identifier, String filename, Integer totalChunks, Integer targetFolderId) throws IOException {
+        logger.info("开始合并分片,identifier:{},filename:{},totalChunks:{},targetFolderId:{}", identifier, filename, totalChunks, targetFolderId);
         String chunkFileFolderPath = getChunkFileFolderPath(identifier); // 获取分片文件夹路径
         String filePath = getFilePath(identifier, filename); // 获取文件路径
         // 检查分片是否都存在
@@ -194,8 +183,7 @@ public class UploaderServiceImpl implements UploaderService {
             // 清空分片
             clearCacheFolder(chunkFileFolderPath);
             //清空redis
-            redisTemplate.delete(identifier);
-
+                redisTemplate.delete(identifier);
             return true; // 合并成功，返回true
         }
         throw new SystemException(CodeMessage.CHUNK_NOT_FULL_ERROR); // 抛出分片不完整异常
@@ -227,7 +215,7 @@ public class UploaderServiceImpl implements UploaderService {
             hashMap.put("uploaded", uploaded); // 将已上传分片信息放入HashMap中
             hashMap.put("totalChunks", chunkDTO.getTotalChunks()); // 将总分片数量放入HashMap中
             hashMap.put("totalSize", chunkDTO.getTotalSize()); // 将文件总大小放入HashMap中
-            hashMap.put("path", chunkDTO.getFilename()); // 将文件名（路径）放入HashMap中
+            hashMap.put("filename", chunkDTO.getFilename()); // 将文件名（路径）放入HashMap中
             redisTemplate.opsForHash().putAll(chunkDTO.getIdentifier(), hashMap); // 将HashMap中的信息保存到Redis中
             // 设置过期时间
             redisTemplate.expire(chunkDTO.getIdentifier(), redisChunksTimeout, TimeUnit.HOURS); // 设置键的过期时间
@@ -240,29 +228,20 @@ public class UploaderServiceImpl implements UploaderService {
 
 
     /**
-     * 得到文件的保存路径
+     * 得到真正文件的保存路径
      */
     private String getFilePath(String identifier, String filename) {
         String ext = filename.substring(filename.lastIndexOf("."));
 //        return getFileFolderPath(identifier) + identifier + ext;
-        return UPLOAD_FOLDER + File.separator + "files" + File.separator +
-                currentUserCache.getCurrentUser().getId() + File.separator + filename;
+        return UPLOAD_FOLDER + File.separator +
+                identifier.charAt(0) + File.separator + identifier + File.separator + filename;
     }
-
 
     /**
      * 得到分块文件所属的目录
      */
     private String getChunkFileFolderPath(String identifier) {
-        return getFileFolderPath(identifier) + "chunks" + File.separator;
-    }
-
-    /**
-     * 得到文件所属的目录
-     */
-    private String getFileFolderPath(String identifier) {
-        return UPLOAD_FOLDER + File.separator + identifier.substring(0, 1) + File.separator +
-                identifier + File.separator;//取得 identifier 的第一个字符,第二个字符,标识符
-//        return uploadFolder;
+        return UPLOAD_CACHE_FOLDER + File.separator + identifier.charAt(0) + File.separator +
+                identifier + File.separator;
     }
 }

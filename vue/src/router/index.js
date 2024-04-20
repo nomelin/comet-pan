@@ -34,7 +34,7 @@ const routes = [
       { path: 'person', name: 'Person', meta: { name: '个人信息' }, component: () => import('../views/front/Person') },
       { path: 'files', name: 'files', meta: { name: '网盘文件' }, component: () => import('../views/front/files') },
       { path: 'trash', name: 'trash', meta: { name: '回收站' }, component: () => import('../views/front/trash') },
-      { path: 'upload', name: 'upload', meta: { name: '上传文件' }, component: () => import('../views/front/uploader') },
+      // { path: 'upload', name: 'upload', meta: { name: '上传文件' }, component: () => import('../views/front/uploader') },
     ]
   },
   { path: '/login', name: 'Login', meta: { name: '登录' }, component: () => import('../views/Login.vue') },

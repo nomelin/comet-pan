@@ -62,7 +62,9 @@ avatar:
   folder: ./avatar
 
 upload:
-  folder: ./DiskFiles
+  folder:
+    root: ./DiskFiles/files #文件上传目录
+    cache: ./DiskFiles/cache #文件上传分片缓存文件夹
   chunks:
     timeout: 24 # redis的分片缓存过期时间，单位：小时
   buffer-size: 2048 # 合并分片时的内存缓冲区大小，单位：字节

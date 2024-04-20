@@ -41,6 +41,8 @@ public class FileChunk implements Serializable {
      */
     private String filename;
 
+    private Integer targetFolderId;
+
     public String getIdentifier() {
         return identifier;
     }
@@ -118,6 +120,14 @@ public class FileChunk implements Serializable {
                 ", totalChunks=" + totalChunks +
                 ", filename='" + filename + '\'' +
                 '}';
+    }
+
+    public Integer getTargetFolderId() {
+        return targetFolderId;
+    }
+
+    public void setTargetFolderId(Integer targetFolderId) {
+        this.targetFolderId = targetFolderId;
     }
 }
 

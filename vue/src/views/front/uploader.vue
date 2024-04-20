@@ -12,13 +12,13 @@
         @files-added="filesAdded"
     >
       <uploader-unsupport></uploader-unsupport>
-      <uploader-drop class="drop">
+      <uploader-drop class="uploader-drop">
         <span class="drop-text"><i class="el-icon-circle-plus"></i> 将文件拖到此处以上传</span>
         <!--        <uploader-btn :directory="true">选择文件夹</uploader-btn>-->
       </uploader-drop>
       <div class="uploader-btns">
         <uploader-btn class="uploader-btn">选择文件</uploader-btn>
-        <uploader-btn class="upload-btn" :attrs="attrs">选择图片</uploader-btn>
+        <uploader-btn class="uploader-btn" :attrs="attrs">选择图片</uploader-btn>
       </div>
       <uploader-list class="uploader-list">
         <uploader-files class="uploader-files"></uploader-files>
@@ -66,7 +66,7 @@ export default {
           return (result.data.uploaded || []).indexOf(chunk.offset + 1) >= 0;
         },
         headers: {
-          // 在header中添加的验证，请根据实际业务来
+          // 在header中添加的验证
           "token": localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).token : "none",
         },
       },
@@ -81,9 +81,21 @@ export default {
         waiting: "等待中...",
         cmd5: "计算文件MD5中...",
       },
-      fileList: [],
+      fileList: [],// 上传的文件列表
       disabled: true,
+
+      fileTarget: [],// 上传文件目标文件夹id，{id:xxx,srcId:xxx}
     };
+  },
+  props: {
+    // uploaderVisible: {
+    //   type: Boolean,
+    //   required: true
+    // },
+    srcId: {
+      type: Number,
+      required: true
+    }
   },
   watch: {
     fileList(o, n) {
@@ -92,16 +104,19 @@ export default {
   },
   methods: {
     fileSuccess(rootFile, file, response, chunk) {
-      console.log(rootFile);
-      console.log(file);
-      console.log(response);
+      // console.log(rootFile);
+      // console.log(file);
       console.log(chunk);
       const result = JSON.parse(response);
       console.log(result);
+      // console.log("合并：file name=[" + file.name + "]src id=[" + this.srcId + "]")
+      let target = this.fileTarget.find(item => item.id === rootFile.id)
+      console.log("上传目文件夹：" + target.id + "，目标目录: " + target.srcId)
       const merge = {
         identifier: file.uniqueIdentifier,
         filename: file.name,
         totalChunks: chunk.offset,
+        targetFolderId: target.srcId,
       }
       if (merge.totalChunks === 0 && result.data.skipUpload === false && result.data.uploaded.length === file.chunks.length) {
         //这是因为分片全部上传以后由于网络中断，所以前端重新请求，
@@ -118,9 +133,9 @@ export default {
         console.log("开始合并文件");
         this.$request.post("/upload/merge", merge).then((res) => {
           if (res.code === '200') {
-            this.$message.success("上传成功");
+            this.$message.success("上传成功:" + file.name);
           } else {
-            this.$message.error(res.code + "：" + res.msg);
+            this.$message.error(res.code + "：" + res.msg+"，文件名："+file.name);
             return false;
           }
         }).catch(function (error) {
@@ -145,6 +160,8 @@ export default {
     filesAdded(file, fileList, event) {
       // console.log(file);
       file.forEach((e) => {
+        // console.log(e);
+        this.fileTarget.push({"id": e.id, "srcId": this.srcId});
         this.fileList.push(e);
         this.computeMD5(e);
       });
@@ -202,7 +219,7 @@ export default {
       }
     },
     allStart() {
-      console.log(this.fileList);
+      // console.log(this.fileList);
       this.fileList.map((e) => {
         if (e.paused) {
           e.resume();
@@ -210,7 +227,7 @@ export default {
       });
     },
     allStop() {
-      console.log(this.fileList);
+      // console.log(this.fileList);
       this.fileList.map((e) => {
         if (!e.paused) {
           e.pause();
@@ -230,7 +247,7 @@ export default {
 <style>
 .uploader-container {
   width: 80%;
-  height: 80%;
+  height: 90%;
   margin-left: 10%;
   border-radius: 20px;
   background-color: #ffffff;
@@ -247,13 +264,14 @@ export default {
 
 }
 
-.drop {
+.uploader-drop {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100px;
   width: 80%;
   margin-left: 10%;
+
 }
 
 .drop-text {
@@ -269,8 +287,8 @@ export default {
 }
 
 .uploader-btn {
-  margin-top: 12px;
-  margin-right: 4px;
+  margin-top: 20px;
+  margin-right: 20px;
 }
 
 .uploader-list {
@@ -284,12 +302,14 @@ export default {
   margin: 10px;
   padding: 10px;
 }
-.uploader-footer{
+
+.uploader-footer {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
 }
+
 .primary-button {
   background-color: #0d53ff;
   color: #fff;
@@ -297,6 +317,7 @@ export default {
   font-weight: bold;
   font-size: 16px;
   width: 10%;
+  min-width: 120px;
   height: 40px;
 }
 
@@ -307,6 +328,7 @@ export default {
   font-weight: bold;
   font-size: 16px;
   width: 10%;
+  min-width: 100px;
   height: 40px;
   margin-right: 20px;
 }

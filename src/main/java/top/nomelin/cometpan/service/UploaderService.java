@@ -15,14 +15,20 @@ public interface UploaderService {
 
 
     /**
-     * 上传文件分片
+     * 上传文件分片到缓存文件夹
      */
     void uploadChunk(FileChunk chunkDTO) throws IOException;
 
 
     /**
-     * 合并文件分片
+     * 合并文件分片,并更新数据库
+     *
+     * @param identifier     上传文件的唯一标识符,md5值
+     * @param fileName       上传文件名
+     * @param totalChunks    上传文件总分片数
+     * @param targetFolderId 上传文件目标文件夹id
      */
-    boolean mergeChunk(String identifier,String fileName,Integer totalChunks)throws IOException;
+    boolean mergeChunkAndUpdateDatabase(
+            String identifier, String fileName, Integer totalChunks, Integer targetFolderId) throws IOException;
 }
 

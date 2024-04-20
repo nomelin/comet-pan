@@ -65,10 +65,10 @@
             <i class="el-icon-folder-opened"></i>
             <span class="words" slot="title">全部文件</span>
           </el-menu-item>
-          <el-menu-item class="el-menu-item" index="/upload">
-            <i class="el-icon-upload"></i>
-            <span class="words" slot="title">上传文件</span>
-          </el-menu-item>
+<!--          <el-menu-item class="el-menu-item" index="/upload">-->
+<!--            <i class="el-icon-upload"></i>-->
+<!--            <span class="words" slot="title">上传文件</span>-->
+<!--          </el-menu-item>-->
           <el-menu-item class="el-menu-item" index="/person">
             <i class="el-icon-user-solid"></i>
             <span class="words" slot="title">个人中心</span>
@@ -263,7 +263,7 @@ export default {
 }
 
 .front-layout {
-  background: #f5f6f7;
+  background: #ebeef5;
 }
 
 /*.front-notice {*/
@@ -283,7 +283,7 @@ export default {
   width: 100vw;
   /*line-height: 60px;*/
   /*border-bottom: 1px solid #eee;*/
-  background: #f5f6f7;
+  /*background: #f5f6f7;*/
 }
 
 .front-header-left {

@@ -37,6 +37,7 @@ public class ExceptionHandle {
     @ExceptionHandler(SystemException.class)
     public Result doSystemException(SystemException e) {
         logger.warn("系统异常->" + e.codeMessage.code + ":" + e.codeMessage.msg);
+        e.printStackTrace();
         return new Result(e.codeMessage.code, e.codeMessage.msg);
     }
 
