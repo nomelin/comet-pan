@@ -1,18 +1,22 @@
 package top.nomelin.cometpan.service.impl;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import top.nomelin.cometpan.cache.CurrentUserCache;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.SystemException;
 import top.nomelin.cometpan.dao.DiskMapper;
+import top.nomelin.cometpan.pojo.DiskFile;
 import top.nomelin.cometpan.pojo.FileChunk;
 import top.nomelin.cometpan.pojo.FileChunkResult;
+import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.service.UploaderService;
 
 import java.io.*;
@@ -32,6 +36,8 @@ public class UploaderServiceImpl implements UploaderService {
 
     private final DiskMapper diskMapper;
 
+    private final FileService fileService;
+
     @Value("${upload.folder.root}")
     private String UPLOAD_FOLDER;
 
@@ -44,10 +50,11 @@ public class UploaderServiceImpl implements UploaderService {
     @Value("${upload.buffer-size}")
     private int bufferSize;
 
-    public UploaderServiceImpl(CurrentUserCache currentUserCache, RedisTemplate<String, Object> redisTemplate, DiskMapper diskMapper) {
+    public UploaderServiceImpl(CurrentUserCache currentUserCache, RedisTemplate<String, Object> redisTemplate, DiskMapper diskMapper, FileService fileService) {
         this.currentUserCache = currentUserCache;
         this.redisTemplate = redisTemplate;
         this.diskMapper = diskMapper;
+        this.fileService = fileService;
     }
 
     /**
@@ -86,12 +93,12 @@ public class UploaderServiceImpl implements UploaderService {
         //1.1)检查在磁盘中是否存在
         String fileFolderPath = getChunkFileFolderPath(chunkDTO.getIdentifier()); // 获取文件夹路径
         logger.info("fileFolderPath-->{}", fileFolderPath); // 记录文件夹路径
-        String filePath = getFilePath(chunkDTO.getIdentifier(), chunkDTO.getFilename()); // 获取文件路径
-        File file = new File(filePath); // 根据文件路径创建文件对象
-        boolean exists = file.exists(); // 检查文件是否存在
+//        String filePath = getFilePath(chunkDTO.getIdentifier(), chunkDTO.getFilename()); // 获取文件路径
+//        File file = new File(filePath); // 根据文件路径创建文件对象
+//        boolean exists = file.exists(); // 检查文件是否存在
         //1.2)检查Redis中是否存在,并且所有分片已经上传完成。
         Set<Integer> uploaded = (Set<Integer>) redisTemplate.opsForHash().get(chunkDTO.getIdentifier(), "uploaded"); // 从Redis中获取已上传的分片信息
-        if (uploaded != null && uploaded.size() == chunkDTO.getTotalChunks() && exists) { // 如果已上传分片数量和总分片数量相等且文件存在
+        if (uploaded != null && uploaded.size() == chunkDTO.getTotalChunks()) { // 如果已上传分片数量和总分片数量相等且文件存在
             return new FileChunkResult(true); // 返回文件已上传的标识
         }
         File fileFolder = new File(fileFolderPath); // 创建文件夹对象
@@ -99,7 +106,7 @@ public class UploaderServiceImpl implements UploaderService {
             boolean mkdirs = fileFolder.mkdirs(); // 创建文件夹
             logger.info("准备工作,创建文件夹,fileFolderPath:{},mkdirs:{}", fileFolderPath, mkdirs); // 记录文件夹创建信息
         }
-        logger.info("fileFolderPath:{},exists:{},chunks:{},totalChunks:{}", fileFolderPath, exists, uploaded, chunkDTO.getTotalChunks()); // 记录文件路径和文件是否存在信息
+        logger.info("fileFolderPath:{},chunks:{},totalChunks:{}", fileFolderPath, uploaded, chunkDTO.getTotalChunks()); // 记录文件路径和文件是否存在信息
         // 断点续传，返回已上传的分片
         return new FileChunkResult(false, uploaded); // 返回未完成上传的文件分片信息
     }
@@ -142,65 +149,76 @@ public class UploaderServiceImpl implements UploaderService {
     /**
      * 合并分片
      */
+    @Override
+    @Transactional
     public boolean mergeChunkAndUpdateDatabase(String identifier, String filename, Integer totalChunks, Integer targetFolderId) throws IOException {
         logger.info("开始合并分片,identifier:{},filename:{},totalChunks:{},targetFolderId:{}", identifier, filename, totalChunks, targetFolderId);
         String chunkFileFolderPath = getChunkFileFolderPath(identifier); // 获取分片文件夹路径
-        String filePath = getFilePath(identifier, filename); // 获取文件路径
+
         // 检查分片是否都存在
-        // 创建文件路径对象
-        Path path = Paths.get(filePath);
-        // 获取文件所在的文件夹路径
-        Path directoryPath = path.getParent();
-        // 创建文件夹（包括必要的父文件夹）
-        Files.createDirectories(directoryPath);
-        if (checkChunks(chunkFileFolderPath, totalChunks)) { // 检查分片是否完整
-            File chunkFileFolder = new File(chunkFileFolderPath); // 创建分片文件夹对象
-            File mergeFile = new File(filePath); // 创建合并后的文件对象
-            File[] chunks = chunkFileFolder.listFiles(); // 获取分片文件列表
-            // 切片排序1、2/3、---
-            if (chunks == null || chunks.length != totalChunks + 1) { // 如果分片数量不正确
-                if (chunks != null) {
-                    logger.error("分片数量不正确,chunks:{},totalChunks:{}", chunks.length, totalChunks);
-                } else {
-                    logger.error("分片数量不正确,chunks:null,totalChunks:{}", totalChunks);
-                }
-                return false; // 返回合并失败
-            }
-            List<File> fileList = Arrays.asList(chunks); // 将文件数组转换为列表
-            fileList.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName()))); // 按文件名进行升序排序
-            RandomAccessFile randomAccessFileWriter = new RandomAccessFile(mergeFile, "rw"); // 创建合并后文件的随机访问文件对象
-            byte[] bytes = new byte[bufferSize]; // 创建字节数组缓冲区
-            for (File chunk : chunks) { // 遍历分片文件列表
-                RandomAccessFile randomAccessFileReader = new RandomAccessFile(chunk, "r"); // 创建分片文件的随机访问文件对象
-                int len;
-                while ((len = randomAccessFileReader.read(bytes)) != -1) { // 读取分片文件内容到缓冲区
-                    randomAccessFileWriter.write(bytes, 0, len); // 将缓冲区内容写入合并后的文件
-                }
-                randomAccessFileReader.close(); // 关闭分片文件的随机访问文件对象
-            }
-            randomAccessFileWriter.close(); // 关闭合并后文件的随机访问文件对象
-            logger.info("合并分片成功,identifier:{},filename:{},totalChunks:{}", identifier, filename, totalChunks);
-            // 清空分片
-            clearCacheFolder(chunkFileFolderPath);
-            //清空redis
-                redisTemplate.delete(identifier);
-            return true; // 合并成功，返回true
+        checkChunks(chunkFileFolderPath, totalChunks);
+        File chunkFileFolder = new File(chunkFileFolderPath); // 创建分片文件夹对象
+        File[] chunks = chunkFileFolder.listFiles(); // 获取分片文件列表
+        if (ObjectUtil.isNull(chunks)) {
+            throw new SystemException(CodeMessage.FILE_UPLOAD_ERROR);
         }
-        throw new SystemException(CodeMessage.CHUNK_NOT_FULL_ERROR); // 抛出分片不完整异常
+        // 更新数据库
+        //如果有执行到合并文件这一步，一定不是秒传,所以一定是新文件
+        Long size = (Long) redisTemplate.opsForHash().get(identifier, "totalSize");
+        if (ObjectUtil.isNull(size)) {
+            size = 0L;
+        }
+        DiskFile diskFile = new DiskFile();
+        diskFile.setCount(1);
+        diskFile.setHash(identifier);
+        diskFile.setLength(size);
+        diskMapper.insert(diskFile); // 插入数据库，得到id
+        fileService.addFile(filename, targetFolderId, Math.toIntExact(size), diskFile.getId());
+        //合并文件
+        String filePath = getFilePath(identifier, diskFile.getId()); // 获取文件路径
+        diskFile.setPath(filePath);
+        diskMapper.updateById(diskFile);//先插入，得到id，然后根据id得到path，然后再根据id保存path到数据库。
+
+        Path path = Paths.get(filePath);// 创建文件路径对象
+        Path directoryPath = path.getParent();// 获取文件所在的文件夹路径
+        Files.createDirectories(directoryPath);// 创建文件夹（包括必要的父文件夹）
+        File mergeFile = new File(filePath); // 创建合并后的文件对象
+
+        List<File> fileList = Arrays.asList(chunks); // 将分片文件数组转换为列表
+        fileList.sort(Comparator.comparingInt(o -> Integer.parseInt(o.getName()))); // 按文件名进行升序排序
+
+        RandomAccessFile randomAccessFileWriter = new RandomAccessFile(mergeFile, "rw"); // 创建合并后文件的随机访问文件对象
+        byte[] bytes = new byte[bufferSize]; // 创建字节数组缓冲区
+        // 遍历分片文件列表
+        for (File chunk : chunks) {
+            RandomAccessFile randomAccessFileReader = new RandomAccessFile(chunk, "r"); // 创建分片文件的随机访问文件对象
+            int len;
+            while ((len = randomAccessFileReader.read(bytes)) != -1) { // 读取分片文件内容到缓冲区
+                randomAccessFileWriter.write(bytes, 0, len); // 将缓冲区内容写入合并后的文件
+            }
+            randomAccessFileReader.close(); // 关闭分片文件对象
+        }
+        randomAccessFileWriter.close(); // 关闭合并后文件对象
+        logger.info("合并分片成功,identifier:{},filename:{},totalChunks:{}", identifier, filename, totalChunks);
+        // 清空分片
+        clearCacheFolder(chunkFileFolderPath);
+
+        //清空redis
+        redisTemplate.delete(identifier);
+        return true; // 合并成功，返回true
     }
+
 
     /**
      * 检查分片是否都存在
      */
-    private boolean checkChunks(String chunkFileFolderPath, Integer totalChunks) {
+    private void checkChunks(String chunkFileFolderPath, Integer totalChunks) {
         for (int i = 1; i <= totalChunks + 1; i++) {
             File file = new File(chunkFileFolderPath + File.separator + i);
             if (!file.exists()) {
                 throw new SystemException(CodeMessage.CHUNK_NOT_FULL_ERROR);
             }
         }
-
-        return true;
     }
 
     /**
@@ -230,11 +248,9 @@ public class UploaderServiceImpl implements UploaderService {
     /**
      * 得到真正文件的保存路径
      */
-    private String getFilePath(String identifier, String filename) {
-        String ext = filename.substring(filename.lastIndexOf("."));
-//        return getFileFolderPath(identifier) + identifier + ext;
+    private String getFilePath(String identifier, int id) {
         return UPLOAD_FOLDER + File.separator +
-                identifier.charAt(0) + File.separator + identifier + File.separator + filename;
+                identifier.charAt(0) + File.separator + identifier + File.separator + id;
     }
 
     /**

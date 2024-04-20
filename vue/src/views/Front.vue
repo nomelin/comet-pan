@@ -122,13 +122,13 @@ export default {
     // 根据占比确定进度条颜色
     progressColor() {
       if (this.percentage >= 90) {
-        return '#f22121'; // 大于等于 90% 显示红色
+        return '#cb2b3d'; // 大于等于 90% 显示红色
       } else if (this.percentage >= 75) {
-        return '#f15f0c'; // 大于等于 75% 显示橙色
+        return '#d76a24'; // 大于等于 75% 显示橙色
       } else if (this.percentage >= 50) {
-        return '#f3f125'; // 大于等于 50% 显示黄色
+        return '#ffd100'; // 大于等于 50% 显示黄色
       } else {
-        return '#4deb10'; // 小于 50% 显示绿色
+        return '#149958'; // 小于 50% 显示绿色
       }
     },
   },

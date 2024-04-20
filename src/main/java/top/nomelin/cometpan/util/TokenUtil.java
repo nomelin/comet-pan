@@ -42,28 +42,28 @@ public class TokenUtil {
                 .sign(Algorithm.HMAC256(sign)); // 以 password 作为 token 的密钥
     }
 
-    /**
-     * 获取当前登录的用户信息
-     */
-    @Deprecated(forRemoval = true)
-    public static Account getCurrentUser() {
-        //TODO 在拦截器已经获取了账号，此处不需要再解析token获取账号。
-        try {
-            HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
-                    RequestContextHolder.getRequestAttributes())).getRequest();// 获取当前请求
-            String token = request.getHeader(Constants.TOKEN);  // 获取token
-            if (ObjectUtil.isNotEmpty(token)) {
-                String userRole = JWT.decode(token).getAudience().get(0);// 获取载荷
-                String userId = userRole.split("-")[0];  // 获取用户id
-                //String role = userRole.split("-")[1];    // 获取角色
-                return userService.selectById(Integer.valueOf(userId));
-            }
-        } catch (Exception e) {
-            log.warn("获取当前用户信息出错", e);
-        }
-        throw new BusinessException(CodeMessage.USER_NOT_LOGIN_ERROR);  // 用户未登录
-        //return new Account();  // 返回空的账号对象
-    }
+//    /**
+//     * 获取当前登录的用户信息
+//     */
+//    @Deprecated(forRemoval = true)
+//    public static Account getCurrentUser() {
+//
+//        try {
+//            HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
+//                    RequestContextHolder.getRequestAttributes())).getRequest();// 获取当前请求
+//            String token = request.getHeader(Constants.TOKEN);  // 获取token
+//            if (ObjectUtil.isNotEmpty(token)) {
+//                String userRole = JWT.decode(token).getAudience().get(0);// 获取载荷
+//                String userId = userRole.split("-")[0];  // 获取用户id
+//                //String role = userRole.split("-")[1];    // 获取角色
+//                return userService.selectById(Integer.valueOf(userId));
+//            }
+//        } catch (Exception e) {
+//            log.warn("获取当前用户信息出错", e);
+//        }
+//        throw new BusinessException(CodeMessage.USER_NOT_LOGIN_ERROR);  // 用户未登录
+//        //return new Account();  // 返回空的账号对象
+//    }
 
     @Autowired
     public void setUserService(UserService userService) {

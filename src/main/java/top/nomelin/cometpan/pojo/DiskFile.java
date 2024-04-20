@@ -10,7 +10,7 @@ public class DiskFile {
     private int count;
     private String path;
     private String hash;
-    private String length;
+    private long length;
 
     public int getId() {
         return id;
@@ -44,11 +44,11 @@ public class DiskFile {
         this.hash = hash;
     }
 
-    public String getLength() {
+    public long getLength() {
         return length;
     }
 
-    public void setLength(String length) {
+    public void setLength(long length) {
         this.length = length;
     }
 }

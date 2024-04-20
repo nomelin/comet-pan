@@ -136,7 +136,7 @@
             :visible.sync="uploaderVisible"
             :close-on-press-escape="false"
             size="50%"
-
+            @close="uploaderClose"
         >
           <span><uploader :src-id.sync="uploaderSrcId"/></span>
         </el-drawer>
@@ -541,6 +541,9 @@ export default {
     uploadFile() {
       this.uploaderVisible = true
       this.uploaderSrcId = parseInt(this.folderId)
+    },
+    uploaderClose() {
+      this.reload()
     },
   }
 }

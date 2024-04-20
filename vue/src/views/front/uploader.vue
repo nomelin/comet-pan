@@ -135,7 +135,7 @@ export default {
           if (res.code === '200') {
             this.$message.success("上传成功:" + file.name);
           } else {
-            this.$message.error(res.code + "：" + res.msg+"，文件名："+file.name);
+            this.$message.error(res.code + "：" + res.msg + "，文件名：" + file.name);
             return false;
           }
         }).catch(function (error) {
@@ -167,6 +167,7 @@ export default {
       });
     },
     computeMD5(file) {
+      this.disabled = true;
       let fileReader = new FileReader();
       let time = new Date().getTime();
       let blobSlice =
@@ -205,6 +206,7 @@ export default {
           file.cmd5 = false; //取消计算md5状态
           // file.resume(); //开始上传,
           // 计算完md5后，也是暂停
+          this.disabled = false;
         }
       };
       fileReader.onerror = function () {

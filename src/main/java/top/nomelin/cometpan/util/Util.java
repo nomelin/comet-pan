@@ -73,11 +73,12 @@ public class Util {
     }
 
     /**
-     *     获取文件类型
+     * 获取文件类型
+     *
      * @param str 文件名称
-     * @return 文件类型
+     * @return 文件类型, 不包含点。如果没有类型，则返回空字符串
      */
-    public static String getType(String str){
+    public static String getType(String str) {
         if (ObjectUtil.isNull(str)) {
             return null;
         }
@@ -88,5 +89,22 @@ public class Util {
         return str.substring(index + 1);
     }
 
+    /**
+     * 获取文件全名,如：abc和txt -> abc.txt
+     * 如果type为空或者null，则不添加后缀，也没有小数点。
+     *
+     * @param name 文件名
+     * @param type 文件类型
+     * @return 文件全名
+     */
+    public static String getFullName(String name, String type) {
+        if (ObjectUtil.isNull(name)) {
+            return null;
+        }
+        if (ObjectUtil.isNull(type) || StrUtil.isEmpty(type)) {
+            return name;
+        }
+        return name + "." + type;
+    }
 
 }

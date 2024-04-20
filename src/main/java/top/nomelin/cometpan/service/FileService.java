@@ -15,6 +15,16 @@ public interface FileService {
     int add(FileMeta fileMeta);
 
     /**
+     * 检查同名文件或文件夹,没有重名，则返回原名字，有重名，则加上(1)或(2)等后缀
+     *
+     * @param fileName       文件名或文件夹名（不包括后缀）
+     * @param parentFolderId 父文件夹ID
+     * @param isFolder       是否为文件夹
+     * @return 修改后的名字，加上(1)或(2)等后缀
+     */
+    String checkSameNameAndUpdate(String fileName, Integer parentFolderId, boolean isFolder);
+
+    /**
      * 在当前用户空间新增文件夹
      */
     int addFolder(String folderName, Integer parentFolderId);
@@ -22,10 +32,12 @@ public interface FileService {
     @Transactional
     void updateName(Integer id, String name);
 
+
     /**
      * 在当前用户空间新增文件
      */
-    int addFile(String fileName, Integer parentFolderId, int size, String type);
+    @Transactional
+    int addFile(String fileName, Integer parentFolderId, int size, int disk_id);
 
     /**
      * 循环向上更新大小，直到根目录

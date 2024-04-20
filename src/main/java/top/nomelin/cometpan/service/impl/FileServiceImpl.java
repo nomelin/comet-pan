@@ -197,14 +197,26 @@ public class FileServiceImpl implements FileService {
         updateTimeById(id);// 更新父目录时间
     }
 
+    /**
+     * 写入文件数据库信息
+     * @param fileName 文件名，全名，包含后缀
+     * @param parentFolderId 父文件夹ID
+     * @param size 文件大小，单位字节
+     * @param disk_id 磁盘文件ID
+     * @return 插入的文件ID
+     */
     @Transactional
     @Override
-    public int addFile(String fileName, Integer parentFolderId, int size, String type) {
+    public int addFile(String fileName, Integer parentFolderId, int size, int disk_id) {
+        logger.info("add file name: " + fileName + " parentFolderId: " + parentFolderId + " size: " + size);
+        String name = Util.removeType(fileName);
+        String type = Util.getType(fileName);
+        name = checkSameNameAndUpdate(name, parentFolderId, false);
         FileMeta file = new FileMeta();
-        fileName = checkSameNameAndUpdate(fileName, parentFolderId, false);
-        file.setName(fileName);
+        logger.info("add file name: " + name + " type: " + type);
+        file.setName(name);//不包括后缀
         file.setFolderId(parentFolderId);
-        file.setSize(size);
+        file.setSize(size);//TODO 重构数据库文件size从int到long
         file.setType(type);
         FileMeta parent = fileMapper.selectById(parentFolderId);
         if (parent == null) {
@@ -217,7 +229,7 @@ public class FileServiceImpl implements FileService {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
         file.setPath(parent.getFolderId() == 0 ? "/" + fileName + "." + type
-                : parent.getPath() + "/" + fileName + "." + type);
+                : parent.getPath() + "/" + name + "." + type);
         int userId = parent.getUserId();
         User user = userMapper.selectById(userId);
         file.setUserId(userId);
@@ -226,6 +238,7 @@ public class FileServiceImpl implements FileService {
         String time = String.valueOf(System.currentTimeMillis());
         file.setCreateTime(time);
         file.setUpdateTime(time);
+        file.setDiskId(disk_id);
         fileMapper.insert(file);
         updateSizeById(file.getId(), true);// 更新全部父目录大小
         updateTimeById(file.getId());// 更新全部父目录时间
@@ -295,6 +308,7 @@ public class FileServiceImpl implements FileService {
      * @param isFolder       是否为文件夹
      * @return 修改后的名字，加上(1)或(2)等后缀
      */
+    @Override
     public String checkSameNameAndUpdate(String fileName, Integer parentFolderId, boolean isFolder) {
         List<FileMeta> fileMetas = selectAllByParentFolderId(parentFolderId);
         int num = 0;
