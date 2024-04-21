@@ -89,30 +89,20 @@ public class UploaderServiceImpl implements UploaderService {
      * 如果文件不存在或者分片为上传完毕，则返回false并返回已经上传的分片信息。
      */
     @Override
+    @Transactional
     public FileChunkResult checkChunkExist(FileChunk chunkDTO) {
         // 秒传
         DiskFile diskFile = new DiskFile();
         diskFile.setHash(chunkDTO.getIdentifier());
-//        logger.info(diskFile.toString());
         List<DiskFile> diskFiles = diskMapper.selectAll(diskFile);
-//        logger.info("filename:{},targetFolderId:{},totalChunks:{},identifier:{}",
-//                chunkDTO.getFilename(), chunkDTO.getTargetFolderId(), chunkDTO.getTotalChunks(),chunkDTO.getIdentifier());
-//        logger.info("diskFiles:{}", diskFiles);
         for (DiskFile file : diskFiles) {
             if (Objects.equals(file.getLength(), chunkDTO.getTotalSize())) {
                 //如果MD5相同，且文件大小相同，则认为是相同文件，可以秒传。
                 logger.info("分片：filename:{},totalChunks:{},diskFileId:{},totalSize:{}",
                         chunkDTO.getFilename(), chunkDTO.getTotalChunks(), file.getId(), chunkDTO.getTotalSize());
-//                fileService.addFile(chunkDTO.getFilename(), chunkDTO.getTargetFolderId(),
-//                        chunkDTO.getTotalChunks(), diskFile.getId());
-
                 logger.info("秒传成功,file:{}", file.getPath());
                 FileChunkResult fileChunkResult = new FileChunkResult(true);
-//                fileChunkResult.setFileName(chunkDTO.getFilename());
-//                fileChunkResult.setSize(chunkDTO.getTotalSize());
-                fileChunkResult.setDiskId(file.getId());
-//                fileChunkResult.setVersion(chunkDTO.getChunkNumber());//版本号没有用，因为只收到一个请求,所以版本号总为1
-                return fileChunkResult;
+                fileChunkResult.setDiskId(file.getId());return fileChunkResult;
             }
         }
         String fileFolderPath = getChunkFileFolderPath(chunkDTO.getIdentifier()); // 获取文件夹路径

@@ -8,6 +8,7 @@ import top.nomelin.cometpan.common.Result;
 import top.nomelin.cometpan.pojo.FileChunk;
 import top.nomelin.cometpan.pojo.FileChunkResult;
 import top.nomelin.cometpan.pojo.InstantUploadDTO;
+import top.nomelin.cometpan.service.DiskService;
 import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.service.UploaderService;
 
@@ -23,9 +24,12 @@ public class UploaderController {
 
     private final FileService fileService;
 
-    public UploaderController(UploaderService uploadService, FileService fileService) {
+    private final DiskService diskService;
+
+    public UploaderController(UploaderService uploadService, FileService fileService, DiskService diskService) {
         this.uploadService = uploadService;
         this.fileService = fileService;
+        this.diskService = diskService;
     }
 
     /**
@@ -68,6 +72,7 @@ public class UploaderController {
     @PostMapping("/instant")
     public Result instantUpload(@RequestBody InstantUploadDTO dto) {
         fileService.addFile(dto.getFilename(), dto.getTargetFolderId(), Math.toIntExact(dto.getTotalSize()), dto.getDiskId());
+        diskService.incDiskCount(dto.getDiskId());
         return Result.success();
     }
 

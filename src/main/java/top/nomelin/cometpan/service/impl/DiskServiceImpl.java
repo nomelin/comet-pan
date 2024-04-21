@@ -62,11 +62,13 @@ public class DiskServiceImpl implements DiskService {
      * @param diskId disk id
      */
     @Override
+    @Transactional
     public void decDiskCount(int diskId) {
         DiskFile diskFile = diskMapper.selectById(diskId);
         if (Objects.isNull(diskFile)) {
             throw new BusinessException(CodeMessage.INVALID_DISK_ID_ERROR);
         }
+        logger.info("diskId:" + diskId + " count:" + diskFile.getCount() + "->" + (diskFile.getCount() - 1));
         if (diskFile.getCount() == 1) {
             logger.info("删除磁盘文件：" + diskFile.getPath());
             // 删除磁盘文件
@@ -90,6 +92,17 @@ public class DiskServiceImpl implements DiskService {
             diskFile.setCount(diskFile.getCount() - 1);
             diskMapper.updateById(diskFile);
         }
+    }
+
+    @Override
+    public void incDiskCount(int diskId) {
+        DiskFile diskFile = diskMapper.selectById(diskId);
+        if (Objects.isNull(diskFile)) {
+            throw new BusinessException(CodeMessage.INVALID_DISK_ID_ERROR);
+        }
+        logger.info("diskId:" + diskId + " count:" + diskFile.getCount() + "->" + (diskFile.getCount() + 1));
+        diskFile.setCount(diskFile.getCount() + 1);
+        diskMapper.updateById(diskFile);
     }
 
     // 判断文件夹是否为空

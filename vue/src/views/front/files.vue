@@ -55,7 +55,7 @@
         </template>
 
         <el-table-column type="selection" min-width="30" align="center"></el-table-column>
-<!--        <el-table-column prop="id" label="序号" width="70" align="center"></el-table-column>-->
+        <!--        <el-table-column prop="id" label="序号" width="70" align="center"></el-table-column>-->
         <el-table-column prop="folder" label="" width="60">
           <template v-slot="scope">
             <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
@@ -71,32 +71,32 @@
         <el-table-column prop="name" label="文件名称" min-width="200" show-overflow-tooltip
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']"
         >
-          <template slot-scope="scope" @mouseenter="mouseEnter(scope.row)" @mouseleave="mouseLeave(scope.row)">
+          <template v-slot="scope">
             <template v-if="!scope.row.isEditing">
-              <!-- 如果type为空，则只显示name -->
-              <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"
-                    @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
-              <!-- 如果type不为空，则显示完整名称 -->
-              <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"
-                    @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
+              <div class="name-container"  @mouseenter="mouseEnter(scope.row)" @mouseleave="mouseLeave(scope.row)">
+                <!-- 如果type为空，则只显示name -->
+                <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"
+                      @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
+                <!-- 如果type不为空，则显示完整名称 -->
+                <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"
+                      @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
 
-              <div >
-                <div style="color: #409EFF; font-size: 13px" v-if="scope.row.optShow">
-                  <el-tooltip content="分享" effect="light" :open-delay="1000">
-                    <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"></i>
-                  </el-tooltip>
-                  <el-tooltip content="下载" effect="light" :open-delay="1000" v-if="scope.row.folder === '否'">
-                    <i class="el-icon-download" style="margin-right: 10px; cursor: pointer" @click="download(scope.row.file)"></i>
-                  </el-tooltip>
-                  <el-tooltip content="删除" effect="light" :open-delay="1000">
-                    <i class="el-icon-delete" style="margin-right: 10px; cursor: pointer"></i>
-                  </el-tooltip>
-                  <el-tooltip content="重命名" effect="light" :open-delay="1000">
-                    <i class="el-icon-rename" style="margin-right: 10px; cursor: pointer" @click="rename(scope.row)"></i>
-                  </el-tooltip>
-                  <el-tooltip content="复制" effect="light" :open-delay="1000">
-                    <i class="el-icon-document-copy" style="cursor: pointer"></i>
-                  </el-tooltip>
+                <div>
+                  <div class="opt-container" v-if="scope.row.optShow">
+                    <el-tooltip content="分享" effect="dark" :open-delay="100">
+                      <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"></i>
+                    </el-tooltip>
+                    <el-tooltip content="删除" effect="dark" :open-delay="100">
+                      <i class="el-icon-delete" style="margin-right: 10px; cursor: pointer"></i>
+                    </el-tooltip>
+                    <el-tooltip content="重命名" effect="dark" :open-delay="100">
+                      <i class="el-icon-rename" style="margin-right: 10px; cursor: pointer"
+                         @click="rename(scope.row)"></i>
+                    </el-tooltip>
+                    <el-tooltip content="复制" effect="dark" :open-delay="100">
+                      <i class="el-icon-document-copy" style="cursor: pointer"></i>
+                    </el-tooltip>
+                  </div>
                 </div>
               </div>
 
@@ -121,7 +121,7 @@
         <el-table-column prop="size" label="文件大小" :formatter="formatSize"
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
         </el-table-column>
-<!--        <el-table-column prop="createTime" :formatter="formatTime" label="创建时间"></el-table-column>-->
+        <!--        <el-table-column prop="createTime" :formatter="formatTime" label="创建时间"></el-table-column>-->
         <el-table-column prop="updateTime" :formatter="formatTime" label="修改时间"
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
           <!--                    <template slot-scope="scope">
@@ -526,17 +526,23 @@ export default {
     saveRename(row) {
       console.log(row.name, row.type)
       console.log(this.editedName)
-      const lastIndex = this.editedName.lastIndexOf('.');
-      const name = this.editedName.substring(0, lastIndex);
-      const type = this.editedName.substring(lastIndex + 1);
-      row.name = name;
-      row.type = type;
-      // 发送后端接口请求保存重命名后的名称
-      let newName = row.name;
-      if (!row.folder) {
-        newName = newName + "." + row.type;
+      let newName = this.editedName;
+      if (row.folder) {
+        row.name = newName;
+        row.type = "";
+      } else {
+        const lastIndex = this.editedName.lastIndexOf('.');
+        let name = this.editedName.substring(0, lastIndex);
+        let type = this.editedName.substring(lastIndex + 1);
+        if (lastIndex === -1) {
+          name = this.editedName;
+          type = "";
+        }
+        row.name = name;
+        row.type = type;
+        newName = name + (type === "" ? "" : "." + type);
       }
-      console.log(newName)
+      console.log("newName:" + newName)
       this.$request.put('/files/rename', {id: row.id, name: newName}).then(res => {
         if (res.code === '200') {
           this.$message.success('重命名成功')
@@ -569,11 +575,9 @@ export default {
       this.reload()
     },
     mouseEnter(row) {
-      console.log("enter")
       this.$set(row, 'optShow', true)
     },
     mouseLeave(row) {
-      console.log("leave")
       this.$set(row, 'optShow', false)
     },
   }
@@ -739,5 +743,16 @@ export default {
   font-size: 16px;
   width: 80px;
   height: 40px;
+}
+
+.name-container{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.opt-container{
+  color: #909399;
+  font-size: 16px;
 }
 </style>

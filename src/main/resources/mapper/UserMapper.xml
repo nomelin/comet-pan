@@ -17,7 +17,6 @@
             <if test="role != null">and role= #{role}</if>
             <if test="rootId != null">and root_id = #{rootId}</if>
         </where>
-        for update
     </select>
 
     <select id="selectById" resultType="User">
@@ -32,7 +31,7 @@
                used_space,
                root_id
         from user
-        where id = #{id} for update
+        where id = #{id}
     </select>
 
     <delete id="deleteById">

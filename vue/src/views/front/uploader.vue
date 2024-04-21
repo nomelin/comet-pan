@@ -130,9 +130,6 @@ export default {
   },
   computed: {
     disabled() {
-      setTimeout(() => {
-        //等待一会。
-      }, 200);
       return this.computingMd5.length > 0 && this.fileList.length > 0;
     },
   },
@@ -243,7 +240,9 @@ export default {
           // file.resume(); //开始上传,
           // 计算完md5后，也是暂停
           // this.disabled = false;
-          this.removeFromSet(file.id);
+          setTimeout(() => {
+            this.removeFromSet(file.id);
+          }, 1000);
         }
       };
       fileReader.onerror = function () {

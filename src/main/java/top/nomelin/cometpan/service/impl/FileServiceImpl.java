@@ -29,7 +29,6 @@ import java.util.*;
  * 网盘文件信息表业务处理
  **/
 @Service
-@Transactional
 public class FileServiceImpl implements FileService {
     private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
@@ -37,11 +36,14 @@ public class FileServiceImpl implements FileService {
     private final UserMapper userMapper;
     private final DiskService diskService;
 
+
     @Autowired
-    public FileServiceImpl(FileMapper fileMapper, UserMapper userMapper, CurrentUserCache currentUserCache, DiskService diskService) {
+    public FileServiceImpl(FileMapper fileMapper, UserMapper userMapper,
+                           CurrentUserCache currentUserCache, DiskService diskService) {
         this.fileMapper = fileMapper;
         this.userMapper = userMapper;
         this.diskService = diskService;
+
     }
 
 
@@ -179,7 +181,7 @@ public class FileServiceImpl implements FileService {
      * @param id       文件ID
      * @param fullName 带有后缀的文件名
      */
-    @Transactional
+
     @Override
     public void updateName(Integer id, String fullName) {
         FileService bean = SpringBeanUtil.getBean(FileService.class);
@@ -207,6 +209,8 @@ public class FileServiceImpl implements FileService {
             fileMeta.setName(fullName);
             fileMeta.setPath(fileMeta.getPath().substring(0, fileMeta.getPath().lastIndexOf("/")) + "/" + fullName);
             fileMapper.updateById(fileMeta);
+            fileMeta = fileMapper.selectById(fileMeta.getFolderId());//父文件夹路径
+            bean.updateSubFolderPath(id, fileMeta.getPath(), fullName);//更新子文件夹路径
         } else {
             String newType = Util.getType(fullName);
             String newName = Util.removeType(fullName);
@@ -239,7 +243,7 @@ public class FileServiceImpl implements FileService {
         logger.info("add file name: " + fileName + " parentFolderId: " + parentFolderId + " size: " + size);
         String name = Util.removeType(fileName);
         String type = Util.getType(fileName);
-        name = checkSameNameAndUpdate(name, parentFolderId, false);
+        name = bean.checkSameNameAndUpdate(name, parentFolderId, false);
         FileMeta file = new FileMeta();
         logger.info("add file name: " + name + " type: " + type);
         file.setName(name);//不包括后缀
@@ -335,51 +339,6 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    /**
-     * 检查同名文件或文件夹,没有重名，则返回原名字，有重名，则加上(1)或(2)等后缀
-     *
-     * @param fileName       文件名或文件夹名（不包括后缀）
-     * @param parentFolderId 父文件夹ID
-     * @param isFolder       是否为文件夹
-     * @return 修改后的名字，加上(1)或(2)等后缀
-     */
-    @Override
-    public String checkSameNameAndUpdate(String fileName, Integer parentFolderId, boolean isFolder) {
-        FileService bean = SpringBeanUtil.getBean(FileService.class);
-        if (ObjectUtil.isNull(bean)) {
-            throw new SystemException(CodeMessage.BEAN_ERROR);
-        }
-        List<FileMeta> fileMetas = bean.selectAllByParentFolderId(parentFolderId);
-        int num = 0;
-        boolean hasSameName = false;
-        // 找到同名文件或文件夹
-        for (FileMeta fileMeta : fileMetas) {
-            if (fileMeta.getName().equals(fileName) && fileMeta.getFolder().equals(isFolder)) {
-                hasSameName = true;
-            }
-            // 同名文件或文件夹
-            if (fileMeta.getName().startsWith(fileName) && fileMeta.getFolder().equals(isFolder)) {
-                String ends = fileMeta.getName().substring(fileName.length());
-                // 如果字符串不为空，判断是否有(1)或(2)等后缀
-                if (!StrUtil.isEmpty(ends) && ends.charAt(0) == '(' && ends.charAt(ends.length() - 1) == ')') {
-                    ends = ends.substring(1, ends.length() - 1);
-                    //如果是数字，则取最大值
-                    if (Util.isNumber(ends)) {
-                        num = Math.max(num, Integer.parseInt(ends));
-                    }
-                }
-            }
-        }
-        if (!hasSameName) {
-            return fileName;// 没有同名文件或文件夹
-        }
-        if (num > 0) {
-            return fileName + "(" + (num + 1) + ")";// 有多次同名文件或文件夹，后缀数字增加
-        } else {
-            return fileName + "(1)";// 仅有同名文件或文件夹加上(1)
-        }
-
-    }
 
     @Transactional
     @Override
@@ -400,7 +359,7 @@ public class FileServiceImpl implements FileService {
         if (parent.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
-        folderName = checkSameNameAndUpdate(folderName, parentFolderId, true);
+        folderName = bean.checkSameNameAndUpdate(folderName, parentFolderId, true);
         folder.setName(folderName);
         // 路径为父路径加上文件夹名
         folder.setPath(parent.getFolderId() == 0 ? "/" + folderName : parent.getPath() + "/" + folderName);
@@ -487,7 +446,7 @@ public class FileServiceImpl implements FileService {
         bean.updateSizeById(id, false);// 更新当前节点的父目录大小
         bean.updateTimeById(id);// 更新旧目录时间
         fileMeta.setFolderId(targetFolderId);
-        String newName = checkSameNameAndUpdate(fileMeta.getName(), targetFolderId, fileMeta.getFolder());
+        String newName = bean.checkSameNameAndUpdate(fileMeta.getName(), targetFolderId, fileMeta.getFolder());
         fileMeta.setName(newName);// 更新文件名
         fileMapper.updateById(fileMeta);// 更新节点
         bean.updateSubFolderPath(id, targetFolder.getPath(), newName);// 如果有重名，更新所有子节点的路径
@@ -593,7 +552,9 @@ public class FileServiceImpl implements FileService {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
 
-        diskService.decDiskCount(fileMeta.getDiskId());
+        if (!fileMeta.getFolder()) {
+            diskService.decDiskCount(fileMeta.getDiskId());
+        }
         fileMapper.deleteById(id);
     }
 
@@ -602,7 +563,15 @@ public class FileServiceImpl implements FileService {
      */
     @Transactional
     public void deleteBatch(List<Integer> ids) {
-        for (Integer id : ids) {
+        Set<Integer> idsSet = new HashSet<>(ids);
+        for (Integer id : idsSet) {
+            FileMeta fileMeta = fileMapper.selectById(id);
+            if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0) {
+                throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+            }
+            if (!fileMeta.getFolder()) {
+                diskService.decDiskCount(fileMeta.getDiskId());
+            }
             fileMapper.deleteById(id);
         }
     }
@@ -623,7 +592,8 @@ public class FileServiceImpl implements FileService {
         if (ObjectUtil.isNull(bean)) {
             throw new SystemException(CodeMessage.BEAN_ERROR);
         }
-        for (Integer id : ids) {
+        Set<Integer> idsSet = new HashSet<>(ids);
+        for (Integer id : idsSet) {
             bean.setDeleteById(id);
         }
     }
@@ -677,6 +647,53 @@ public class FileServiceImpl implements FileService {
         PageHelper.startPage(pageNum, pageSize);
         List<FileMeta> list = fileMapper.selectAll(diskFiles);
         return PageInfo.of(list);
+    }
+
+    /**
+     * 检查同名文件或文件夹,没有重名，则返回原名字，有重名，则加上(1)或(2)等后缀
+     *
+     * @param fileName       文件名或文件夹名（不包括后缀）
+     * @param parentFolderId 父文件夹ID
+     * @param isFolder       是否为文件夹
+     * @return 修改后的名字，加上(1)或(2)等后缀
+     */
+    @Override
+    @Transactional
+    public String checkSameNameAndUpdate(String fileName, Integer parentFolderId, boolean isFolder) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
+        List<FileMeta> fileMetas = bean.selectAllByParentFolderId(parentFolderId);
+        int num = 0;
+        boolean hasSameName = false;
+        // 找到同名文件或文件夹
+        for (FileMeta fileMeta : fileMetas) {
+            if (fileMeta.getName().equals(fileName) && fileMeta.getFolder().equals(isFolder)) {
+                hasSameName = true;
+            }
+            // 同名文件或文件夹
+            if (fileMeta.getName().startsWith(fileName) && fileMeta.getFolder().equals(isFolder)) {
+                String ends = fileMeta.getName().substring(fileName.length());
+                // 如果字符串不为空，判断是否有(1)或(2)等后缀
+                if (!StrUtil.isEmpty(ends) && ends.charAt(0) == '(' && ends.charAt(ends.length() - 1) == ')') {
+                    ends = ends.substring(1, ends.length() - 1);
+                    //如果是数字，则取最大值
+                    if (Util.isNumber(ends)) {
+                        num = Math.max(num, Integer.parseInt(ends));
+                    }
+                }
+            }
+        }
+        if (!hasSameName) {
+            return fileName;// 没有同名文件或文件夹
+        }
+        if (num > 0) {
+            return fileName + "(" + (num + 1) + ")";// 有多次同名文件或文件夹，后缀数字增加
+        } else {
+            return fileName + "(1)";// 仅有同名文件或文件夹加上(1)
+        }
+
     }
 
 }

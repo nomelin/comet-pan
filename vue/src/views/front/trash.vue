@@ -35,14 +35,15 @@
         <el-table-column prop="size" label="文件大小" :formatter="formatSize"></el-table-column>
         <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
         <el-table-column label="创建时间">
-          <template slot-scope="scope">
+          <template v-slot="scope">
             <span v-if="scope.row.createTime != null">
             	{{ scope.row.createTime | formatTime }}
             </span>
           </template>
         </el-table-column>
         <el-table-column label="修改时间">
-          <template slot-scope="scope">
+          <template
+              v-slot="scope">
             <span v-if="scope.row.updateTime != null">
             	{{ scope.row.updateTime | formatTime }}
             </span>

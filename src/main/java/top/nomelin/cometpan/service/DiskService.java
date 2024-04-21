@@ -12,4 +12,6 @@ public interface DiskService {
     void uploadAvatar(Resource resource, int userId) throws IOException;
 
     void decDiskCount(int diskId);
+
+    void incDiskCount(int diskId);
 }
