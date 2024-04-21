@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import top.nomelin.cometpan.common.Result;
 import top.nomelin.cometpan.pojo.FileChunk;
 import top.nomelin.cometpan.pojo.FileChunkResult;
+import top.nomelin.cometpan.pojo.InstantUploadDTO;
+import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.service.UploaderService;
 
 import java.io.IOException;
@@ -19,8 +21,11 @@ public class UploaderController {
     private final static Logger logger = LoggerFactory.getLogger(UploaderController.class);
     private final UploaderService uploadService;
 
-    public UploaderController(UploaderService uploadService) {
+    private final FileService fileService;
+
+    public UploaderController(UploaderService uploadService, FileService fileService) {
         this.uploadService = uploadService;
+        this.fileService = fileService;
     }
 
     /**
@@ -58,6 +63,12 @@ public class UploaderController {
         logger.info("mergeChunks 成功: " + success);
         return Result.success(success);
 
+    }
+
+    @PostMapping("/instant")
+    public Result instantUpload(@RequestBody InstantUploadDTO dto) {
+        fileService.addFile(dto.getFilename(), dto.getTargetFolderId(), Math.toIntExact(dto.getTotalSize()), dto.getDiskId());
+        return Result.success();
     }
 
 }

@@ -6,25 +6,25 @@ package top.nomelin.cometpan.pojo;
  * @author nomelin
  */
 public class DiskFile {
-    private int id;
-    private int count;
+    private Integer id;
+    private Integer count;
     private String path;
     private String hash;
-    private long length;
+    private Long length;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public int getCount() {
+    public Integer getCount() {
         return count;
     }
 
-    public void setCount(int count) {
+    public void setCount(Integer count) {
         this.count = count;
     }
 
@@ -44,11 +44,22 @@ public class DiskFile {
         this.hash = hash;
     }
 
-    public long getLength() {
+    public Long getLength() {
         return length;
     }
 
-    public void setLength(long length) {
+    public void setLength(Long length) {
         this.length = length;
+    }
+
+    @Override
+    public String toString() {
+        return "DiskFile{" +
+                "id=" + id +
+                ", count=" + count +
+                ", path='" + path + '\'' +
+                ", hash='" + hash + '\'' +
+                ", length=" + length +
+                '}';
     }
 }

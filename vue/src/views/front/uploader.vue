@@ -60,8 +60,30 @@ export default {
         // 服务器分片校验函数
         checkChunkUploadedByResponse: (chunk, message) => {
           const result = JSON.parse(message);
-          if (result.data.skipUpload) {
+          if (result.data.skipUpload && chunk.offset === 0) {
             this.skip = true;
+            // this.$request.post()
+            // console.log("信息：" + message)
+            // console.log("chunk1：" + chunk.file.id)
+            // console.log("chunk2：" + chunk.file.name)
+            // console.log("chunk3：" + chunk.file.size)
+            let target = this.fileTarget.find(item => item.id === chunk.file.id)
+            this.$request.post("/upload/instant", {
+              filename: chunk.file.name,
+              totalSize: chunk.file.size,
+              targetFolderId: target.srcId,
+              diskId: result.data.diskId,
+            }).then(res => {
+              if (res.code === '200') {
+                this.$message.success("秒传成功:" + chunk.file.name);
+              } else {
+                this.$message.error("秒传失败" + res.code + "：" + res.msg + "，文件名：" + chunk.file.name);
+              }
+            }).catch(err => {
+              console.log(err)
+            })
+            return true;
+          } else if (result.data.skipUpload) {
             return true;
           }
           return (result.data.uploaded || []).indexOf(chunk.offset + 1) >= 0;
@@ -108,6 +130,9 @@ export default {
   },
   computed: {
     disabled() {
+      setTimeout(() => {
+        //等待一会。
+      }, 200);
       return this.computingMd5.length > 0 && this.fileList.length > 0;
     },
   },
@@ -171,7 +196,7 @@ export default {
       // this.disabled = true;
       // console.log(file);
       file.forEach((e) => {
-        // console.log(e);
+        console.log("id:" + e.id + ",srcId:" + this.srcId);
         this.fileTarget.push({"id": e.id, "srcId": this.srcId});
         this.fileList.push(e);
         this.addToSet(e.id)

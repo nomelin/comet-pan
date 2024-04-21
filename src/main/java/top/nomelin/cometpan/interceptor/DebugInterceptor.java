@@ -14,7 +14,7 @@ public class DebugInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-//        logger.info("请求{}---{}---访问。",request.getMethod(),request.getRequestURI());
+        logger.info("请求{}---{}---访问。",request.getMethod(),request.getRequestURI());
         return true;
     }
 

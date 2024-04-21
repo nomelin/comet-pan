@@ -90,23 +90,39 @@ public class UploaderServiceImpl implements UploaderService {
      */
     @Override
     public FileChunkResult checkChunkExist(FileChunk chunkDTO) {
-        //1.检查文件是否已上传过
-        //1.1)检查在磁盘中是否存在
+        // 秒传
+        DiskFile diskFile = new DiskFile();
+        diskFile.setHash(chunkDTO.getIdentifier());
+//        logger.info(diskFile.toString());
+        List<DiskFile> diskFiles = diskMapper.selectAll(diskFile);
+//        logger.info("filename:{},targetFolderId:{},totalChunks:{},identifier:{}",
+//                chunkDTO.getFilename(), chunkDTO.getTargetFolderId(), chunkDTO.getTotalChunks(),chunkDTO.getIdentifier());
+//        logger.info("diskFiles:{}", diskFiles);
+        for (DiskFile file : diskFiles) {
+            if (Objects.equals(file.getLength(), chunkDTO.getTotalSize())) {
+                //如果MD5相同，且文件大小相同，则认为是相同文件，可以秒传。
+                logger.info("分片：filename:{},totalChunks:{},diskFileId:{},totalSize:{}",
+                        chunkDTO.getFilename(), chunkDTO.getTotalChunks(), file.getId(), chunkDTO.getTotalSize());
+//                fileService.addFile(chunkDTO.getFilename(), chunkDTO.getTargetFolderId(),
+//                        chunkDTO.getTotalChunks(), diskFile.getId());
+
+                logger.info("秒传成功,file:{}", file.getPath());
+                FileChunkResult fileChunkResult = new FileChunkResult(true);
+//                fileChunkResult.setFileName(chunkDTO.getFilename());
+//                fileChunkResult.setSize(chunkDTO.getTotalSize());
+                fileChunkResult.setDiskId(file.getId());
+//                fileChunkResult.setVersion(chunkDTO.getChunkNumber());//版本号没有用，因为只收到一个请求,所以版本号总为1
+                return fileChunkResult;
+            }
+        }
         String fileFolderPath = getChunkFileFolderPath(chunkDTO.getIdentifier()); // 获取文件夹路径
         logger.info("fileFolderPath-->{}", fileFolderPath); // 记录文件夹路径
-//        String filePath = getFilePath(chunkDTO.getIdentifier(), chunkDTO.getFilename()); // 获取文件路径
-//        File file = new File(filePath); // 根据文件路径创建文件对象
-//        boolean exists = file.exists(); // 检查文件是否存在
-        //1.2)检查Redis中是否存在,并且所有分片已经上传完成。
-        Set<Integer> uploaded = (Set<Integer>) redisTemplate.opsForHash().get(chunkDTO.getIdentifier(), "uploaded"); // 从Redis中获取已上传的分片信息
-        if (uploaded != null && uploaded.size() == chunkDTO.getTotalChunks()) { // 如果已上传分片数量和总分片数量相等且文件存在
-            return new FileChunkResult(true); // 返回文件已上传的标识
-        }
         File fileFolder = new File(fileFolderPath); // 创建文件夹对象
         if (!fileFolder.exists()) { // 如果文件夹不存在
             boolean mkdirs = fileFolder.mkdirs(); // 创建文件夹
             logger.info("准备工作,创建文件夹,fileFolderPath:{},mkdirs:{}", fileFolderPath, mkdirs); // 记录文件夹创建信息
         }
+        Set<Integer> uploaded = (Set<Integer>) redisTemplate.opsForHash().get(chunkDTO.getIdentifier(), "uploaded"); // 从Redis中获取已上传的分片信息
         logger.info("fileFolderPath:{},chunks:{},totalChunks:{}", fileFolderPath, uploaded, chunkDTO.getTotalChunks()); // 记录文件路径和文件是否存在信息
         // 断点续传，返回已上传的分片
         return new FileChunkResult(false, uploaded); // 返回未完成上传的文件分片信息
