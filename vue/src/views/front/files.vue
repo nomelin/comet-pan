@@ -600,10 +600,41 @@ export default {
         console.log("是文件夹：" + row.name)
         return
       }
-      let elemIF = document.createElement('iframe')
-      elemIF.src = '/download/' + row.diskId
-      elemIF.style.display = 'none'
-      document.body.appendChild(elemIF)
+      this.XHRLoadFile('http://localhost:12345/download/' + row.id + '/0', {})
+    },
+
+    //通过XMLHttpRequest发送post请求下载文件
+    //url : 请求的Url
+    //data ： 请求的数据
+    XHRLoadFile: (url, data) => {
+      let xhr = new XMLHttpRequest()
+      xhr.open('post', url)
+      //如果需要请求头中这是token信息可以在这设置
+      // xhr.setRequestHeader('Content-Type','application/json;charset=UTF-8')
+      let user = JSON.parse(localStorage.getItem('user') || '{}')
+      console.log(user.token)
+      let token = user.token
+      xhr.setRequestHeader('token', token)
+      xhr.responseType = 'blob'
+      xhr.send(JSON.stringify(data))
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          const blob = new Blob([xhr.response])
+          let url = window.URL.createObjectURL(blob)
+
+          //创建一个a标签元素，设置下载属性，点击下载，最后移除该元素
+          let link = document.createElement('a')
+          link.href = url
+          link.style.display = 'none'
+          //取出下载文件名
+          const disposition = xhr.getResponseHeader('content-disposition')
+          let fileName=disposition.substring(disposition.indexOf("=")+1);
+          const downloadFileName = decodeURIComponent(fileName)
+          link.setAttribute('download', downloadFileName)
+          link.click()
+          window.URL.revokeObjectURL(url)
+        }
+      }
     },
   }
 }

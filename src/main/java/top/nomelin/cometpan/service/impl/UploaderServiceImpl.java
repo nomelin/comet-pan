@@ -91,6 +91,7 @@ public class UploaderServiceImpl implements UploaderService {
     @Override
     @Transactional
     public FileChunkResult checkChunkExist(FileChunk chunkDTO) {
+        testRedisConnection(); // 测试Redis连接
         // 秒传
         DiskFile diskFile = new DiskFile();
         diskFile.setHash(chunkDTO.getIdentifier());
@@ -102,7 +103,8 @@ public class UploaderServiceImpl implements UploaderService {
                         chunkDTO.getFilename(), chunkDTO.getTotalChunks(), file.getId(), chunkDTO.getTotalSize());
                 logger.info("秒传成功,file:{}", file.getPath());
                 FileChunkResult fileChunkResult = new FileChunkResult(true);
-                fileChunkResult.setDiskId(file.getId());return fileChunkResult;
+                fileChunkResult.setDiskId(file.getId());
+                return fileChunkResult;
             }
         }
         String fileFolderPath = getChunkFileFolderPath(chunkDTO.getIdentifier()); // 获取文件夹路径
@@ -129,6 +131,7 @@ public class UploaderServiceImpl implements UploaderService {
      */
     @Override
     public void uploadChunk(FileChunk chunkDTO) {
+        testRedisConnection();
         // 分块的目录
         String chunkFileFolderPath = getChunkFileFolderPath(chunkDTO.getIdentifier()); // 获取分片文件夹路径
 //        logger.info("分块的目录 -> {}", chunkFileFolderPath); // 记录分片文件夹路径
@@ -161,7 +164,7 @@ public class UploaderServiceImpl implements UploaderService {
     public boolean mergeChunkAndUpdateDatabase(String identifier, String filename, Integer totalChunks, Integer targetFolderId) {
         logger.info("开始合并分片,identifier:{},filename:{},totalChunks:{},targetFolderId:{}", identifier, filename, totalChunks, targetFolderId);
         String chunkFileFolderPath = getChunkFileFolderPath(identifier); // 获取分片文件夹路径
-
+        testRedisConnection(); // 测试Redis连接
         // 检查分片是否都存在
         checkChunks(chunkFileFolderPath, totalChunks);
         File chunkFileFolder = new File(chunkFileFolderPath); // 创建分片文件夹对象
@@ -276,5 +279,15 @@ public class UploaderServiceImpl implements UploaderService {
     private String getChunkFileFolderPath(String identifier) {
         return UPLOAD_CACHE_FOLDER + File.separator + identifier.charAt(0) + File.separator +
                 identifier + File.separator;
+    }
+
+    private void testRedisConnection() {
+        try {
+            String pingResult = Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().ping();
+            logger.info("redis连接成功: " + pingResult);
+        } catch (Exception e) {
+            logger.warn("redis连接失败: " + e.getMessage());
+            throw new SystemException(CodeMessage.REDIS_CONNECTION_ERROR);
+        }
     }
 }

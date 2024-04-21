@@ -47,6 +47,7 @@ public enum CodeMessage {
 
     SYSTEM_ERROR("800", "系统异常"),
     BEAN_ERROR("801", "Bean代理异常"),
+    REDIS_CONNECTION_ERROR("801", "Redis连接失败,请稍后重试"),
     UNKNOWN_ERROR("900", "未知异常"),
     ;
 
