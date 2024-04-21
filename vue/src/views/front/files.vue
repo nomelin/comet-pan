@@ -41,7 +41,10 @@
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
                 height="66vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
-                ref="table" :default-sort="{prop: 'name', order: 'ascending'}">
+                ref="table" :default-sort="{prop: 'name', order: 'ascending'}"
+                @cell-mouse-enter="mouseEnter"
+                @cell-mouse-leave="mouseLeave"
+      >
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
@@ -73,33 +76,13 @@
         >
           <template v-slot="scope">
             <template v-if="!scope.row.isEditing">
-              <div class="name-container" @mouseenter="mouseEnter(scope.row)" @mouseleave="mouseLeave(scope.row)">
+              <div class="name-container" @click="handleFolderClick(scope.row)">
                 <!-- 如果type为空，则只显示name -->
                 <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"
-                      @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
+                      style="cursor: pointer;"></span>
                 <!-- 如果type不为空，则显示完整名称 -->
                 <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"
-                      @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
-
-                <div>
-                  <div class="opt-container" v-if="scope.row.optShow">
-                    <el-tooltip content="分享" effect="dark" :open-delay="100">
-                      <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"></i>
-                    </el-tooltip>
-                    <el-tooltip content="删除" effect="dark" :open-delay="100">
-                      <i class="el-icon-delete-solid" style="margin-right: 10px; cursor: pointer"
-                         @click="del(scope.row.id)"></i>
-                    </el-tooltip>
-                    <el-tooltip content="重命名" effect="dark" :open-delay="100">
-                      <i class="el-icon-document" style="margin-right: 10px; cursor: pointer"
-                         @click="rename(scope.row)"></i>
-                    </el-tooltip>
-                    <el-tooltip content="移动到" effect="dark" :open-delay="100">
-                      <i class="el-icon-s-unfold" style="cursor: pointer"
-                         @click="move(scope.row.id)"></i>
-                    </el-tooltip>
-                  </div>
-                </div>
+                      style="cursor: pointer;"></span>
               </div>
 
             </template>
@@ -116,6 +99,32 @@
               </div>
             </template>
           </template>
+        </el-table-column>
+        <el-table-column label="">
+          <template v-slot="scope">
+            <template v-if="!scope.row.isEditing">
+              <div>
+                <div class="opt-container" v-if="scope.row.optShow">
+                  <el-tooltip content="分享" effect="dark" :open-delay="100">
+                    <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"></i>
+                  </el-tooltip>
+                  <el-tooltip content="删除" effect="dark" :open-delay="100">
+                    <i class="el-icon-delete-solid" style="margin-right: 10px; cursor: pointer"
+                       @click="del(scope.row.id)"></i>
+                  </el-tooltip>
+                  <el-tooltip content="重命名" effect="dark" :open-delay="100">
+                    <i class="el-icon-document" style="margin-right: 10px; cursor: pointer"
+                       @click="rename(scope.row)"></i>
+                  </el-tooltip>
+                  <el-tooltip content="移动到" effect="dark" :open-delay="100">
+                    <i class="el-icon-s-unfold" style="cursor: pointer"
+                       @click="move(scope.row.id)"></i>
+                  </el-tooltip>
+                </div>
+              </div>
+            </template>
+          </template>
+
         </el-table-column>
 
         <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
@@ -628,7 +637,7 @@ export default {
           link.style.display = 'none'
           //取出下载文件名
           const disposition = xhr.getResponseHeader('content-disposition')
-          let fileName=disposition.substring(disposition.indexOf("=")+1);
+          let fileName = disposition.substring(disposition.indexOf("=") + 1);
           const downloadFileName = decodeURIComponent(fileName)
           link.setAttribute('download', downloadFileName)
           link.click()
@@ -718,7 +727,7 @@ export default {
 
 .table-style {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /*右键菜单*/

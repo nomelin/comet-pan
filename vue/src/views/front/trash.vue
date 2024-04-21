@@ -2,8 +2,8 @@
   <div class="main-container">
     <div class="blank"></div>
     <div class="operation">
-      <el-button type="danger" plain @click="delBatch">批量清空</el-button>
-      <el-button type="warning" plain @click="restoreBatch">批量还原</el-button>
+      <el-button type="danger" class="normal-button" plain @click="delBatch">批量清空</el-button>
+      <el-button type="primary" class="primary-button" plain @click="restoreBatch">批量还原</el-button>
       <!--      <el-button type="danger" plain @click="delAll">清空全部</el-button>-->
     </div>
     <div class="blank"></div>
@@ -22,13 +22,41 @@
           </el-empty>
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column prop="name" label="文件名称" sortable></el-table-column>
-        <el-table-column label="是否文件夹">
+        <el-table-column prop="folder" label="" width="60">
           <template v-slot="scope">
-            <span >
-              <i v-if="scope.row.folder" class="el-icon-folder"></i>
-              <span v-else>文件</span>
+            <span>
+              <i v-if="scope.row.folder">
+                <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
+              </i>
+              <span v-else>
+                <img class="folder-icon" src="@/assets/imgs/文件.svg" alt="文件">
+              </span>
             </span>
+          </template>
+        </el-table-column>
+        <!--        <el-table-column prop="name" label="文件名称" sortable min-width="200" show-overflow-tooltip></el-table-column>-->
+        <!--        <el-table-column label="是否文件夹">-->
+        <!--          <template v-slot="scope">-->
+        <!--            <span >-->
+        <!--              <i v-if="scope.row.folder" class="el-icon-folder"></i>-->
+        <!--              <span v-else>文件</span>-->
+        <!--            </span>-->
+        <!--          </template>-->
+        <!--        </el-table-column>-->
+        <el-table-column prop="name" label="文件名称" min-width="200" show-overflow-tooltip
+                         sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']"
+        >
+          <template v-slot="scope">
+            <template>
+              <div class="name-container">
+                <!-- 如果type为空，则只显示name -->
+                <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"></span>
+                <!-- 如果type不为空，则显示完整名称 -->
+                <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"></span>
+
+              </div>
+
+            </template>
           </template>
         </el-table-column>
         <el-table-column prop="type" label="文件类型"></el-table-column>
@@ -84,6 +112,14 @@ export default {
     // this.folderId = this.user.rootId
     this.load()
   },
+  computed: {
+    highlightText() {
+      // console.log(this.isSearch, this.searchText)
+      return (name) => {
+        return name;
+      }
+    }
+  },
   // computed: {
   //   // 计算属性，data变化以后自动更新
   //   filteredData() {
@@ -98,7 +134,7 @@ export default {
       this.$confirm('确定要彻底删除选中的文件吗？\n此操作无法撤销!', '确认删除', {
         confirmButtonText: '彻底删除',
         cancelButtonText: '取消',
-        type: 'error',
+        type: 'warning',
         center: true
       }).then(response => {
         this.$request.delete('/files/completely/' + id).then(res => {
@@ -109,7 +145,8 @@ export default {
             this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
           }
         })
-      })
+      }).catch(() => {
+      });
     },
     delBatch() {   // 批量删除
       if (!this.ids.length) {
@@ -130,7 +167,8 @@ export default {
             this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
           }
         })
-      })
+      }).catch(() => {
+      });
     },
     restore(id) {   // 单个还原
       this.$request.put('/files/restore/' + id).then(res => {
@@ -227,7 +265,8 @@ export default {
 
 <style scoped>
 .main-container {
-  border-radius: 50px;
+  /*border-radius: 50px;*/
+  border-top-left-radius: 50px;
   background-color: #ffffff;
   height: 100%;
   width: 100%;
@@ -238,9 +277,9 @@ export default {
   height: 75%;
 }
 
-.el-table .el-table__row--selected {
-  background-color: blue; /* 修改被选中行的底色为蓝色 */
-  color: white; /* 修改被选中行的文字颜色为白色 */
+/* 设置 el-table 每一行的高度 */
+::v-deep .el-table .el-table__body .el-table__row {
+  height: 60px; /* 设置每一行的高度 */
 }
 
 .blank {
@@ -255,7 +294,10 @@ export default {
 .backAndForward {
   margin-left: 5%;
   width: 80%;
+  display: flex;
+  justify-content: flex-start; /* 靠左对齐 */
 }
+
 
 .path {
   font-weight: bold;
@@ -298,14 +340,14 @@ export default {
 }
 
 .table-style {
-  /*font-weight: bold;*/
+  font-weight: bold;
   font-size: 14px;
 }
 
 /*右键菜单*/
 .contextmenu__item {
   display: block;
-  line-height: 34px;
+  line-height: 35px;
   text-align: center;
 }
 
@@ -336,5 +378,61 @@ export default {
   background: #e6f1ff;
   border-color: #e6f1ff;
   /*color: #52565e;*/
+}
+
+::v-deep .rename-input .el-input__inner {
+  overflow: visible;
+  width: 100%;
+  text-align: left;
+  border: 0 !important;
+  outline: none;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.dialog-files {
+  z-index: 999;
+}
+
+.folder-icon {
+  width: 100%;
+}
+
+.little-icon {
+  width: 50px;
+  vertical-align: middle;
+}
+
+
+.primary-button {
+  background-color: #0d53ff;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  width: 120px;
+  height: 40px;
+}
+
+.normal-button {
+  background-color: #ffffff;
+  color: #606266;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  width: 120px;
+  height: 40px;
+}
+
+.name-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.opt-container {
+  color: #606266;
+  font-size: 16px;
+  font-weight: bold;
 }
 </style>

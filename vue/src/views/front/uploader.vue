@@ -60,6 +60,11 @@ export default {
         // 服务器分片校验函数
         checkChunkUploadedByResponse: (chunk, message) => {
           const result = JSON.parse(message);
+          if (result.code!== '200') {
+            this.$message.error(result.code + "：" + result.msg);
+            return false;
+          }
+          console.log(result);
           if (result.data.skipUpload && chunk.offset === 0) {
             this.skip = true;
             // this.$request.post()
