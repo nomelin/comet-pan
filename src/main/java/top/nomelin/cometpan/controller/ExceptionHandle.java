@@ -47,8 +47,8 @@ public class ExceptionHandle {
      * @param e 其它异常
      * @return 结果
      */
-    @ExceptionHandler(Exception.class)
-    public Result doException(Exception e) {
+    @ExceptionHandler(Throwable.class)
+    public Result doException(Throwable e) {
         logger.warn("其它异常->" + e.getMessage());
         e.printStackTrace();
         return new Result(CodeMessage.UNKNOWN_ERROR.code, CodeMessage.UNKNOWN_ERROR.msg);

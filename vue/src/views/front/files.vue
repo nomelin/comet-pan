@@ -73,7 +73,7 @@
         >
           <template v-slot="scope">
             <template v-if="!scope.row.isEditing">
-              <div class="name-container"  @mouseenter="mouseEnter(scope.row)" @mouseleave="mouseLeave(scope.row)">
+              <div class="name-container" @mouseenter="mouseEnter(scope.row)" @mouseleave="mouseLeave(scope.row)">
                 <!-- 如果type为空，则只显示name -->
                 <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"
                       @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
@@ -87,14 +87,16 @@
                       <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"></i>
                     </el-tooltip>
                     <el-tooltip content="删除" effect="dark" :open-delay="100">
-                      <i class="el-icon-delete" style="margin-right: 10px; cursor: pointer"></i>
+                      <i class="el-icon-delete-solid" style="margin-right: 10px; cursor: pointer"
+                         @click="del(scope.row.id)"></i>
                     </el-tooltip>
                     <el-tooltip content="重命名" effect="dark" :open-delay="100">
-                      <i class="el-icon-rename" style="margin-right: 10px; cursor: pointer"
+                      <i class="el-icon-document" style="margin-right: 10px; cursor: pointer"
                          @click="rename(scope.row)"></i>
                     </el-tooltip>
-                    <el-tooltip content="复制" effect="dark" :open-delay="100">
-                      <i class="el-icon-document-copy" style="cursor: pointer"></i>
+                    <el-tooltip content="移动到" effect="dark" :open-delay="100">
+                      <i class="el-icon-s-unfold" style="cursor: pointer"
+                         @click="move(scope.row.id)"></i>
                     </el-tooltip>
                   </div>
                 </div>
@@ -136,13 +138,26 @@
          v-show="menuVisible"
          class="menu">
       <div class="contextmenu__item"
+           @click="handleFolderClick(CurrentRow)">打开
+      </div>
+      <div class="contextmenu__item"
+           @click="download(CurrentRow)">下载
+      </div>
+      <div class="contextmenu__item"
+           @click="share(CurrentRow)">分享
+      </div>
+      <div class="contextmenu__item"
            @click="rename(CurrentRow)">重命名
       </div>
       <div class="contextmenu__item"
-           @click="del(CurrentRow.id)">删除
-      </div>
-      <div class="contextmenu__item"
            @click="move(CurrentRow.id)">移动到
+      </div>
+      <div class="divider">
+        <el-divider></el-divider>
+      </div>
+
+      <div class="contextmenu__item"
+           @click="del(CurrentRow.id)">删除
       </div>
     </div>
     <template>
@@ -580,6 +595,16 @@ export default {
     mouseLeave(row) {
       this.$set(row, 'optShow', false)
     },
+    download(row) {
+      if (row.folder === true) {
+        console.log("是文件夹：" + row.name)
+        return
+      }
+      let elemIF = document.createElement('iframe')
+      elemIF.src = '/download/' + row.diskId
+      elemIF.style.display = 'none'
+      document.body.appendChild(elemIF)
+    },
   }
 }
 </script>
@@ -668,7 +693,7 @@ export default {
 /*右键菜单*/
 .contextmenu__item {
   display: block;
-  line-height: 34px;
+  line-height: 35px;
   text-align: center;
 }
 
@@ -745,14 +770,19 @@ export default {
   height: 40px;
 }
 
-.name-container{
+.name-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.opt-container{
-  color: #909399;
+.opt-container {
+  color: #606266;
   font-size: 16px;
+  font-weight: bold;
+}
+
+.divider {
+  height: 0;
 }
 </style>

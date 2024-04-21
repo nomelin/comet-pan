@@ -99,10 +99,10 @@ public class Util {
      */
     public static String getFullName(String name, String type) {
         if (ObjectUtil.isNull(name)) {
-            return null;
+            return "";
         }
         if (ObjectUtil.isNull(type) || StrUtil.isEmpty(type)) {
-            return name;
+            return name + "";
         }
         return name + "." + type;
     }
