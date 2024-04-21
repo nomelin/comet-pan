@@ -23,11 +23,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Controller
-public class DiskController {
-    private final Logger logger = LoggerFactory.getLogger(DiskController.class);
+public class AvatarController {
+    private final Logger logger = LoggerFactory.getLogger(AvatarController.class);
     private final DiskService diskService;
 
-    public DiskController(DiskService diskService) {
+    public AvatarController(DiskService diskService) {
         this.diskService = diskService;
     }
 

@@ -18,7 +18,7 @@
       </el-button>
       <el-button class="normal-button" type="danger" plain @click="delBatch">删除</el-button>
       <el-button class="primary-button" type="primary" plain style="margin-left: 10px" @click="uploadFile">
-        <i class="el-icon-upload"></i> 上传文件
+        <i class="el-icon-upload"></i> 上传 / 秒传
       </el-button>
 
       <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">按钮仍在开发中</span>
@@ -46,7 +46,7 @@
           <el-empty description=" ">
             <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
           </el-empty>
-          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">上传文件</el-button>
+          <el-button type="primary" @click="uploadFile" class="primary-button">上传 / 秒传</el-button>
         </template>
         <template v-else slot="empty">
           <el-empty description=" ">
@@ -55,7 +55,7 @@
         </template>
 
         <el-table-column type="selection" min-width="30" align="center"></el-table-column>
-        <el-table-column prop="id" label="序号" width="70" align="center"></el-table-column>
+<!--        <el-table-column prop="id" label="序号" width="70" align="center"></el-table-column>-->
         <el-table-column prop="folder" label="" width="60">
           <template v-slot="scope">
             <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
@@ -69,8 +69,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="name" label="文件名称" min-width="200" show-overflow-tooltip
-                         sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
-          <template slot-scope="scope">
+                         sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']"
+        >
+          <template slot-scope="scope" @mouseenter="mouseEnter(scope.row)" @mouseleave="mouseLeave(scope.row)">
             <template v-if="!scope.row.isEditing">
               <!-- 如果type为空，则只显示name -->
               <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"
@@ -78,7 +79,29 @@
               <!-- 如果type不为空，则显示完整名称 -->
               <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"
                     @click="handleFolderClick(scope.row)" style="cursor: pointer;"></span>
+
+              <div >
+                <div style="color: #409EFF; font-size: 13px" v-if="scope.row.optShow">
+                  <el-tooltip content="分享" effect="light" :open-delay="1000">
+                    <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"></i>
+                  </el-tooltip>
+                  <el-tooltip content="下载" effect="light" :open-delay="1000" v-if="scope.row.folder === '否'">
+                    <i class="el-icon-download" style="margin-right: 10px; cursor: pointer" @click="download(scope.row.file)"></i>
+                  </el-tooltip>
+                  <el-tooltip content="删除" effect="light" :open-delay="1000">
+                    <i class="el-icon-delete" style="margin-right: 10px; cursor: pointer"></i>
+                  </el-tooltip>
+                  <el-tooltip content="重命名" effect="light" :open-delay="1000">
+                    <i class="el-icon-rename" style="margin-right: 10px; cursor: pointer" @click="rename(scope.row)"></i>
+                  </el-tooltip>
+                  <el-tooltip content="复制" effect="light" :open-delay="1000">
+                    <i class="el-icon-document-copy" style="cursor: pointer"></i>
+                  </el-tooltip>
+                </div>
+              </div>
+
             </template>
+
             <template v-else>
               <div style="display: flex; align-items: center;">
                 <el-input class="rename-input" v-if="!scope.row.type" v-model="editedName"
@@ -98,7 +121,7 @@
         <el-table-column prop="size" label="文件大小" :formatter="formatSize"
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
         </el-table-column>
-        <el-table-column prop="createTime" :formatter="formatTime" label="创建时间"></el-table-column>
+<!--        <el-table-column prop="createTime" :formatter="formatTime" label="创建时间"></el-table-column>-->
         <el-table-column prop="updateTime" :formatter="formatTime" label="修改时间"
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
           <!--                    <template slot-scope="scope">
@@ -445,9 +468,6 @@ export default {
         }
       })
     },
-    handleAdd() {
-
-    },
     // 右键菜单
     rightClick(row, column, event) {
       // 判断当前行是否已经被选中
@@ -506,7 +526,9 @@ export default {
     saveRename(row) {
       console.log(row.name, row.type)
       console.log(this.editedName)
-      const [name, type] = this.editedName.split('.');
+      const lastIndex = this.editedName.lastIndexOf('.');
+      const name = this.editedName.substring(0, lastIndex);
+      const type = this.editedName.substring(lastIndex + 1);
       row.name = name;
       row.type = type;
       // 发送后端接口请求保存重命名后的名称
@@ -514,6 +536,7 @@ export default {
       if (!row.folder) {
         newName = newName + "." + row.type;
       }
+      console.log(newName)
       this.$request.put('/files/rename', {id: row.id, name: newName}).then(res => {
         if (res.code === '200') {
           this.$message.success('重命名成功')
@@ -544,6 +567,14 @@ export default {
     },
     uploaderClose() {
       this.reload()
+    },
+    mouseEnter(row) {
+      console.log("enter")
+      this.$set(row, 'optShow', true)
+    },
+    mouseLeave(row) {
+      console.log("leave")
+      this.$set(row, 'optShow', false)
     },
   }
 }

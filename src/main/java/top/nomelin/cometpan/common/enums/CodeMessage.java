@@ -43,6 +43,7 @@ public enum CodeMessage {
 
     FILE_UPLOAD_ERROR("701", "文件上传失败"),
     CHUNK_NOT_FULL_ERROR("702", "分块上传不完整，无法合并"),
+    DOWNLOAD_FILE_ERROR("703", "文件下载失败"),
 
     SYSTEM_ERROR("800", "系统异常"),
     BEAN_ERROR("801", "Bean代理异常"),

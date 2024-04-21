@@ -56,7 +56,18 @@ public interface FileService {
 
     void moveNode(Integer id, Integer targetFolderId);
 
-
+    /**
+     * 更新所有子文件夹的路径。自动处理根节点（只有一个/，以/结尾）的特殊情况。
+     * 例如：将/demo/folder1移动到/下，则变成/folder1，/demo/folder1/file1.txt的路径变成/folder1/file1.txt，依此类推。
+     * 又如，/demo/folder1移动到/folder2下，则变成/folder2/folder1，
+     * /demo/folder1/file1.txt的路径变成/folder2/folder1/file1.txt，依此类推。
+     * 同时，如果要更改此文件夹的名字，请传入newName参数，会自动更改所有子节点路径。
+     * 否则，传入原名
+     *
+     * @param folderId 要更新的文件树的根目录ID, 【也可以是一个文件】
+     * @param path     要更新的路径，不包括根目录文件名，以/开头。
+     * @param newName  要更新的文件名，如果为原名，则不更新文件名。
+     */
     void updateSubFolderPath(Integer folderId, String path, String newName);
 
     PageInfo<FileMeta> selectPagesByFolderId(Integer folderId, Integer pageNum, Integer pageSize);
@@ -134,4 +145,5 @@ public interface FileService {
     PageInfo<FileMeta> selectPage(FileMeta fileMeta, Integer pageNum, Integer pageSize);
 
 
+    List<FileMeta> selectAllByParentFolderId(Integer parentFolderId);
 }

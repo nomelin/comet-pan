@@ -203,14 +203,14 @@ public class FileServiceImpl implements FileService {
         }
         if (fileMeta.getFolder()) {
             // 如果是文件夹,不需要考虑类型
-            fullName = checkSameNameAndUpdate(fullName, fileMeta.getFolderId(), true);
+            fullName = bean.checkSameNameAndUpdate(fullName, fileMeta.getFolderId(), true);
             fileMeta.setName(fullName);
             fileMeta.setPath(fileMeta.getPath().substring(0, fileMeta.getPath().lastIndexOf("/")) + "/" + fullName);
             fileMapper.updateById(fileMeta);
         } else {
             String newType = Util.getType(fullName);
             String newName = Util.removeType(fullName);
-            newName = checkSameNameAndUpdate(newName, fileMeta.getFolderId(), false);
+            newName = bean.checkSameNameAndUpdate(newName, fileMeta.getFolderId(), false);
             fileMeta.setName(newName);
             fileMeta.setPath(fileMeta.getPath().substring(0, fileMeta.getPath().lastIndexOf("/"))
                     + "/" + newName + "." + newType);
@@ -345,7 +345,11 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public String checkSameNameAndUpdate(String fileName, Integer parentFolderId, boolean isFolder) {
-        List<FileMeta> fileMetas = selectAllByParentFolderId(parentFolderId);
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
+        List<FileMeta> fileMetas = bean.selectAllByParentFolderId(parentFolderId);
         int num = 0;
         boolean hasSameName = false;
         // 找到同名文件或文件夹
@@ -425,7 +429,8 @@ public class FileServiceImpl implements FileService {
         return fileMapper.selectAll(fileMeta);
     }
 
-
+    @Transactional
+    @Override
     public List<FileMeta> selectAllByParentFolderId(Integer parentFolderId) {
         FileMeta fileMeta = new FileMeta();
         fileMeta.setFolderId(parentFolderId);
