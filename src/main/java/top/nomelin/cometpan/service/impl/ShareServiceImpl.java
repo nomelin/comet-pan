@@ -34,22 +34,18 @@ public class ShareServiceImpl implements ShareService {
 
     @Transactional
     @Override
-    public int createShare(String name, List<Integer> fileIds, String password, Integer days) {
+    public Share createShare(String name, List<Integer> fileIds, String password, Integer days) {
+        logger.info("创建分享:createShare name:{}, fileIds:{}, password:{}, days:{}", name, fileIds, password, days);
         if (ObjectUtil.isNull(fileIds) || ObjectUtil.isEmpty(fileIds)) {
             throw new BusinessException(CodeMessage.PARAM_ERROR);
         }
         if (ObjectUtil.isNull(name) || StrUtil.isEmpty(name)) {
             name = "未命名";
         }
-        if (ObjectUtil.isNull(password) || StrUtil.isEmpty(password)) {
-            password = "1234";
-        }
-        if (ObjectUtil.isNull(days) || days <= 0) {
-            days = 7;
-        }
         for (int fileId : fileIds) {
             FileMeta fileMeta = fileMapper.selectById(fileId);
-            if (Objects.equals(fileMeta.getUserId(), currentUserCache.getCurrentUser().getId())) {
+            if (!Objects.equals(fileMeta.getUserId(), currentUserCache.getCurrentUser().getId())) {
+//                logger.info(fileMeta.getUserId() + " " + currentUserCache.getCurrentUser().getId());
                 throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
             }
         }
@@ -57,15 +53,19 @@ public class ShareServiceImpl implements ShareService {
         share.setFileIds(Util.getArrayStr(fileIds));
         share.setCode(password);
         share.setName(name);
-        String time = String.valueOf(System.currentTimeMillis());
+        long currentTime = System.currentTimeMillis();
+        String time = String.valueOf(currentTime);
         share.setShareTime(time);
-        share.setEndTime(time + days * 24 * 60 * 60 * 1000);
+        share.setEndTime(String.valueOf(currentTime + days * 24 * 60 * 60 * 1000 + 60 * 1000));//多加一分钟
+        if (days == -1) {
+            share.setEndTime("-1");
+        }
         FileMeta fileMeta = fileMapper.selectById(fileIds.get(0));
         share.setUserId(fileMeta.getUserId());
-        int id = shareMapper.insert(share);
-        share.setPath(getSharePath(id));
+        shareMapper.insert(share);
+        share.setPath(getSharePath(share.getId()));
         shareMapper.updateById(share);
-        return id;
+        return share;
     }
 
     @Override
@@ -74,10 +74,12 @@ public class ShareServiceImpl implements ShareService {
         if (id == -1) {
             return null;
         }
+        //        long currentTime = System.currentTimeMillis();
+//        long endTime = Long.parseLong(share.getEndTime());
+//        share.setLeftDays(Util.calculateRemainingDays(currentTime, endTime));
         Share share = shareMapper.selectById(id);
-        long currentTime = System.currentTimeMillis();
-        long endTime = Long.parseLong(share.getEndTime());
-        share.setLeftDays(Util.calculateRemainingDays(currentTime, endTime));
+        share.setCount(share.getCount() + 1);//如果通过链接访问，则访问次数加1
+        shareMapper.updateById(share);
         return share;
     }
 
@@ -91,13 +93,12 @@ public class ShareServiceImpl implements ShareService {
         }
         Share share = new Share();
         share.setUserId(userId);
-        List<Share> shares = shareMapper.selectAll(share);
-        for (Share s : shares) {
-            long currentTime = System.currentTimeMillis();
-            long endTime = Long.parseLong(s.getEndTime());
-            s.setLeftDays(Util.calculateRemainingDays(currentTime, endTime));
-        }
-        return shares;
+        //        for (Share s : shares) {
+//            long currentTime = System.currentTimeMillis();
+//            long endTime = Long.parseLong(s.getEndTime());
+//            s.setLeftDays(Util.calculateRemainingDays(currentTime, endTime));
+//        }
+        return shareMapper.selectAll(share);
     }
 
     @Override
@@ -123,7 +124,8 @@ public class ShareServiceImpl implements ShareService {
 
 
     private String getSharePath(int id) {
-        return Util.getRandomStr() + "a" + id;
+        String str = Util.getRandomStr() + "a" + id;
+        return str.substring(str.length() - 50);//取最后50位作为路径
     }
 
     private int getIdBySharePath(String path) {

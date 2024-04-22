@@ -141,6 +141,8 @@ public class Util {
             return new ArrayList<>();
         }
         List<Integer> resultList = new ArrayList<>();
+        // 去除首尾的方括号
+        str = str.trim().replaceAll("^\\[|]$", "");
         // 按照逗号分割字符串，并去除空格
         String[] strArray = str.split(",");
         // 将每个分割得到的字符串转换为整数并添加到结果列表中
@@ -187,7 +189,7 @@ public class Util {
      * @return 随机字符串
      */
     public static String getRandomStr(String... strings) {
-        String str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ000111222333444555666777888999";
         UUID uuid = UUID.randomUUID();
         String randomPart = uuid.toString().replaceAll("-", "");
         // 将randomPart、str以及strings合并成一个新的数组

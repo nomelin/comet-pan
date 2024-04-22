@@ -43,7 +43,6 @@
     <insert id="insert" parameterType="Share" useGeneratedKeys="true" keyProperty="id">
         insert into share
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">id,</if>
             <if test="path != null">path,</if>
             <if test="fileIds != null">file_ids,</if>
             <if test="shareTime != null">share_time,</if>
@@ -55,7 +54,6 @@
 
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">#{id},</if>
             <if test="path != null">#{path},</if>
             <if test="fileIds != null">#{fileIds},</if>
             <if test="shareTime != null">#{shareTime},</if>
@@ -72,10 +70,10 @@
         update share
         <set>
             <if test="path != null">
-                name = #{path},
+                path=#{path},
             </if>
             <if test="fileIds != null">
-                file_id = #{fileIds},
+                file_ids = #{fileIds},
             </if>
             <if test="shareTime != null">
                 share_time = #{shareTime},

@@ -69,10 +69,16 @@
           <!--            <i class="el-icon-upload"></i>-->
           <!--            <span class="words" slot="title">上传文件</span>-->
           <!--          </el-menu-item>-->
+          <el-menu-item class="el-menu-item" index="/share">
+            <i class="el-icon-share"></i>
+            <span class="words" slot="title">我的分享</span>
+          </el-menu-item>
+
           <el-menu-item class="el-menu-item" index="/person">
             <i class="el-icon-user-solid"></i>
             <span class="words" slot="title">个人中心</span>
           </el-menu-item>
+
           <el-menu-item class="el-menu-item" index="/trash">
             <i class="el-icon-delete-solid"></i>
             <span class="words" slot="title">回收站</span>

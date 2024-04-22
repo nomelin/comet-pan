@@ -1,7 +1,8 @@
 package top.nomelin.cometpan.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import top.nomelin.cometpan.cache.CurrentUserCache;
 import top.nomelin.cometpan.common.Result;
 import top.nomelin.cometpan.pojo.Share;
 import top.nomelin.cometpan.service.ShareService;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/share")
 public class ShareController {
+    private final static Logger logger = LoggerFactory.getLogger(ShareController.class);
     private final ShareService shareService;
 
 
@@ -29,11 +31,12 @@ public class ShareController {
         return Result.success(shareService.selectByUserId(userId));
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     public Result addShare(@RequestBody Share share) {
-        int id = shareService.createShare(share.getName(), Util.getArrayInt(share.getFileIds()),
+        logger.info(share.toString());
+        Share share1 = shareService.createShare(share.getName(), Util.getArrayInt(share.getFileIds()),
                 share.getCode(), share.getLeftDays());
-        return Result.success(id);
+        return Result.success(share1);
     }
 
     @DeleteMapping("/{id}")

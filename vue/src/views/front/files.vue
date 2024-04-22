@@ -11,14 +11,22 @@
       </el-input>
 
 
-      <el-button class="normal-button" plain style="margin-left: 10px" @click="reset">重置</el-button>
+      <el-button class="normal-button"  plain style="margin-left: 10px" @click="reset">
+        <i class="el-icon-refresh"></i> 重置
+      </el-button>
       <!--      <img class="little-icon" src="@/assets/imgs/folder-add.svg" alt="">-->
-      <el-button class="primary-button" type="primary" plain style="margin-left: 10px" @click="addFolder">
+      <el-button class="primary-button" type="text" plain style="margin-left: 10px" @click="addFolder">
         <i class="el-icon-plus"></i> 新建文件夹
       </el-button>
-      <el-button class="normal-button" type="danger" plain @click="delBatch">删除</el-button>
+      <el-button class="normal-button" type="danger" plain @click="delBatch" style="width: 120px">
+        <i class="el-icon-delete-solid"></i> 批量删除
+      </el-button>
       <el-button class="primary-button" type="primary" plain style="margin-left: 10px" @click="uploadFile">
         <i class="el-icon-upload"></i> 上传 / 秒传
+      </el-button>
+      <el-button class="normal-button" type="info" plain style="margin-left: 10px"
+                 @click="shareFile">
+        <i class="el-icon-share"></i> 分享
       </el-button>
 
       <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">按钮仍在开发中</span>
@@ -153,7 +161,7 @@
            @click="download(CurrentRow)">下载
       </div>
       <div class="contextmenu__item"
-           @click="share(CurrentRow)">分享
+           @click="shareFile">分享
       </div>
       <div class="contextmenu__item"
            @click="rename(CurrentRow)">重命名
@@ -169,6 +177,41 @@
            @click="del(CurrentRow.id)">删除
       </div>
     </div>
+
+    <el-dialog title="分享" :visible.sync="shareDialogVisible" width="40%"
+               center>
+      <el-form ref="form" :model="shareForm" label-width="25%" :rules="rules">
+        <el-form-item label="分享名称">
+          <el-input v-model="shareForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="过期时间">
+          <el-select v-model="shareForm.leftDays">
+            <el-option label="一天" value="1"></el-option>
+            <el-option label="三天" value="3"></el-option>
+            <el-option label="七天" value="7"></el-option>
+            <!-- <el-option label="十四天" value="14"></el-option> -->
+            <el-option label="三十天" value="30"></el-option>
+            <el-option label="永久" value="-1"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="是否需要密码">
+          <el-radio-group v-model="shareForm.needCode">
+            <el-radio label="0">无密码</el-radio>
+            <el-radio label="1">有密码</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="shareForm.needCode === '1'" label="分享密码" prop="code">
+          <el-input v-model="shareForm.code" placeholder="请输入分享密码"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="normal-button" @click="shareDialogVisible = false">取消</el-button>
+          <el-button class="primary-button" type="primary" @click="onSubmit" :disabled="!isCodeValid">创建分享
+          </el-button>
+        </el-form-item>
+      </el-form>
+
+    </el-dialog>
+
     <template>
       <div class="dialog-files">
         <file-table-dialog :dialog-files-visible.sync="dialogFilesVisible" :src-id.sync="srcId"/>
@@ -176,6 +219,7 @@
         它可以简化父子组件之间的通信，特别是用于修改父组件中的 prop 数据。-->
       </div>
     </template>
+
     <template>
       <div class="uploader">
         <el-drawer
@@ -232,6 +276,22 @@ export default {
       uploaderVisible: false, // 上传文件对话框是否显示
       uploaderSrcId: -1, // 上传文件的目标文件夹id
 
+      shareDialogVisible: false, // 分享对话框是否显示
+
+      shareForm: {
+        name: '未命名',
+        needCode: "0",
+        code: '',
+        leftDays: '7',
+      },
+      rules: {
+        code: [
+          {required: true, message: '请输入分享密码', trigger: 'blur'},
+          {min: 4, max: 4, message: '密码长度必须为4个字符', trigger: 'blur'},
+          {pattern: /^[0-9a-zA-Z]+$/, message: '密码只能包含英文字母或数字', trigger: 'blur'}
+        ],
+      },
+
 
     }
   },
@@ -265,6 +325,17 @@ export default {
           return name;
         }
       };
+    },
+    isCodeValid() {
+      if (this.shareForm.needCode === '1') {
+        // 根据需要密码的状态检查密码是否符合规则
+        // 这里假设密码必须是4个字符的英文字母或数字
+        const code = this.shareForm.code;
+        return /^[a-zA-Z0-9]{4}$/.test(code);
+      } else {
+        // 不需要密码时，直接返回 true
+        return true;
+      }
     },
   },
   watch: {
@@ -335,7 +406,7 @@ export default {
     },
     delBatch() {   // 批量删除
       if (!this.ids.length) {
-        this.$message.warning('请选择数据')
+        this.$message.warning('请选择')
         return
       }
       this.$confirm('确定要删除选中的文件吗？', '确认删除', {
@@ -644,6 +715,37 @@ export default {
           window.URL.revokeObjectURL(url)
         }
       }
+    },
+    shareFile() {
+      if (!this.ids.length) {
+        this.$message.warning('请选择数据')
+        return
+      }
+      this.shareDialogVisible = true
+    },
+    onSubmit() {
+      if (!this.ids.length) {
+        this.$message.warning('请选择')
+        return
+      }
+      console.log(this.ids)
+      console.log(this.ids.join(','))
+      this.$request.post('/share', {
+        fileIds: this.ids.join(','),
+        name: this.shareForm.name,
+        code: this.shareForm.code,
+        leftDays: this.shareForm.leftDays,
+      }).then(res => {
+        if (res.code === '200') {   // 表示操作成功
+          this.$message.success('分享成功')
+          // this.$alert('链接' + res.data.path, '分享成功', {
+          //   confirmButtonText: '确定',
+          // });
+        } else {
+          this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
+        }
+        this.shareDialogVisible = false
+      })
     },
   }
 }

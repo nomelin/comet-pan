@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ShareService {
     @Transactional
-    int createShare(String name, List<Integer> fileIds, String password, Integer days);
+    Share createShare(String name, List<Integer> fileIds, String password, Integer days);
 
     Share selectByPath(String path);
 

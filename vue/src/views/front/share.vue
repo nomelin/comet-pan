@@ -2,91 +2,42 @@
   <div class="main-container">
     <div class="blank"></div>
     <div class="operation">
-      <el-button type="danger" class="normal-button" plain @click="delBatch">批量清空</el-button>
-      <el-button type="primary" class="primary-button" plain @click="restoreBatch">批量还原</el-button>
+      <el-button type="warning" class="normal-button" plain @click="delBatch">取消分享</el-button>
+      <!--      <el-button type="primary" class="primary-button" plain @click="restoreBatch">批量还原</el-button>-->
       <!--      <el-button type="danger" plain @click="delAll">清空全部</el-button>-->
     </div>
     <div class="blank"></div>
     <div class="path">
-      <span>回收站></span><span>共{{ this.total }}</span>
+      <span>我的分享></span><span>共{{ this.total }}</span>
     </div>
     <div class="table">
       <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
-      <el-table v-else :data="tableData" strip @selection-change="handleSelectionChange"
+      <el-table v-else :data="computedData" strip @selection-change="handleSelectionChange"
                 height="70vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
                 ref="table">
         <template slot="empty">
           <el-empty description=" ">
-            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里什么都没有</span></p>
+            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>还没有分享的文件,快去分享吧！</span></p>
           </el-empty>
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column prop="folder" label="" width="60">
-          <template v-slot="scope">
-            <span>
-              <i v-if="scope.row.folder">
-                <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
-              </i>
-              <span v-else>
-                <img class="folder-icon" src="@/assets/imgs/文件.svg" alt="文件">
-              </span>
-            </span>
-          </template>
+        <el-table-column label="" width="60">
+          <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
         </el-table-column>
-        <!--        <el-table-column prop="name" label="文件名称" sortable min-width="200" show-overflow-tooltip></el-table-column>-->
-        <!--        <el-table-column label="是否文件夹">-->
-        <!--          <template v-slot="scope">-->
-        <!--            <span >-->
-        <!--              <i v-if="scope.row.folder" class="el-icon-folder"></i>-->
-        <!--              <span v-else>文件</span>-->
-        <!--            </span>-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
-        <el-table-column prop="name" label="文件名称" min-width="150" show-overflow-tooltip
-                         sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']"
-        >
-          <template v-slot="scope">
-            <template>
-              <div class="name-container">
-                <!-- 如果type为空，则只显示name -->
-                <span v-if="!scope.row.type" v-html="highlightText(scope.row.name)"></span>
-                <!-- 如果type不为空，则显示完整名称 -->
-                <span v-else v-html="highlightText(scope.row.name + '.' + scope.row.type)"></span>
+        <el-table-column prop="name" label="分享名称" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="path" label="分享链接" show-overflow-tooltip min-width="200"></el-table-column>
+        <el-table-column prop="days" label="剩余时间" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="code" label="访问密码" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="count" label="访问次数" show-overflow-tooltip></el-table-column>
 
-              </div>
-
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column prop="type" label="文件类型"></el-table-column>
-        <el-table-column prop="size" label="文件大小" :formatter="formatSize"></el-table-column>
-        <el-table-column prop="path" label="文件路径" show-overflow-tooltip min-width="150"></el-table-column>
-        <el-table-column label="创建时间">
-          <template v-slot="scope">
-            <span v-if="scope.row.createTime != null">
-            	{{ scope.row.createTime | formatTime }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column label="修改时间">
-          <template
-              v-slot="scope">
-            <span v-if="scope.row.updateTime != null">
-            	{{ scope.row.updateTime | formatTime }}
-            </span>
-          </template>
-        </el-table-column>
       </el-table>
     </div>
     <div id="contextmenu"
          v-show="menuVisible"
          class="menu">
       <div class="contextmenu__item"
-           @click="restore(CurrentRow.id)">还原
-      </div>
-      <div class="contextmenu__item"
-           @click="del(CurrentRow.id)">彻底删除
+           @click="del(CurrentRow.id)">取消分享
       </div>
     </div>
   </div>
@@ -113,33 +64,37 @@ export default {
     this.load()
   },
   computed: {
-    highlightText() {
-      // console.log(this.isSearch, this.searchText)
-      return (name) => {
-        return name;
-      }
-    }
+    computedData() {
+      return this.tableData.map(item => {
+        // 计算天数
+        const shareTime = new Date(item.shareTime);
+        const endTime = item.endTime === "-1" ? null : new Date(item.endTime); // 如果是永久则设为null
+        const days = endTime ? Math.ceil((endTime - shareTime) / (1000 * 3600 * 24)) +'天后' : "永久";
+
+        // 设置访问密码
+        const code = item.code.trim() ? item.code.trim() : "无访问密码";
+
+        // 返回处理后的对象
+        return {
+          ...item,
+          days: days,
+          code: code
+        };
+      });
+    },
   },
-  // computed: {
-  //   // 计算属性，data变化以后自动更新
-  //   filteredData() {
-  //     let data = this.tableData
-  //     this.total = data.length
-  //     this.getPath(this.folderId)
-  //     return data;
-  //   },
-  // },
+
   methods: {
     del(id) {   // 单个删除
-      this.$confirm('确定要彻底删除选中的文件吗？\n此操作无法撤销!', '确认删除', {
-        confirmButtonText: '彻底删除',
+      this.$confirm('确定要取消分享吗?', '取消分享', {
+        confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
         center: true
       }).then(response => {
-        this.$request.delete('/files/completely/' + id).then(res => {
+        this.$request.delete('/share/' + id).then(res => {
           if (res.code === '200') {   // 表示操作成功
-            this.$message.success('已彻底删除！')
+            this.$message.success('已取消分享!')
             this.load()
           } else {
             this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
@@ -153,15 +108,15 @@ export default {
         this.$message.warning('请选择数据')
         return
       }
-      this.$confirm('确定要彻底删除选中的文件吗？\n此操作无法撤销!', '确认删除', {
-        confirmButtonText: '删除',
+      this.$confirm('确定要取消分享这些文件吗？', '取消分享', {
+        confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
         center: true
       }).then(response => {
-        this.$request.delete('/files/completely/batch', {data: this.ids}).then(res => {
+        this.$request.delete('/share', {data: this.ids}).then(res => {
           if (res.code === '200') {   // 表示操作成功
-            this.$message.success('已彻底删除！')
+            this.$message.success('已取消分享！')
             this.load()
           } else {
             this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
@@ -170,46 +125,12 @@ export default {
       }).catch(() => {
       });
     },
-    restore(id) {   // 单个还原
-      this.$request.put('/files/restore/' + id).then(res => {
-        if (res.code === '200') {   // 表示操作成功
-          this.$message.success('还原成功')
-          this.load()
-        } else {
-          this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
-        }
-      })
-    },
-    restoreBatch() {   // 批量还原
-      if (!this.ids.length) {
-        this.$message.warning('请选择数据')
-        return
-      }
-      //注意：这里后面的参数是data，不是config，delete和put的请求参数不同！！！
-      this.$request.put('/files/restore/batch', this.ids).then(res => {
-        if (res.code === '200') {   // 表示操作成功
-          this.$message.success('操作成功')
-          this.load()
-        } else {
-          this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
-        }
-      })
-    },
     handleSelectionChange(rows) {   // 当前选中的所有的行数据
       this.ids = rows.map(v => v.id)   //  [1,2]
     },
-    getPath(id) {
-      this.$request.get('/files/file/' + id).then(res => {
-        if (res.code === '200') {
-          this.path = res.data.path.replace(/\//g, '>'); // 使用正则表达式替换所有匹配到的 /
-        } else {
-          this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
-        }
-      })
-    },
     load() {
       this.loading = true;
-      this.$request.get("/files/trash").then(res => {
+      this.$request.get("/share/user/" + this.user.id).then(res => {
         this.loading = false;
         if (res.code !== '200') {
           this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
@@ -253,44 +174,12 @@ export default {
         menu.style.top = event.clientY - 10 + 'px'
       }
     },
-    formatSize(row, column) {
-      // row 是当前行的数据对象
-      // column 是当前列的属性配置对象
-      // 调用过滤器来格式化文件大小
-      return this.$options.filters.sizeFormat(row[column.property]);
-    },
-    customSortMethod(a, b) {
-      let table = this.$refs.table
-      // 获取排序状态对象
-      let sortState = table.store.states;
-      // 获取当前的排序字段
-      let currentSortProp = sortState.sortProp;
-      // 获取当前的排序顺序
-      let currentSortOrder = sortState.sortOrder;
-      // console.log(currentSortProp, currentSortOrder)
-      if (a.folder === b.folder) {
-        // 如果两个值相等，按照要排序的字段排序
-        if (currentSortProp === 'name') {
-          return a.name.localeCompare(b.name);
-        } else if (currentSortProp === 'updateTime') {
-          return a.updateTime - b.updateTime
-        } else if (currentSortProp === 'size') {
-          return a.size - b.size
-        }
-      } else if (a.folder) {
-        if (currentSortOrder === 'ascending') {
-          return -1;
-        } else if (currentSortOrder === 'descending') {
-          return 1;
-        }
-      } else if (b.folder) {
-        if (currentSortOrder === 'ascending') {
-          return 1;
-        } else if (currentSortOrder === 'descending') {
-          return -1;
-        }
-      }
-    },
+    // formatSize(row, column) {
+    //   // row 是当前行的数据对象
+    //   // column 是当前列的属性配置对象
+    //   // 调用过滤器来格式化文件大小
+    //   return this.$options.filters.sizeFormat(row[column.property]);
+    // },
   }
 }
 </script>

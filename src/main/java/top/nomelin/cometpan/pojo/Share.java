@@ -15,7 +15,7 @@ public class Share implements Serializable {
      */
     private String path;
     /**
-     * 文件ID
+     * 文件IDs
      */
     private String fileIds;
     /**
@@ -34,7 +34,6 @@ public class Share implements Serializable {
      * 分享人ID
      */
     private Integer userId;
-
     /**
      * 访问密码（4位）
      */
@@ -47,6 +46,22 @@ public class Share implements Serializable {
      * 剩余天数,数据库不保存，每次访问时计算。
      */
     private Integer leftDays;
+
+    @Override
+    public String toString() {
+        return "Share{" +
+                "id=" + id +
+                ", path='" + path + '\'' +
+                ", fileIds='" + fileIds + '\'' +
+                ", shareTime='" + shareTime + '\'' +
+                ", endTime='" + endTime + '\'' +
+                ", count=" + count +
+                ", userId=" + userId +
+                ", code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", leftDays=" + leftDays +
+                '}';
+    }
 
     public String getFileIds() {
         return fileIds;

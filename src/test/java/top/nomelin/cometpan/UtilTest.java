@@ -15,10 +15,7 @@ public class UtilTest {
 
     @Test
     public void test() {
-        long currentTime = System.currentTimeMillis();
-        long endTime = 1713867943000L;
-
-        long remainingDays = calculateRemainingDays(currentTime, endTime);
-        System.out.println("Remaining days: " + remainingDays);
+        System.out.println(Util.getArrayInt("1,2,3,2,43"));
+        System.out.println(Util.getArrayInt("[1,2,-3,2,43]"));
     }
 }
