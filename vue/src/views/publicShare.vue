@@ -22,7 +22,7 @@
                        fit="contain" size="large" alt=""></el-avatar>
             <div class="user-name">
               <span v-if="isLogin">{{ user.name }}</span>
-              <span v-else>您尚未登录</span>
+              <span v-else>点此登录</span>
             </div>
 
           </div>
@@ -34,9 +34,6 @@
             <span class="user-space"> {{
                 usedSpace| sizeFormat
               }} / {{ totalSpace | sizeFormat }}</span>
-          </div>
-          <div v-else class="user-name" style="text-align: center">
-            点此登录
           </div>
         </div>
         <el-menu v-if="isLogin" text-color="#565757" active-text-color="#0d53ff" router class="el-menu"
@@ -75,6 +72,17 @@
 
       <div class="main-right">
         <div class="main-container">
+
+          <div class="blank"></div>
+
+          <div class="operation">
+            <el-button class="normal-button"  plain style="margin-left: 10px" @click="">
+              <i class="el-icon-refresh"></i> 重置
+            </el-button>
+          </div>
+
+          <div class="blank"></div>
+
           <div class="table">
             <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
             <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
@@ -289,14 +297,13 @@ export default {
       })
     },
     getFiles() {
-      console.log("get1:" + this.fileIds)
-      console.log("get2:" + JSON.stringify(this.fileIds))
+      console.log("get:" + JSON.stringify(this.fileIds))
 
       this.$request.post('/files/share/batch', JSON.stringify(this.fileIds)).then(res => {
         if (res.code !== '200') {
           this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
         } else {
-          this.tableData = res.data.files
+          this.tableData = res.data
           this.total = res.data.length
         }
       })
