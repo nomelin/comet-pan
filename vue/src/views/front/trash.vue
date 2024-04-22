@@ -43,7 +43,7 @@
         <!--            </span>-->
         <!--          </template>-->
         <!--        </el-table-column>-->
-        <el-table-column prop="name" label="文件名称" min-width="200" show-overflow-tooltip
+        <el-table-column prop="name" label="文件名称" min-width="150" show-overflow-tooltip
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']"
         >
           <template v-slot="scope">
@@ -61,7 +61,7 @@
         </el-table-column>
         <el-table-column prop="type" label="文件类型"></el-table-column>
         <el-table-column prop="size" label="文件大小" :formatter="formatSize"></el-table-column>
-        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="path" label="文件路径" show-overflow-tooltip min-width="150"></el-table-column>
         <el-table-column label="创建时间">
           <template v-slot="scope">
             <span v-if="scope.row.createTime != null">
@@ -83,10 +83,10 @@
          v-show="menuVisible"
          class="menu">
       <div class="contextmenu__item"
-           @click="del(CurrentRow.id)">彻底删除
+           @click="restore(CurrentRow.id)">还原
       </div>
       <div class="contextmenu__item"
-           @click="restore(CurrentRow.id)">还原
+           @click="del(CurrentRow.id)">彻底删除
       </div>
     </div>
   </div>
@@ -258,6 +258,38 @@ export default {
       // column 是当前列的属性配置对象
       // 调用过滤器来格式化文件大小
       return this.$options.filters.sizeFormat(row[column.property]);
+    },
+    customSortMethod(a, b) {
+      let table = this.$refs.table
+      // 获取排序状态对象
+      let sortState = table.store.states;
+      // 获取当前的排序字段
+      let currentSortProp = sortState.sortProp;
+      // 获取当前的排序顺序
+      let currentSortOrder = sortState.sortOrder;
+      // console.log(currentSortProp, currentSortOrder)
+      if (a.folder === b.folder) {
+        // 如果两个值相等，按照要排序的字段排序
+        if (currentSortProp === 'name') {
+          return a.name.localeCompare(b.name);
+        } else if (currentSortProp === 'updateTime') {
+          return a.updateTime - b.updateTime
+        } else if (currentSortProp === 'size') {
+          return a.size - b.size
+        }
+      } else if (a.folder) {
+        if (currentSortOrder === 'ascending') {
+          return -1;
+        } else if (currentSortOrder === 'descending') {
+          return 1;
+        }
+      } else if (b.folder) {
+        if (currentSortOrder === 'ascending') {
+          return 1;
+        } else if (currentSortOrder === 'descending') {
+          return -1;
+        }
+      }
     },
   }
 }

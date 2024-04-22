@@ -17,14 +17,14 @@ public class Task {
         this.redisTemplate = redisTemplate;
     }
 
-    @Scheduled(initialDelay = 10000, fixedRate = 60000) // 延迟1秒后执行，然后每隔60秒执行一次
+    @Scheduled(initialDelay = 10000, fixedRate = 60000) // 延迟10秒后执行，然后每隔60秒执行一次
     public void pingRedis() {
         try {
             String pingResult = Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().ping();
             logger.info("redis连接成功: " + pingResult);
         } catch (Exception e) {
             logger.warn("redis连接失败: " + e.getMessage());
-            pingRedis();//如果ping失败，则立即重新ping
+//            pingRedis();//如果ping失败，则立即重新ping
         }
     }
 }

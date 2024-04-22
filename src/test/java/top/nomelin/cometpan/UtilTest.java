@@ -4,18 +4,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import top.nomelin.cometpan.util.Util;
 
+import java.util.List;
+import java.util.UUID;
+
+import static top.nomelin.cometpan.util.Util.calculateRemainingDays;
+
 @SpringBootTest
 public class UtilTest {
 
 
     @Test
     public void test() {
-        String str = "changelog_FR.txt";
-        String filename=Util.removeType(str);
-        String type=Util.getType(str);
-        System.out.println(filename);
-        System.out.println(type);
+        long currentTime = System.currentTimeMillis();
+        long endTime = 1713867943000L;
 
-        System.out.println(Util.getFullName(filename,type));
+        long remainingDays = calculateRemainingDays(currentTime, endTime);
+        System.out.println("Remaining days: " + remainingDays);
     }
 }
