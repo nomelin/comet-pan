@@ -29,7 +29,7 @@
         <i class="el-icon-share"></i> 分享
       </el-button>
 
-      <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">按钮仍在开发中</span>
+      <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">功能仍在开发中</span>
     </div>
     <div class="blank"></div>
     <div class="backAndForward">
@@ -79,7 +79,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="name" label="文件名称" min-width="200" show-overflow-tooltip
+        <el-table-column prop="name" label="文件名称" min-width="180" show-overflow-tooltip
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']"
         >
           <template v-slot="scope">

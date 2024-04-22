@@ -67,9 +67,11 @@ export default {
     computedData() {
       return this.tableData.map(item => {
         // 计算天数
-        const shareTime = new Date(item.shareTime);
-        const endTime = item.endTime === "-1" ? null : new Date(item.endTime); // 如果是永久则设为null
-        const days = endTime ? Math.ceil((endTime - shareTime) / (1000 * 3600 * 24)) +'天后' : "永久";
+        const shareTime = new Date(parseInt(item.shareTime));
+
+        const endTime = item.endTime === "-1" ? null : new Date(parseInt(item.endTime)); // 如果是永久则设为null
+        console.log(shareTime+' '+endTime)
+        const days = endTime ? Math.floor((endTime - shareTime) / (1000 * 3600 * 24)) +'天后' : "永久";
 
         // 设置访问密码
         const code = item.code.trim() ? item.code.trim() : "无访问密码";

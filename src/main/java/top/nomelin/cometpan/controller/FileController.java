@@ -12,6 +12,7 @@ import top.nomelin.cometpan.pojo.User;
 import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -173,6 +174,17 @@ public class FileController {
         List<FileMeta> fileMetas = fileService.selectAll(fileMeta);
         return Result.success(fileMetas);
     }
+
+    @PostMapping("/share/batch")
+    public Result selectShareBatch(@RequestBody List<Integer> ids) {
+        logger.info("获取共享文件: " + ids);
+        List<FileMeta> fileMetas = new ArrayList<>();
+        for (Integer id : ids) {
+            fileMetas.add(fileService.selectById(id));
+        }
+        return Result.success(fileMetas);
+    }
+
 
     /**
      * 查询回收站文件,只查询垃圾森林的根节点,不查询出垃圾文件夹嵌套的子节点。

@@ -85,7 +85,6 @@ export default {
         if (valid) {
           this.slideVerifyShow = true;
           // 验证通过
-
         }
       })
     },
@@ -95,6 +94,15 @@ export default {
           localStorage.setItem("user", JSON.stringify(res.data));
           this.$message.success('登录成功');
           setTimeout(() => {
+            //以下是为了实现跳转回登录前的页面,比如分享页面
+            // 获取 URL 参数中的当前页面路径
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect');
+            // 在用户登录成功后，跳转回之前的页面
+            if (redirect) {
+              window.location.href = decodeURIComponent(redirect);
+            }
+
             if (res.data.role === 1) {
               this.$router.push('/manager/home');
             } else if (res.data.role === 2) {
