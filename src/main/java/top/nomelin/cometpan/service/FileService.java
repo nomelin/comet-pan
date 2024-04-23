@@ -40,7 +40,8 @@ public interface FileService {
     int addFile(String fileName, Integer parentFolderId, int size, int disk_id);
 
     /**
-     * 循环向上更新大小，直到根目录
+     * 从这个节点的父文件夹开始，更新节点大小,直到根目录
+     * 更新的大小就是这个节点的大小
      *
      * @param id  节点ID
      * @param add true为增加，false为减少
@@ -49,7 +50,7 @@ public interface FileService {
     void updateSizeById(Integer id, boolean add);
 
     /**
-     * 更新“修改时间”
+     * 从这个节点开始（包括），更新节点updateTime时间，直到根目录
      */
     void updateTimeById(Integer id);
 
@@ -65,7 +66,7 @@ public interface FileService {
      * 否则，传入原名
      *
      * @param folderId 要更新的文件树的根目录ID, 【也可以是一个文件】
-     * @param path     要更新的路径，不包括根目录文件名，以/开头。
+     * @param path     要更新到的路径，不包括根目录文件名，以/开头。
      * @param newName  要更新的文件名，如果为原名，则不更新文件名。
      */
     void updateSubFolderPath(Integer folderId, String path, String newName);
@@ -146,4 +147,10 @@ public interface FileService {
 
 
     List<FileMeta> selectAllByParentFolderId(Integer parentFolderId);
+
+    @Transactional
+    void copyNode(Integer id, Integer targetFolderId);
+
+    @Transactional
+    int copyNodeMethod(Integer id, Integer parentFolderId);
 }

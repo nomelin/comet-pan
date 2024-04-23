@@ -96,6 +96,7 @@ public class ShareServiceImpl implements ShareService {
         return share;
     }
 
+
     @Override
     public Share selectByPath(String path) {
         int id = getIdBySharePath(path);

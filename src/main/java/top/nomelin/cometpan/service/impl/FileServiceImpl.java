@@ -303,12 +303,6 @@ public class FileServiceImpl implements FileService {
             int newSize = add ? fileMeta.getSize() + size : fileMeta.getSize() - size;
             FileMeta updatedFolder = new FileMeta(); // 创建一个新的对象来保存更新后的父目录信息
             updatedFolder.setId(fileMeta.getId());
-//            if (newSize < 0) {
-//                newSize = 0;
-//                logger.error("【事务异常】出现了负值空间大小，文件id:" + fileMeta.getId());
-//            }
-//            logger.info("子id：{}，更新父目录id:{} 大小:{}->{}，差值：{}",
-//                    id, fileMeta.getId(), fileMeta.getSize(), newSize, size);
             updatedFolder.setSize(newSize);
             fileMapper.updateById(updatedFolder); // 更新父目录
         }
@@ -428,21 +422,7 @@ public class FileServiceImpl implements FileService {
         if (!ObjectUtil.equals(targetFolder.getUserId(), fileMeta.getUserId())) {
             throw new BusinessException(CodeMessage.CANNOT_ACCESS_ERROR); // 如果目标文件夹不是自己的
         }
-        //如果目标文件夹是当前文件夹的子文件夹，则不能移动
-        int targetFolderIdCopy = targetFolderId;
-        while (true) {
-            FileMeta target = fileMapper.selectById(targetFolderIdCopy);
-            if (ObjectUtil.isNull(target) || target.getDelete()) {
-                throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
-            }
-            if (target.getFolderId() == 0) {
-                break; // 到达根目录
-            }
-            if (ObjectUtil.equals(target.getFolderId(), id)) {
-                throw new BusinessException(CodeMessage.SUB_FOLDER_ERROR); // 如果目标文件夹是当前文件夹的子文件夹
-            }
-            targetFolderIdCopy = target.getFolderId();
-        }
+        checkSubFolder(id, targetFolderId);
         bean.updateSizeById(id, false);// 更新当前节点的父目录大小
         bean.updateTimeById(id);// 更新旧目录时间
         fileMeta.setFolderId(targetFolderId);
@@ -454,18 +434,7 @@ public class FileServiceImpl implements FileService {
         bean.updateTimeById(id);// 更新新目录时间
     }
 
-    /**
-     * 更新所有子文件夹的路径。自动处理根节点（只有一个/，以/结尾）的特殊情况。
-     * 例如：将/demo/folder1移动到/下，则变成/folder1，/demo/folder1/file1.txt的路径变成/folder1/file1.txt，依此类推。
-     * 又如，/demo/folder1移动到/folder2下，则变成/folder2/folder1，
-     * /demo/folder1/file1.txt的路径变成/folder2/folder1/file1.txt，依此类推。
-     * 同时，如果要更改此文件夹的名字，请传入newName参数，会自动更改所有子节点路径。
-     * 否则，传入原名
-     *
-     * @param folderId 要更新的文件树的根目录ID, 【也可以是一个文件】
-     * @param path     要更新的路径，不包括根目录文件名，以/开头。
-     * @param newName  要更新的文件名，如果为原名，则不更新文件名。
-     */
+
     @Transactional
     @Override
     public void updateSubFolderPath(Integer folderId, String path, String newName) {
@@ -480,7 +449,7 @@ public class FileServiceImpl implements FileService {
         if (ObjectUtil.isNull(path) || !path.startsWith("/")) {
             throw new BusinessException(CodeMessage.PARAM_ERROR);
         }
-        String oldName = fileMeta.getName();
+//        String oldName = fileMeta.getName();
         if (path.equals("/")) {
             path = "";// 根目录特殊处理
         }
@@ -503,7 +472,7 @@ public class FileServiceImpl implements FileService {
             if (child.getFolder()) {
                 bean.updateSubFolderPath(child.getId(), path, child.getName());// 递归更新子文件夹路径
             } else {
-                if (StrUtil.isEmpty(child.getType())) {
+                if (ObjectUtil.isNull(child.getType()) || StrUtil.isEmpty(child.getType())) {
                     child.setPath(path + "/" + child.getName()); // 更新文件路径,叶子
                 } else {
                     child.setPath(path + "/" + child.getName() + "." + child.getType()); // 更新文件路径,叶子
@@ -694,6 +663,107 @@ public class FileServiceImpl implements FileService {
             return fileName + "(1)";// 仅有同名文件或文件夹加上(1)
         }
 
+    }
+
+    /**
+     * 复制节点（文件或文件夹）到目标文件夹
+     * 可以是不同用户之间复制,所以可以用于分享文件
+     *
+     * @param id             节点ID
+     * @param targetFolderId 目标文件夹ID
+     */
+    @Override
+    @Transactional
+    public void copyNode(Integer id, Integer targetFolderId) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
+        FileMeta fileMeta = selectById(id);
+        FileMeta targetFolder = fileMapper.selectById(targetFolderId);
+        if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0 || fileMeta.getDelete()
+                || ObjectUtil.isNull(targetFolder) || targetFolder.getFolderId() == 0 || targetFolder.getDelete()) {
+            throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+        }
+        if (!targetFolder.getFolder()) {
+            throw new BusinessException(CodeMessage.PARENT_IS_NOT_FOLDER_ERROR);
+        }
+        //如果目标文件夹是当前文件夹的子文件夹，则不能复制
+        checkSubFolder(id, targetFolderId);//只读,不需要事务
+
+        //递归复制以后,父目录大小和时间没有更新,子目录路径没有更新,文件重名没有更新
+        int newId = bean.copyNodeMethod(id, targetFolderId);
+        //更新父目录大小和时间
+        bean.updateSizeById(newId, true);
+        bean.updateTimeById(newId);
+        FileMeta newFileMeta = selectById(newId);
+        String newName = bean.checkSameNameAndUpdate(newFileMeta.getName(), targetFolderId, newFileMeta.getFolder());
+        bean.updateSubFolderPath(newId, targetFolder.getPath(), newName);// 更新所有子节点的路径,同时处理重名
+    }
+
+    /**
+     * 复制节点的递归方法,不要之间使用此方法
+     *
+     * @param id             节点ID
+     * @param parentFolderId 要复制到的父文件夹ID
+     * @return 复制的新节点ID
+     */
+    @Transactional
+    @Override
+    public int copyNodeMethod(Integer id, Integer parentFolderId) {
+        FileService bean = SpringBeanUtil.getBean(FileService.class);
+        if (ObjectUtil.isNull(bean)) {
+            throw new SystemException(CodeMessage.BEAN_ERROR);
+        }
+        // 复制文件或文件夹
+        FileMeta newFileMeta = new FileMeta();
+        FileMeta old = selectById(id);
+        FileMeta parent = fileMapper.selectById(parentFolderId);
+        Integer newUserId = parent.getUserId();
+        newFileMeta.setUserId(newUserId);
+        newFileMeta.setFolderId(parentFolderId);
+        newFileMeta.setRootFolderId(parent.getRootFolderId());
+        newFileMeta.setSize(old.getSize());
+        newFileMeta.setFolder(old.getFolder());
+        newFileMeta.setName(old.getName());
+        newFileMeta.setType(old.getType());
+
+        String time = String.valueOf(System.currentTimeMillis());
+        newFileMeta.setCreateTime(time);
+        newFileMeta.setUpdateTime(old.getUpdateTime());//更新时间还是旧文件的时间,因为复制的是旧文件
+        newFileMeta.setDiskId(old.getDiskId());
+        newFileMeta.setPath(old.getPath());//路径在全部复制后统一更新
+        fileMapper.insert(newFileMeta);// 插入新节点,并获取新节点ID
+        if (old.getFolder()) {
+            // 复制文件夹
+            List<FileMeta> children = selectByParentFolderId(id);
+            for (FileMeta child : children) {
+                bean.copyNodeMethod(child.getId(), newFileMeta.getId());
+            }
+        } else {
+            // 复制文件
+            diskService.incDiskCount(old.getDiskId());
+        }
+        return newFileMeta.getId();
+    }
+
+    /**
+     * 检查目标文件夹是否是子文件夹
+     */
+    private void checkSubFolder(Integer id, Integer targetFolderId) {
+        while (true) {
+            FileMeta target = fileMapper.selectById(targetFolderId);
+            if (ObjectUtil.isNull(target) || target.getDelete()) {
+                throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
+            }
+            if (target.getFolderId() == 0) {
+                break; // 到达根目录
+            }
+            if (ObjectUtil.equals(target.getFolderId(), id)) {
+                throw new BusinessException(CodeMessage.SUB_FOLDER_ERROR); // 如果目标文件夹是当前文件夹的子文件夹
+            }
+            targetFolderId = target.getFolderId();
+        }
     }
 
 }
