@@ -18,6 +18,9 @@ import top.nomelin.cometpan.util.Util;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ShareServiceImpl implements ShareService {
@@ -31,6 +34,31 @@ public class ShareServiceImpl implements ShareService {
         this.shareMapper = shareMapper;
         this.fileMapper = fileMapper;
     }
+
+    private static String getSharePath(int id) {
+        String str = Util.getRandomStr("CDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz00112233445566778899");
+        StringBuilder builder = new StringBuilder(str);
+        Random random = new Random();
+        int insertIndex = random.nextInt(Math.min(40, str.length())); // 获取随机插入位置，
+        // 最大为40或原始字符串长度，以防超出原始字符串长度
+        builder.insert(insertIndex, "A" + id + "B");
+        return builder.substring(0, 50);
+    }
+
+    private static int getIdBySharePath(String path) {
+        // 匹配A数字B形式的正则表达式
+        String regex = "A(\\d+)B";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(path);
+        // 查找匹配的数字并返回第一个匹配到的数字
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        } else {
+            // 如果未找到匹配的数字，可以根据实际需求返回一个默认值，或者抛出异常等
+            throw new BusinessException(CodeMessage.PARAM_ERROR);
+        }
+    }
+
 
     @Transactional
     @Override
@@ -101,6 +129,31 @@ public class ShareServiceImpl implements ShareService {
         return shareMapper.selectAll(share);
     }
 
+    /**
+     * 自动清理过期分享
+     *
+     * @param userId 用户id
+     */
+    @Override
+    public void autoClean(Integer userId) {
+        //不必使用事务,因为删除的行之间没关系,不需要还原.
+        Share share = new Share();
+        share.setUserId(userId);
+        List<Share> shares = shareMapper.selectAll(share);
+        long currentTime = System.currentTimeMillis();
+        for (Share s : shares) {
+            long endTime = Long.parseLong(s.getEndTime());
+            if (s.getEndTime().equals("-1")) {
+                continue;//永久有效的分享不清理
+            }
+            if (currentTime > endTime) {
+                logger.info("自动清理过期分享:autoClean userId:{}, shareId:{}", userId, s.getId());
+                shareMapper.deleteById(s.getId());
+            }
+        }
+
+    }
+
     @Override
     public void deleteById(Integer id) {
         shareMapper.deleteById(id);
@@ -120,24 +173,5 @@ public class ShareServiceImpl implements ShareService {
             return;
         }
         shareMapper.deleteById(id);
-    }
-
-
-    private String getSharePath(int id) {
-        String str = Util.getRandomStr() + "a" + id;
-        return str.substring(str.length() - 50);//取最后50位作为路径
-    }
-
-    private int getIdBySharePath(String path) {
-        int index = path.lastIndexOf("a");
-        if (index == -1) {
-            return -1;
-        }
-        String idStr = path.substring(index + 1);
-        try {
-            return Integer.parseInt(idStr);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
     }
 }

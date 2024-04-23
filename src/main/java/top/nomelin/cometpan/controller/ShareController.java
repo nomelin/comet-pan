@@ -51,4 +51,10 @@ public class ShareController {
         return Result.success();
     }
 
+    @DeleteMapping("/clean/{userId}")
+    public Result autoClean(@PathVariable Integer userId) {
+        shareService.autoClean(userId);
+        return Result.success();
+    }
+
 }

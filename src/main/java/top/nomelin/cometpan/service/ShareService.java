@@ -13,6 +13,8 @@ public interface ShareService {
 
     List<Share> selectByUserId(Integer userId);
 
+    void autoClean(Integer userId);
+
     void deleteById(Integer id);
 
     void deleteBatch(List<Integer> ids);

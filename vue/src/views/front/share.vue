@@ -60,6 +60,11 @@ export default {
     }
   },
   created() {
+    this.$request.delete("/share/clean/" + this.user.id).then(res => {
+      if (res.code !== '200') {
+        this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
+      }
+    })
     // this.folderId = this.user.rootId
     this.load()
   },
@@ -70,8 +75,8 @@ export default {
         const shareTime = new Date(parseInt(item.shareTime));
 
         const endTime = item.endTime === "-1" ? null : new Date(parseInt(item.endTime)); // 如果是永久则设为null
-        console.log(shareTime+' '+endTime)
-        const days = endTime ? Math.floor((endTime - shareTime) / (1000 * 3600 * 24)) +'天后' : "永久";
+        console.log(shareTime + ' ' + endTime)
+        const days = endTime ? Math.floor((endTime - shareTime) / (1000 * 3600 * 24)) + '天后' : "永久";
 
         // 设置访问密码
         const code = item.code.trim() ? item.code.trim() : "无访问密码";

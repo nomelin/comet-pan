@@ -33,13 +33,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/login")
                 .excludePathPatterns("/register")
                 .excludePathPatterns("/avatar/**")
+                .excludePathPatterns("/users/{id}")
                 .excludePathPatterns("/valid/*")
                 .excludePathPatterns("/share/*")
                 .excludePathPatterns("/files/share/batch");
 //                .excludePathPatterns("/upload/**");
-        registry.addInterceptor(adminInterceptor).addPathPatterns("/users/**");// 管理后台
+        registry.addInterceptor(adminInterceptor).addPathPatterns("/users/**")
+                .excludePathPatterns("/users/{id}")
+        ;// 管理后台
 
-        registry.addInterceptor(userInterceptor).addPathPatterns("/files/**")
-                .excludePathPatterns("/files/share/batch");// 用户文件空间
+        registry.addInterceptor(userInterceptor).addPathPatterns("/files/**")// 用户文件空间
+                .excludePathPatterns("/files/share/batch");
     }
 }

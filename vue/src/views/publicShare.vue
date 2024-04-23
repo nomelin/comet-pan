@@ -75,11 +75,21 @@
 
           <div class="blank"></div>
 
-          <div class="operation">
-            <el-button class="normal-button"  plain style="margin-left: 10px" @click="">
+          <div class="operation" style="display: flex; justify-content: space-between; align-items: center;">
+            <el-button class="normal-button" plain @click="">
               <i class="el-icon-refresh"></i> 重置
             </el-button>
+
+            <div style="display: flex; align-items: center; background-color: #f5f6f8;
+            padding: 10px 20px;border-radius: 20px;">
+              <el-avatar class="avatar" :src="$baseUrl+'/avatar/'+shareUser.id"
+                         shape="circle" fit="contain" size="large" alt=""></el-avatar>
+              <div class="user-name" style="margin-left: 10px;">
+                <span>来自 [{{ shareUser.name }}] 的分享</span>
+              </div>
+            </div>
           </div>
+
 
           <div class="blank"></div>
 
@@ -90,6 +100,18 @@
                       height="66vh" class="table-style" empty-text=""
                       ref="table" :default-sort="{prop: 'name', order: 'ascending'}"
             >
+              <template v-if="!checked" slot="empty">
+                <el-empty description=" ">
+                  <p class="emptyText"><span
+                      style='font-size: 18px;font-weight: bold'>这些分享文件已经被加密了,请输入访问码进行查看</span></p>
+                </el-empty>
+                <el-button type="primary" @click="dialogVisible = true" class="primary-button">输入访问码</el-button>
+              </template>
+              <template v-else slot="empty">
+                <el-empty description=" ">
+                  <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>没有找到相关文件</span></p>
+                </el-empty>
+              </template>
 
               <el-table-column type="selection" min-width="30" align="center"></el-table-column>
               <el-table-column prop="folder" label="" width="60">
@@ -109,14 +131,17 @@
               >
 
               </el-table-column>
+
+
             </el-table>
 
             <el-dialog :visible.sync="dialogVisible" :close-on-click-modal="false" :close-on-press-escape="false"
-                       title="请输入访问密码">
-              <el-input v-model="password" type="password" placeholder="四位访问码"></el-input>
+                       :show-close="false" width="30%" center title="请输入访问密码">
+              <el-input v-model="password" type="password" placeholder="四位访问码" maxlength="4"
+                        minlength="4" @keyup.enter.native="checkCode"></el-input>
               <span slot="footer" class="dialog-footer">
-        <el-button @click="checkCode">提交</el-button>
-      </span>
+                <el-button class="normal-button" type="primary" @click="checkCode">提交</el-button>
+              </span>
             </el-dialog>
           </div>
         </div>
@@ -145,6 +170,10 @@ export default {
       password: '',
       loading: false,
       code: '',
+
+      checked: false,//是否验证过密码
+
+      shareUser: null, //分享者信息
 
     }
   },
@@ -261,6 +290,7 @@ export default {
     },
     checkCode() {
       if (this.password === this.code) {
+        this.checked = true;
         this.dialogVisible = false;
         this.getFiles()
       } else {
@@ -271,12 +301,12 @@ export default {
       this.loading = true;
       // 获取当前 URL 的路径部分
       const pathname = window.location.pathname;
-// 使用字符串的 split 方法分割路径，并取最后一部分
+      // 使用字符串的 split 方法分割路径，并取最后一部分
       const parts = pathname.split('/');
       const lastPart = parts[parts.length - 1];
-// 如果想要去掉可能存在的查询参数部分，可以继续使用 split 方法再次分割
+      // 如果想要去掉可能存在的查询参数部分，可以继续使用 split 方法再次分割
       const finalPart = lastPart.split('?')[0];
-// 最后的字符串即为所需的部分
+      // 最后的字符串即为所需的部分
       console.log(finalPart);
       this.$request.get('/share/' + finalPart,
       ).then(res => {
@@ -285,10 +315,13 @@ export default {
           this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
         } else {
           this.code = res.data.code
+          this.shareName = res.data.name
+          this.getShareUser(res.data.userId)
           this.fileIds = res.data.fileIds.split(",").map(function (item) {
             return parseInt(item);
           });
           if (this.code === "") {
+            this.checked = true;
             this.getFiles()
           } else {
             this.dialogVisible = true;
@@ -306,6 +339,17 @@ export default {
           this.tableData = res.data
           this.total = res.data.length
         }
+      })
+    },
+    getShareUser(userId) {
+      this.$request.get('/users/' + userId).then(res => {
+        if (res.code === '200') {
+          this.shareUser = res.data
+        } else {
+          this.$message.error(res.code + ":" + res.msg)  // 弹出错误的信息
+        }
+      }).catch(err => {
+        console.log(err)
       })
     },
 
@@ -511,6 +555,7 @@ export default {
 
 .operation {
   /*position: absolute;*/
+  width: 80%;
   margin-left: 3%;
 }
 

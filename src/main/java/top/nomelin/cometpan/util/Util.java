@@ -189,14 +189,12 @@ public class Util {
      * @return 随机字符串
      */
     public static String getRandomStr(String... strings) {
-        String str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ000111222333444555666777888999";
         UUID uuid = UUID.randomUUID();
         String randomPart = uuid.toString().replaceAll("-", "");
         // 将randomPart、str以及strings合并成一个新的数组
-        String[] combinedStrings = new String[strings.length + 2];
+        String[] combinedStrings = new String[strings.length + 1];
         combinedStrings[0] = randomPart;
-        combinedStrings[1] = str;
-        System.arraycopy(strings, 0, combinedStrings, 2, strings.length);
+        System.arraycopy(strings, 0, combinedStrings, 1, strings.length);
         // 将合并后的数组作为参数传递给randomMixStrings方法
         return randomMixStrings(combinedStrings);
     }
