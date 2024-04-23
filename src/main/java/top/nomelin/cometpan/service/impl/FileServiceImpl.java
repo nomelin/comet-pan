@@ -691,13 +691,19 @@ public class FileServiceImpl implements FileService {
         //如果目标文件夹是当前文件夹的子文件夹，则不能复制
         checkSubFolder(id, targetFolderId);//只读,不需要事务
 
+        //复制前先检查重名并且记录
+        String newName = bean.checkSameNameAndUpdate(fileMeta.getName(), targetFolderId, fileMeta.getFolder());
+
         //递归复制以后,父目录大小和时间没有更新,子目录路径没有更新,文件重名没有更新
         int newId = bean.copyNodeMethod(id, targetFolderId);
         //更新父目录大小和时间
         bean.updateSizeById(newId, true);
         bean.updateTimeById(newId);
+
         FileMeta newFileMeta = selectById(newId);
-        String newName = bean.checkSameNameAndUpdate(newFileMeta.getName(), targetFolderId, newFileMeta.getFolder());
+        newFileMeta.setName(newName);
+        fileMapper.updateById(newFileMeta);// 更新原文件名
+
         bean.updateSubFolderPath(newId, targetFolder.getPath(), newName);// 更新所有子节点的路径,同时处理重名
     }
 
@@ -748,9 +754,12 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 检查目标文件夹是否是子文件夹
+     * 检查目标文件夹是否是子文件夹或是相同文件夹
      */
     private void checkSubFolder(Integer id, Integer targetFolderId) {
+        if (id.equals(targetFolderId)) {
+            throw new BusinessException(CodeMessage.SAME_FOLDER_ERROR);
+        }
         while (true) {
             FileMeta target = fileMapper.selectById(targetFolderId);
             if (ObjectUtil.isNull(target) || target.getDelete()) {

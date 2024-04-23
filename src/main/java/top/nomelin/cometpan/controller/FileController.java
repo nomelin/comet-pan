@@ -185,6 +185,12 @@ public class FileController {
         return Result.success(fileMetas);
     }
 
+    @PostMapping("/copy/{id}/{targetFolderId}")
+    public Result copyNode(@PathVariable Integer id, @PathVariable Integer targetFolderId){
+        fileService.copyNode(id, targetFolderId);
+        return Result.success();
+    }
+
 
     /**
      * 查询回收站文件,只查询垃圾森林的根节点,不查询出垃圾文件夹嵌套的子节点。

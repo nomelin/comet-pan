@@ -2,7 +2,7 @@
   <div>
     <!-- 高斯模糊背景 -->
     <div class="blur-background" v-if="dialogFilesVisible"></div>
-    <el-dialog center class="dialog-files" title="移动到" :visible.sync="dialogFilesVisible"
+    <el-dialog center class="dialog-files" :title="str" :visible.sync="dialogFilesVisible"
                :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false">
       <el-button type="primary" plain @click="backNavigationTemp" icon="el-icon-back"
                  :disabled="cacheIndexTemp<=0"></el-button>
@@ -23,7 +23,8 @@
       </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button @click="handleCancel">取 消</el-button>
-        <el-button type="primary" @click="handleMove">移动到此文件夹</el-button>
+        <el-button v-if="type==='move'" type="primary" @click="handleMove">{{ str }}此文件夹</el-button>
+        <el-button v-else-if="type==='copy'" type="primary" @click="handleCopy">{{ str }}此文件夹</el-button>
       </div>
     </el-dialog>
   </div>
@@ -53,7 +54,14 @@ export default {
     srcId: {
       type: Number,
       required: true
-    }
+    },
+    srcIds: {
+      type: Array,
+    },
+    type: {
+      type: String,//copy or move
+      required: true
+    },
   },
   computed: {
     filteredData() {
@@ -63,6 +71,13 @@ export default {
       this.getPath(this.folderIdTemp)
       return data;
     },
+    str() {
+      if (this.type === 'copy') {
+        return '复制到'
+      } else {
+        return '移动到'
+      }
+    }
   },
   mounted() {
 
@@ -107,10 +122,22 @@ export default {
     handleMove() {
       this.$emit('update:dialog-files-visible', false);
       // this.$request.post("/files/move/"+)
-      console.log(this.srcId + "->" + this.folderIdTemp)
+      console.log("移动:" + this.srcId + "->" + this.folderIdTemp)
       this.$request.post("/files/move/" + this.srcId + "/" + this.folderIdTemp).then(res => {
         if (res.code === '200') {
           this.$message.success("移动成功")
+        } else {
+          this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
+        }
+      })
+    },
+    handleCopy() {
+      this.$emit('update:dialog-files-visible', false);
+      // this.$request.post("/files/move/"+)
+      console.log("复制:" + this.srcId + "->" + this.folderIdTemp)
+      this.$request.post("/files/copy/" + this.srcId + "/" + this.folderIdTemp).then(res => {
+        if (res.code === '200') {
+          this.$message.success("复制成功")
         } else {
           this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
         }
@@ -158,6 +185,7 @@ export default {
         }
       })
     },
+
   }
 };
 </script>
@@ -185,11 +213,11 @@ export default {
 
 }
 
-.folder-icon{
+.folder-icon {
   width: 100%;
 }
 
-.table-files{
+.table-files {
   font-weight: bold;
   font-size: 13px;
 }

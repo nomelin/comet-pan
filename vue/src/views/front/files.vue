@@ -11,7 +11,7 @@
       </el-input>
 
 
-      <el-button class="normal-button"  plain style="margin-left: 10px" @click="reset">
+      <el-button class="normal-button" plain style="margin-left: 10px" @click="reset">
         <i class="el-icon-refresh"></i> 重置
       </el-button>
       <!--      <img class="little-icon" src="@/assets/imgs/folder-add.svg" alt="">-->
@@ -167,6 +167,9 @@
            @click="rename(CurrentRow)">重命名
       </div>
       <div class="contextmenu__item"
+           @click="copy(CurrentRow.id)">复制
+      </div>
+      <div class="contextmenu__item"
            @click="move(CurrentRow.id)">移动到
       </div>
       <div class="divider">
@@ -214,7 +217,7 @@
 
     <template>
       <div class="dialog-files">
-        <file-table-dialog :dialog-files-visible.sync="dialogFilesVisible" :src-id.sync="srcId"/>
+        <file-table-dialog :dialog-files-visible.sync="dialogFilesVisible" :src-id.sync="srcId" :type.sync="type"/>
         <!-- .sync 是 Vue.js 中的一种特殊语法，用于实现子组件和父组件之间双向绑定数据的功能。
         它可以简化父子组件之间的通信，特别是用于修改父组件中的 prop 数据。-->
       </div>
@@ -291,6 +294,8 @@ export default {
           {pattern: /^[0-9a-zA-Z]+$/, message: '密码只能包含英文字母或数字', trigger: 'blur'}
         ],
       },
+
+      type: "move", // 移动类型，move 移动，copy 复制
 
 
     }
@@ -660,6 +665,12 @@ export default {
     },
     move(id) {
       this.srcId = id
+      this.type = 'move'
+      this.dialogFilesVisible = true
+    },
+    copy(id) {
+      this.srcId = id
+      this.type = 'copy'
       this.dialogFilesVisible = true
     },
     uploadFile() {

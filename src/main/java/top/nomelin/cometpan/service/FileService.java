@@ -64,6 +64,8 @@ public interface FileService {
      * /demo/folder1/file1.txt的路径变成/folder2/folder1/file1.txt，依此类推。
      * 同时，如果要更改此文件夹的名字，请传入newName参数，会自动更改所有子节点路径。
      * 否则，传入原名
+     * <p>
+     * 注意,不会更新根节点的文件名,但是会更新路径
      *
      * @param folderId 要更新的文件树的根目录ID, 【也可以是一个文件】
      * @param path     要更新到的路径，不包括根目录文件名，以/开头。
