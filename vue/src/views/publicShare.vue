@@ -18,7 +18,9 @@
       <div class="main-left">
         <div class="main-left-upper" @click="login">
           <div class="user-info">
-            <el-avatar class="avatar" :src="$baseUrl+'/avatar/'+user.id" shape="circle"
+            <el-avatar v-if="isLogin" class="avatar" :src="$baseUrl+'/avatar/'+user.id" shape="circle"
+                       fit="contain" size="large" alt=""></el-avatar>
+            <el-avatar v-else class="avatar" :src="$baseUrl+'/avatar/'+0" shape="circle"
                        fit="contain" size="large" alt=""></el-avatar>
             <div class="user-name">
               <span v-if="isLogin">{{ user.name }}</span>
@@ -76,8 +78,8 @@
           <div class="blank"></div>
 
           <div class="operation" style="display: flex; justify-content: space-between; align-items: center;">
-            <el-button class="normal-button" plain @click="">
-              <i class="el-icon-refresh"></i> 重置
+            <el-button class="primary-button" plain @click="mergeShare">
+              保存到我的文件
             </el-button>
 
             <div style="display: flex; align-items: center; background-color: #f5f6f8;
@@ -116,7 +118,7 @@
               <el-table-column type="selection" min-width="30" align="center"></el-table-column>
               <el-table-column prop="folder" label="" width="60">
                 <template v-slot="scope">
-            <span style="cursor: pointer;">
+            <span>
               <i v-if="scope.row.folder">
                 <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
               </i>
@@ -143,6 +145,15 @@
                 <el-button class="normal-button" type="primary" @click="checkCode">提交</el-button>
               </span>
             </el-dialog>
+
+            <template>
+              <div class="dialog-files">
+                <file-table-dialog :dialog-files-visible.sync="dialogFilesVisible" :src-ids.sync="ids"
+                                   :type.sync="type"/>
+              </div>
+            </template>
+
+
           </div>
         </div>
       </div>
@@ -152,9 +163,11 @@
 </template>
 
 <script>
+import FileTableDialog from "@/views/front/fileTableDialog";
 
 export default {
-  name: "FrontLayout",
+  name: "publicShare",
+  components: {FileTableDialog},
 
   data() {
     return {
@@ -175,6 +188,10 @@ export default {
 
       shareUser: null, //分享者信息
 
+      dialogFilesVisible: false,
+
+      type: 'mergeShare',
+
     }
   },
   created() {
@@ -183,6 +200,7 @@ export default {
 
   mounted() {
     if (this.isLogin) {
+      console.log("login" + this.isLogin)
       this.getUsedSpace()
     }
   },
@@ -193,7 +211,7 @@ export default {
   },
   computed: {
     isLogin() {
-      return this.user.id && this.user.id !== 'null' && this.user.id !== 'undefined';
+      return typeof this.user === 'object' && Object.keys(this.user).length > 0;
     },
     // 计算已用空间占比
     percentage() {
@@ -352,6 +370,14 @@ export default {
         console.log(err)
       })
     },
+    mergeShare() {
+      console.log("merge:" + JSON.stringify(this.ids))
+      if (this.isLogin === false) {
+        this.$message.info("请先登录")
+        return
+      }
+      this.dialogFilesVisible = true;
+    }
 
   }
 

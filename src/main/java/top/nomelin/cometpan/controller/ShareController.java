@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import top.nomelin.cometpan.common.Result;
 import top.nomelin.cometpan.pojo.Share;
+import top.nomelin.cometpan.service.FileService;
 import top.nomelin.cometpan.service.ShareService;
 import top.nomelin.cometpan.util.Util;
 
@@ -15,10 +16,12 @@ import java.util.List;
 public class ShareController {
     private final static Logger logger = LoggerFactory.getLogger(ShareController.class);
     private final ShareService shareService;
+    private final FileService fileService;
 
 
-    public ShareController(ShareService shareService) {
+    public ShareController(ShareService shareService, FileService fileService) {
         this.shareService = shareService;
+        this.fileService = fileService;
     }
 
     @GetMapping("/{path}")
@@ -37,6 +40,16 @@ public class ShareController {
         Share share1 = shareService.createShare(share.getName(), Util.getArrayInt(share.getFileIds()),
                 share.getCode(), share.getLeftDays());
         return Result.success(share1);
+    }
+
+    @PostMapping("/merge/{targetId}")
+
+    public Result mergeShare(@RequestBody List<Integer> ids, @PathVariable Integer targetId) {
+        logger.info("收到合并分享请求: ids:{}, targetId:{}", ids, targetId);
+        for (int id : ids) {
+            fileService.copyNode(id, targetId);
+        }
+        return Result.success();
     }
 
     @DeleteMapping("/{id}")

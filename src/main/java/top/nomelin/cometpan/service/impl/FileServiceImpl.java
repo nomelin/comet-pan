@@ -599,6 +599,7 @@ public class FileServiceImpl implements FileService {
         fileMeta.setDelete(true);
         List<FileMeta> list = fileMapper.selectAll(fileMeta);
         Iterator<FileMeta> iterator = list.iterator();
+        logger.info(list.toString());
         while (iterator.hasNext()) {
             FileMeta file = iterator.next();
             FileMeta parent = fileMapper.selectById(file.getFolderId());
@@ -606,6 +607,7 @@ public class FileServiceImpl implements FileService {
                 iterator.remove(); // 使用迭代器的 remove 方法来安全地删除元素
             }
         }
+        logger.info(list.toString());
         return list;
     }
 
@@ -682,7 +684,7 @@ public class FileServiceImpl implements FileService {
         FileMeta fileMeta = selectById(id);
         FileMeta targetFolder = fileMapper.selectById(targetFolderId);
         if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0 || fileMeta.getDelete()
-                || ObjectUtil.isNull(targetFolder) || targetFolder.getFolderId() == 0 || targetFolder.getDelete()) {
+                || ObjectUtil.isNull(targetFolder) || targetFolder.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
         if (!targetFolder.getFolder()) {
@@ -728,7 +730,11 @@ public class FileServiceImpl implements FileService {
         Integer newUserId = parent.getUserId();
         newFileMeta.setUserId(newUserId);
         newFileMeta.setFolderId(parentFolderId);
-        newFileMeta.setRootFolderId(parent.getRootFolderId());
+        if(parent.getFolderId() == 0){
+            newFileMeta.setRootFolderId(parent.getId());//根目录的根目录就是自己
+        }else {
+            newFileMeta.setRootFolderId(parent.getRootFolderId());
+        }
         newFileMeta.setSize(old.getSize());
         newFileMeta.setFolder(old.getFolder());
         newFileMeta.setName(old.getName());

@@ -25,6 +25,10 @@
         <el-button @click="handleCancel">取 消</el-button>
         <el-button v-if="type==='move'" type="primary" @click="handleMove">{{ str }}此文件夹</el-button>
         <el-button v-else-if="type==='copy'" type="primary" @click="handleCopy">{{ str }}此文件夹</el-button>
+        <el-button v-else-if="type==='mergeShare'" type="primary" @click="handleMergeShare">{{
+            str
+          }}此文件夹
+        </el-button>
       </div>
     </el-dialog>
   </div>
@@ -53,7 +57,7 @@ export default {
     },
     srcId: {
       type: Number,
-      required: true
+      // required: true
     },
     srcIds: {
       type: Array,
@@ -68,14 +72,20 @@ export default {
       // console.log(this.folderIdTemp)
       let data = this.tableDataTemp.filter(item => item.folder)
       this.totalTemp = data.length
-      this.getPath(this.folderIdTemp)
+      if(typeof this.user === 'object' && Object.keys(this.user).length > 0){
+        //如果用户没有登录,则不计算路径
+        console.log("get user")
+        this.getPath(this.folderIdTemp)
+      }
       return data;
     },
     str() {
       if (this.type === 'copy') {
         return '复制到'
-      } else {
+      } else if (this.type === 'move') {
         return '移动到'
+      } else if (this.type === 'mergeShare') {
+        return '保存到'
       }
     }
   },
@@ -141,6 +151,19 @@ export default {
         } else {
           this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
         }
+      })
+    },
+    handleMergeShare() {
+      console.log("合并分享:" + this.srcIds + "->" + this.folderIdTemp)
+      this.$emit('update:dialog-files-visible', false);
+      this.$request.post("/share/merge/" + this.folderIdTemp, this.srcIds).then(res => {
+        if (res.code === '200') {
+          this.$message.success("保存成功")
+        } else {
+          this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
+        }
+      }).catch(err => {
+        console.log(err)
       })
     },
     handleCancel() {
