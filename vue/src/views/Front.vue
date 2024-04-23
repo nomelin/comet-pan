@@ -79,9 +79,14 @@
             <span class="words" slot="title">个人中心</span>
           </el-menu-item>
 
+          <el-menu-item class="el-menu-item" index="/group">
+            <i class="el-icon-user-solid"></i>
+            <span class="words" slot="title">我的群组</span>
+          </el-menu-item>
+
           <el-menu-item class="el-menu-item" index="/trash">
             <i class="el-icon-delete-solid"></i>
-            <span class="words" slot="title">回收站</span>
+            <span class="words" slot="title">回收中心</span>
           </el-menu-item>
           <el-menu-item class="el-menu-item" @click="logout">
             <i class="el-icon-switch-button"></i>

@@ -123,7 +123,17 @@
                 <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
               </i>
               <span v-else>
-                <img class="folder-icon" src="@/assets/imgs/文件.svg" alt="文件">
+                  <img v-if="extension.compressed.includes(scope.row.type)"
+                       class="folder-icon" src="@/assets/imgs/压缩包.svg" alt="压缩包">
+                  <img v-else-if="extension.video.includes(scope.row.type)"
+                       class="folder-icon" src="@/assets/imgs/视频文件.svg" alt="视频文件">
+                  <img v-else-if="extension.audio.includes(scope.row.type)"
+                       class="folder-icon" src="@/assets/imgs/声音文件.svg" alt="声音文件">
+                    <img v-else-if="extension.image.includes(scope.row.type)"
+                         class="folder-icon" src="@/assets/imgs/图片文件.svg" alt="图片文件">
+                    <img v-else-if="extension.text.includes(scope.row.type)"
+                         class="folder-icon" src="@/assets/imgs/文本文件.svg" alt="文本文件">
+                    <img v-else class="folder-icon" src="@/assets/imgs/未知文件.svg" alt="未知文件">
               </span>
             </span>
                 </template>
@@ -164,6 +174,7 @@
 
 <script>
 import FileTableDialog from "@/views/front/fileTableDialog";
+import {fileExtensions} from "@/utils/const.js";
 
 export default {
   name: "publicShare",
@@ -171,6 +182,9 @@ export default {
 
   data() {
     return {
+
+      extension: fileExtensions,
+
       top: '',
       user: JSON.parse(localStorage.getItem("user") || '{}'),
 

@@ -61,6 +61,7 @@ const routes = [
             {path: 'trash', name: 'trash', meta: {name: '回收站'}, component: () => import('../views/front/trash')},
             // { path: 'upload', name: 'upload', meta: { name: '上传文件' }, component: () => import('../views/front/uploader') },
             {path: 'share', name: 'share', meta: {name: '我的分享'}, component: () => import('../views/front/share')},
+            {path: 'group', name: 'group', meta: {name: '我的群组'}, component: () => import('../views/front/group')},
 
         ]
     },

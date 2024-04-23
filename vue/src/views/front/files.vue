@@ -33,9 +33,9 @@
     </div>
     <div class="blank"></div>
     <div class="backAndForward">
-      <el-button type="primary" plain @click="backNavigation" icon="el-icon-back"
+      <el-button type="primary" plain @click="backNavigation" icon="el-icon-back" class="navigation-button"
                  circle :disabled="cacheIndex <= 0"></el-button>
-      <el-button type="primary" plain @click="forwardNavigation" icon="el-icon-right"
+      <el-button type="primary" plain @click="forwardNavigation" icon="el-icon-right" class="navigation-button"
                  circle :disabled="cacheIndex >= requestCache.length - 1"></el-button>
       <div class="path">
         <span v-if="!isSearch">全部文件</span>
@@ -70,12 +70,7 @@
         <el-table-column prop="folder" label="" width="60">
           <template v-slot="scope">
             <span @click="handleFolderClick(scope.row)" style="cursor: pointer;">
-              <i v-if="scope.row.folder">
-                <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
-              </i>
-              <span v-else>
-                <img class="folder-icon" src="@/assets/imgs/文件.svg" alt="文件">
-              </span>
+              <FileIcon :file-type="scope.row.type" :isFolder="scope.row.folder"></FileIcon>
             </span>
           </template>
         </el-table-column>
@@ -244,12 +239,14 @@
 <script>
 import FileTableDialog from "@/views/front/fileTableDialog";
 import Uploader from "@/views/front/uploader";
-
+import FileIcon  from "@/views/FileIcon";
 export default {
   name: "DiskFiles",
-  components: {FileTableDialog, Uploader},
+  components: {FileTableDialog, Uploader, FileIcon},
   data() {
     return {
+      // extension: fileExtensions,
+
       tableData: [],  // 所有的数据
       pageNum: 1,   // 当前的页码
       pageSize: 10,  // 每页显示的个数
@@ -937,5 +934,9 @@ export default {
 
 .divider {
   height: 0;
+}
+
+.navigation-button {
+  border: 3px solid;
 }
 </style>

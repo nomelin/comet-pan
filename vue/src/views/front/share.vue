@@ -23,7 +23,7 @@
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column label="" width="60">
-          <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
+          <img class="folder-icon" src="@/assets/imgs/分享.svg" alt="文件夹">
         </el-table-column>
         <el-table-column prop="name" label="分享名称" show-overflow-tooltip></el-table-column>
         <el-table-column prop="path" label="分享链接" show-overflow-tooltip min-width="200"></el-table-column>
