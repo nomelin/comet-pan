@@ -217,7 +217,7 @@ public class FileServiceImpl implements FileService {
             newName = bean.checkSameNameAndUpdate(newName, fileMeta.getFolderId(), false);
             fileMeta.setName(newName);
             fileMeta.setPath(fileMeta.getPath().substring(0, fileMeta.getPath().lastIndexOf("/"))
-                    + "/" + newName + "." + newType);
+                    + "/" + Util.getFullName(newName, newType));
             fileMeta.setType(newType);
             fileMapper.updateById(fileMeta);
         }
@@ -455,11 +455,7 @@ public class FileServiceImpl implements FileService {
         }
         // 如果是文件，则只更新自己的路径
         if (!fileMeta.getFolder()) {
-            if (StrUtil.isEmpty(fileMeta.getType())) {
-                fileMeta.setPath(path + "/" + newName); // 更新文件路径
-            } else {
-                fileMeta.setPath(path + "/" + newName + "." + fileMeta.getType()); // 更新文件路径
-            }
+            fileMeta.setPath(path + "/" + Util.getFullName(newName, fileMeta.getType()));// 更新文件路径
             fileMapper.updateById(fileMeta);// 更新当前文件路径
             return;
         }
@@ -472,11 +468,7 @@ public class FileServiceImpl implements FileService {
             if (child.getFolder()) {
                 bean.updateSubFolderPath(child.getId(), path, child.getName());// 递归更新子文件夹路径
             } else {
-                if (ObjectUtil.isNull(child.getType()) || StrUtil.isEmpty(child.getType())) {
-                    child.setPath(path + "/" + child.getName()); // 更新文件路径,叶子
-                } else {
-                    child.setPath(path + "/" + child.getName() + "." + child.getType()); // 更新文件路径,叶子
-                }
+                child.setPath(path + "/" + Util.getFullName(child.getName(), child.getType()));// 更新文件路径
                 fileMapper.updateById(child);
             }
         }

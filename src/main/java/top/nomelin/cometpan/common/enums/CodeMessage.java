@@ -42,7 +42,7 @@ public enum CodeMessage {
     CANNOT_ACCESS_ERROR("700", "没有权限访问此资源"),
 
     FILE_UPLOAD_ERROR("701", "文件上传失败"),
-    CHUNK_NOT_FULL_ERROR("702", "分块上传不完整，无法合并"),
+    CHUNK_NOT_FULL_ERROR("702", "服务器分片不完整，请重新尝试"),
     DOWNLOAD_FILE_ERROR("703", "文件下载失败"),
     SHARE_NOT_EXIST_ERROR("704", "分享不存在或已过期"),
 

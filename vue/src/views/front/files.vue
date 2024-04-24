@@ -130,8 +130,8 @@
 
         </el-table-column>
 
-        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="type" label="文件类型"></el-table-column>
+        <!--        <el-table-column prop="path" label="文件路径" show-overflow-tooltip></el-table-column>-->
+        <!--        <el-table-column prop="type" label="文件类型"></el-table-column>-->
         <el-table-column prop="size" label="文件大小" :formatter="formatSize"
                          sortable :sort-method="customSortMethod" :sort-orders="['ascending', 'descending']">
         </el-table-column>
@@ -166,6 +166,9 @@
       </div>
       <div class="contextmenu__item"
            @click="move(CurrentRow.id)">移动到
+      </div>
+      <div class="contextmenu__item"
+           @click="details(CurrentRow)">详细信息
       </div>
       <div class="divider">
         <el-divider></el-divider>
@@ -525,7 +528,7 @@ export default {
     handleFolderClick(row) {
       if (row.folder) {
         this.handleCacheAndGetFileRequest('/files/folder/' + row.id)
-        console.log(this.requestCache + ":" + this.cacheIndex)
+        // console.log(this.requestCache + ":" + this.cacheIndex)
         this.folderId = row.id
       }
     },
@@ -689,6 +692,7 @@ export default {
     },
     download(row) {
       if (row.folder === true) {
+        this.$message.info('暂不支持下载文件夹')
         console.log("是文件夹：" + row.name)
         return
       }
@@ -759,6 +763,32 @@ export default {
         this.shareDialogVisible = false
       })
     },
+    details(row) {
+      let message =
+          "<div style='width:300px; margin: 0 auto; text-align: left;'>" +
+          "<strong style='color:black'>文件名：</strong>" +
+          "<span style='color:gray'>" + row.name + "</span><br>" +
+          "<strong style='color:black'>文件类型：</strong>" +
+          "<span style='color:gray'>" + (row.folder ? "文件夹" : row.type || "其它") + "</span><br>" +
+          "<strong style='color:black'>文件大小：</strong>" +
+          "<span style='color:gray'>" + this.$options.filters.sizeFormat(row.size, 3) + "</span><br>" +
+          "<strong style='color:black'>创建时间：</strong>" +
+          "<span style='color:gray'>" + this.$options.filters.formatTime(row.createTime) + "</span><br>" +
+          "<strong style='color:black'>修改时间：</strong>" +
+          "<span style='color:gray'>" + this.$options.filters.formatTime(row.updateTime) + "</span><br>" +
+          "<strong style='color:black'>文件路径：</strong>" +
+          "<span style='color:gray'>" + row.path + "</span>";
+
+      this.$confirm(message, '详细信息', {
+        showCancelButton: false,
+        showConfirmButton: false,
+        center: true,
+        dangerouslyUseHTMLString: true // 使用 HTML 字符串
+      }).then(() => {
+      }).catch(() => {
+      })
+    },
+
   }
 }
 </script>

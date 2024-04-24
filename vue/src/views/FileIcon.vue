@@ -9,6 +9,11 @@
       <img v-else-if="iconType === 'audio'" src="@/assets/imgs/audio.svg" alt="声音文件" class="file-icon">
       <img v-else-if="iconType === 'image'" src="@/assets/imgs/image.svg" alt="图片文件" class="file-icon">
       <img v-else-if="iconType === 'text'" src="@/assets/imgs/text.svg" alt="文本文件" class="file-icon">
+      <img v-else-if="iconType === 'word'" src="@/assets/imgs/word.svg" alt="word文件" class="file-icon">
+      <img v-else-if="iconType === 'pdf'" src="@/assets/imgs/pdf.svg" alt="pdf文件" class="file-icon">
+      <img v-else-if="iconType === 'excel'" src="@/assets/imgs/excel.svg" alt="excel文件" class="file-icon">
+      <img v-else-if="iconType === 'exes'" src="@/assets/imgs/可执行文件.svg" alt="可执行文件" class="file-icon">
+      <img v-else-if="iconType === 'code'" src="@/assets/imgs/代码块.svg" alt="代码文件" class="file-icon">
       <img v-else src="@/assets/imgs/unknown.svg" alt="未知文件" class="file-icon">
     </span>
   </span>
@@ -27,7 +32,13 @@ export default {
         video: ["mp4", "avi", "rmvb", "wmv", "flv"],
         audio: ["mp3", "wav", "wma", "aac", "flac"],
         image: ["jpg", "jpeg", "png", "gif", "bmp", "psd", "webp", "ico"],
-        text: ["txt", "doc", "docx", "pdf", "md", "html", "css", "js"]
+        text: ["txt", "md", "log", "ini"],
+        excel: ["xls", "xlsx", "csv"],
+        pdf: ["pdf"],
+        word: ["doc", "docx"],
+        exes: ["exe", "bat", "sh", "apk"],
+        code: ["java", "c", "cpp", "py", "js", "html", "css", "php", "go", "swift", "scala", "kotlin", "sql", "xml",
+          "json", "vue", "ts", "yml", "yaml"],
       };
 
       const extension = this.fileType.toLowerCase(); // 将后缀名转换为小写，以便匹配
