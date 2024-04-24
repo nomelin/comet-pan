@@ -60,7 +60,7 @@ export default {
         // 服务器分片校验函数
         checkChunkUploadedByResponse: (chunk, message) => {
           const result = JSON.parse(message);
-          if (result.code!== '200') {
+          if (result.code !== '200') {
             this.$message.error(result.code + "：" + result.msg);
             return false;
           }
@@ -72,6 +72,7 @@ export default {
             // console.log("chunk1：" + chunk.file.id)
             // console.log("chunk2：" + chunk.file.name)
             // console.log("chunk3：" + chunk.file.size)
+            //发送秒传请求,只在第一个分片发送一次.
             let target = this.fileTarget.find(item => item.id === chunk.file.id)
             this.$request.post("/upload/instant", {
               filename: chunk.file.name,
@@ -80,9 +81,9 @@ export default {
               diskId: result.data.diskId,
             }).then(res => {
               if (res.code === '200') {
-                this.$message.success("秒传成功:" + chunk.file.name);
+                this.$message.success("[ 秒传 ] 成功:" + chunk.file.name);
               } else {
-                this.$message.error("秒传失败" + res.code + "：" + res.msg + "，文件名：" + chunk.file.name);
+                this.$message.error("[ 秒传 ] 失败" + res.code + "：" + res.msg + "，文件名：" + chunk.file.name);
               }
             }).catch(err => {
               console.log(err)
@@ -247,7 +248,7 @@ export default {
           // this.disabled = false;
           setTimeout(() => {
             this.removeFromSet(file.id);
-          }, 1000);
+          }, 300);//延时是为了保证一定处理好了.
         }
       };
       fileReader.onerror = function () {

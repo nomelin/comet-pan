@@ -239,7 +239,8 @@
 <script>
 import FileTableDialog from "@/views/front/fileTableDialog";
 import Uploader from "@/views/front/uploader";
-import FileIcon  from "@/views/FileIcon";
+import FileIcon from "@/views/FileIcon";
+
 export default {
   name: "DiskFiles",
   components: {FileTableDialog, Uploader, FileIcon},
@@ -446,7 +447,7 @@ export default {
       //如果搜素条件为空，则相当于重置
       if (this.name === null || this.name === "") {
         this.isSearch = false;
-        this.getFileRequest("/files")
+        this.reset()
         return;
       }
       // this.requestCache = this.requestCache.slice(0, this.cacheIndex + 1)
@@ -478,7 +479,9 @@ export default {
       this.name = null
       this.isSearch = false;
       this.searchText = "";
-      this.load(1)
+      // this.load(1);
+      this.folderId = this.user.rootId
+      this.handleCacheAndGetFileRequest("/files")
     },
     reload() {
       this.getFileRequest(this.requestCache[this.cacheIndex])
@@ -522,6 +525,7 @@ export default {
     handleFolderClick(row) {
       if (row.folder) {
         this.handleCacheAndGetFileRequest('/files/folder/' + row.id)
+        console.log(this.requestCache + ":" + this.cacheIndex)
         this.folderId = row.id
       }
     },

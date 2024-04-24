@@ -260,8 +260,8 @@ public class FileServiceImpl implements FileService {
         if (parent.getDelete()) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
-        file.setPath(parent.getFolderId() == 0 ? "/" + fileName + "." + type
-                : parent.getPath() + "/" + name + "." + type);
+        file.setPath(parent.getFolderId() == 0 ? "/" + Util.getFullName(name, type)
+                : parent.getPath() + "/" + Util.getFullName(name, type));
         int userId = parent.getUserId();
         User user = userMapper.selectById(userId);
         file.setUserId(userId);
@@ -730,9 +730,9 @@ public class FileServiceImpl implements FileService {
         Integer newUserId = parent.getUserId();
         newFileMeta.setUserId(newUserId);
         newFileMeta.setFolderId(parentFolderId);
-        if(parent.getFolderId() == 0){
+        if (parent.getFolderId() == 0) {
             newFileMeta.setRootFolderId(parent.getId());//根目录的根目录就是自己
-        }else {
+        } else {
             newFileMeta.setRootFolderId(parent.getRootFolderId());
         }
         newFileMeta.setSize(old.getSize());

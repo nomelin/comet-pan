@@ -99,13 +99,15 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public Share selectByPath(String path) {
         int id = getIdBySharePath(path);
-        if (id == -1) {
-            return null;
-        }
-        //        long currentTime = System.currentTimeMillis();
-//        long endTime = Long.parseLong(share.getEndTime());
-//        share.setLeftDays(Util.calculateRemainingDays(currentTime, endTime));
         Share share = shareMapper.selectById(id);
+        if (ObjectUtil.isNull(share)) {
+            throw new BusinessException(CodeMessage.SHARE_NOT_EXIST_ERROR);
+        }
+        autoClean(share.getUserId());//自动清理过期分享
+        share = shareMapper.selectById(id);//再次获取,看看是否被删除
+        if (ObjectUtil.isNull(share)) {
+            throw new BusinessException(CodeMessage.SHARE_NOT_EXIST_ERROR);
+        }
         share.setCount(share.getCount() + 1);//如果通过链接访问，则访问次数加1
         shareMapper.updateById(share);
         return share;

@@ -15,6 +15,7 @@
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="tableData" strip @selection-change="handleSelectionChange"
                 height="70vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
+                :default-sort="{prop: 'name', order: 'ascending'}"
                 ref="table">
         <template slot="empty">
           <el-empty description=" ">
@@ -25,22 +26,7 @@
         <el-table-column prop="folder" label="" width="60">
           <template v-slot="scope">
             <span>
-              <i v-if="scope.row.folder">
-                <img class="folder-icon" src="@/assets/imgs/folder.svg" alt="文件夹">
-              </i>
-              <span v-else>
-                  <img v-if="extension.compressed.includes(scope.row.type)"
-                       class="folder-icon" src="@/assets/imgs/压缩包.svg" alt="压缩包">
-                  <img v-else-if="extension.video.includes(scope.row.type)"
-                       class="folder-icon" src="@/assets/imgs/视频文件.svg" alt="视频文件">
-                  <img v-else-if="extension.audio.includes(scope.row.type)"
-                       class="folder-icon" src="@/assets/imgs/声音文件.svg" alt="声音文件">
-                    <img v-else-if="extension.image.includes(scope.row.type)"
-                         class="folder-icon" src="@/assets/imgs/图片文件.svg" alt="图片文件">
-                    <img v-else-if="extension.text.includes(scope.row.type)"
-                         class="folder-icon" src="@/assets/imgs/文本文件.svg" alt="文本文件">
-                    <img v-else class="folder-icon" src="@/assets/imgs/未知文件.svg" alt="未知文件">
-              </span>
+              <FileIcon :file-type="scope.row.type" :isFolder="scope.row.folder"></FileIcon>
             </span>
           </template>
         </el-table-column>
@@ -103,14 +89,15 @@
 </template>
 
 <script>
-import {fileExtensions} from "@/utils/const.js";
+import FileIcon  from "@/views/FileIcon";
 
 export default {
 
   name: "trash",
+  components: {FileIcon},
   data() {
     return {
-      extension: fileExtensions,
+      // extension: fileExtensions,
 
       tableData: [],  // 所有的数据
       total: 0,
