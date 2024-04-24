@@ -1,2 +1,3 @@
 彗星网盘
-![image](https://github.com/nomelin/comet-pan/assets/107407124/3dc0d559-659f-4ad0-a126-211102862a9a)
+
+![image](https://github.com/nomelin/comet-pan/assets/107407124/9ee03f83-4102-4945-b790-70c374b88d0a)
