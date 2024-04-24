@@ -66,6 +66,11 @@ export default {
         require('@/assets/imgs/slide3.jpg'),
         require('@/assets/imgs/slide4.jpg'),
         require('@/assets/imgs/slide5.jpg'),
+        require('@/assets/imgs/slide6.jpg'),
+        require('@/assets/imgs/slide7.jpg'),
+        require('@/assets/imgs/slide8.jpg'),
+        require('@/assets/imgs/slide9.jpg'),
+        require('@/assets/imgs/slide10.jpg'),
 
       ],
       slideVerifyShow: false,

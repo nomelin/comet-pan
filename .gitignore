@@ -36,3 +36,4 @@ vue/node_modules/**
 log/
 avatar/**
 DiskFiles/**
+vue/dist/**
