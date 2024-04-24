@@ -26,7 +26,12 @@
           <img class="folder-icon" src="@/assets/imgs/分享.svg" alt="文件夹">
         </el-table-column>
         <el-table-column prop="name" label="分享名称" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="path" label="分享链接" show-overflow-tooltip min-width="200"></el-table-column>
+        <el-table-column  label="分享链接" show-overflow-tooltip min-width="400">
+          <template v-slot="scope">
+            <!-- 使用自定义渲染函数，将路径加上固定前缀 -->
+            <span>{{ 'https://pan.nomelin.top/share/' + scope.row.path }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="days" label="剩余时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="code" label="访问密码" show-overflow-tooltip></el-table-column>
         <el-table-column prop="count" label="访问次数" show-overflow-tooltip></el-table-column>
@@ -36,6 +41,9 @@
     <div id="contextmenu"
          v-show="menuVisible"
          class="menu">
+      <div class="contextmenu__item"
+           @click="copyToClipboard(CurrentRow)">复制分享链接
+      </div>
       <div class="contextmenu__item"
            @click="del(CurrentRow.id)">取消分享
       </div>
@@ -187,6 +195,10 @@ export default {
     //   // 调用过滤器来格式化文件大小
     //   return this.$options.filters.sizeFormat(row[column.property]);
     // },
+    copyToClipboard(row) {
+      navigator.clipboard.writeText('https://pan.nomelin.top/share/' + row.path);
+      this.$message.success('复制成功,快分享给其它人吧！')
+    }
   }
 }
 </script>
