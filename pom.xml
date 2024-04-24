@@ -10,7 +10,7 @@
     </parent>
     <groupId>top.nomelin</groupId>
     <artifactId>cometpan</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>cometpan</name>
     <description>个人网盘</description>
     <properties>
@@ -100,5 +100,7 @@
             </plugin>
         </plugins>
     </build>
+    <!-- 打包成jar包 -->
+    <packaging>jar</packaging>
 
 </project>

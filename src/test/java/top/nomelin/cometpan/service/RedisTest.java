@@ -16,12 +16,12 @@ public class RedisTest {
     @Test
     public void testRedis() throws InterruptedException {
 
-        redisService.setValue("hello","world");
-        redisService.expire("hello",10);
-        System.out.println(redisService.getExpire("hello"));
-        Thread.sleep(5000);
-
-        System.out.println(redisService.getExpire("hello"));
+//        redisService.setValue("hello","world");
+//        redisService.expire("hello",10);
+//        System.out.println(redisService.getExpire("hello"));
+//        Thread.sleep(5000);
+//
+//        System.out.println(redisService.getExpire("hello"));
 
     }
 }

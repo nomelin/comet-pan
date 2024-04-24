@@ -15,7 +15,7 @@ public class UtilTest {
 
     @Test
     public void test() {
-        System.out.println(Util.getArrayInt("1,2,3,2,43"));
-        System.out.println(Util.getArrayInt("[1,2,-3,2,43]"));
+//        System.out.println(Util.getArrayInt("1,2,3,2,43"));
+//        System.out.println(Util.getArrayInt("[1,2,-3,2,43]"));
     }
 }

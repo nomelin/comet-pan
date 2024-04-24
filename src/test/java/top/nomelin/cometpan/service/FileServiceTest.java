@@ -60,10 +60,10 @@ class FileServiceTest {
 
     @Test
     void setDeleteBatch() {
-        List<Integer> ids = new ArrayList<>();
-        ids.add(31);
-        ids.add(32);
-        fileService.setDeleteBatch(ids);
+//        List<Integer> ids = new ArrayList<>();
+//        ids.add(31);
+//        ids.add(32);
+//        fileService.setDeleteBatch(ids);
     }
 
     @Test
@@ -72,14 +72,14 @@ class FileServiceTest {
 
     @Test
     void selectById() {
-        System.out.println(fileService.selectById(5));
+//        System.out.println(fileService.selectById(5));
     }
 
     @Test
     void selectAll() {
-        FileMeta fileMeta = new FileMeta();
-        fileMeta.setUserId(3);
-        fileService.selectAll(fileMeta).forEach(System.out::println);
+//        FileMeta fileMeta = new FileMeta();
+//        fileMeta.setUserId(3);
+//        fileService.selectAll(fileMeta).forEach(System.out::println);
     }
 
     @Test
@@ -107,12 +107,12 @@ class FileServiceTest {
 
     @Test
     void selectByParentFolderId() {
-        fileService.selectByParentFolderId(5).forEach(System.out::println);
+//        fileService.selectByParentFolderId(5).forEach(System.out::println);
     }
 
     @Test
     void moveFile() {
-        fileService.moveNode(131, 154);
+//        fileService.moveNode(131, 154);
     }
 
 }

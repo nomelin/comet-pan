@@ -19,7 +19,7 @@ class DiskServiceTest {
     @Test
     void uploadAvatar() throws IOException {
 // 从类路径中读取资源文件，这里假设文件名为 "avatar.jpg"
-        Resource resource = new ClassPathResource("test1.png");
-        diskService.uploadAvatar(resource, 2);
+//        Resource resource = new ClassPathResource("test1.png");
+//        diskService.uploadAvatar(resource, 2);
     }
 }

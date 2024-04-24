@@ -46,7 +46,7 @@ export default {
       skip: false,
       options: {
         chunkSize: 1024 * 1024 * 10, // 10MB
-        target: "//localhost:12345/upload/chunk",
+        target: "https://pan.nomelin.top/api/upload/chunk",
         // 开启服务端分片校验功能
         testChunks: true,
         parseTimeRemaining: function (timeRemaining, parsedTimeRemaining) {

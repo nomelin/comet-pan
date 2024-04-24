@@ -696,7 +696,7 @@ export default {
         console.log("是文件夹：" + row.name)
         return
       }
-      this.XHRLoadFile('http://localhost:12345/download/' + row.id + '/0', {})
+      this.XHRLoadFile('https://pan.nomelin.top/api/download/' + row.id + '/0', {})
     },
 
     //通过XMLHttpRequest发送post请求下载文件

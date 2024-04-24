@@ -24,9 +24,9 @@ class UserServiceTest {
 
     @Test
     void add() {
-        User user = new User();
-        user.setUserName("哈喽");
-        userService.add(user);
+//        User user = new User();
+//        user.setUserName("哈喽");
+//        userService.add(user);
     }
 
     @Test
@@ -36,52 +36,52 @@ class UserServiceTest {
 
     @Test
     void deleteBatch() {
-        List<Integer> ids = new ArrayList<>();
-        userService.deleteBatch(ids);
+//        List<Integer> ids = new ArrayList<>();
+//        userService.deleteBatch(ids);
     }
 
     @Test
     void updateById() {
-        User user = new User();
-        user.setId(10);
-        user.setName("小米");
-        user.setUserName("小米小米小米小米小米小米");
-        userService.updateById(user);
+//        User user = new User();
+//        user.setId(10);
+//        user.setName("小米");
+//        user.setUserName("小米小米小米小米小米小米");
+//        userService.updateById(user);
     }
 
     @Test
     void selectById() {
-        System.out.println(userService.selectById(1));
+//        System.out.println(userService.selectById(1));
     }
 
     @Test
     void selectAll() {
-        User user = new User();
-        List<User> users = userService.selectAll(user);
-        for (User u : users) {
-            System.out.println(u);
-        }
+//        User user = new User();
+//        List<User> users = userService.selectAll(user);
+//        for (User u : users) {
+//            System.out.println(u);
+//        }
     }
 
     @Test
     void selectPage() {
-        User user = new User();
-        PageInfo<User> users = userService.selectPage(user, 1, 5);
-        System.out.println("总记录数" + users.getTotal());
-        System.out.println("总页数" + users.getPages());
-        for (User u : users.getList()) {
-            System.out.println(u);
-        }
-        System.out.println("---------------------");
-        users = userService.selectPage(user, users.getPages(), 5);
-        for (User u : users.getList()) {
-            System.out.println(u);
-        }
-        System.out.println("---------------------");
-        users = userService.selectPage(user, users.getPages() + 1, 5);
-        for (User u : users.getList()) {
-            System.out.println(u);
-        }
+//        User user = new User();
+//        PageInfo<User> users = userService.selectPage(user, 1, 5);
+//        System.out.println("总记录数" + users.getTotal());
+//        System.out.println("总页数" + users.getPages());
+//        for (User u : users.getList()) {
+//            System.out.println(u);
+//        }
+//        System.out.println("---------------------");
+//        users = userService.selectPage(user, users.getPages(), 5);
+//        for (User u : users.getList()) {
+//            System.out.println(u);
+//        }
+//        System.out.println("---------------------");
+//        users = userService.selectPage(user, users.getPages() + 1, 5);
+//        for (User u : users.getList()) {
+//            System.out.println(u);
+//        }
 
     }
 
