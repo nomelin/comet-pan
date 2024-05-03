@@ -28,7 +28,7 @@ export default {
   computed: {
     iconType() {
       const typeMap = {
-        compressed: ["zip", "rar", "7z", "tar", "gz", "bz2"],
+        compressed: ["zip", "rar", "7z", "tar", "gz", "bz2","jar"],
         video: ["mp4", "avi", "rmvb", "wmv", "flv"],
         audio: ["mp3", "wav", "wma", "aac", "flac"],
         image: ["jpg", "jpeg", "png", "gif", "bmp", "psd", "webp", "ico"],

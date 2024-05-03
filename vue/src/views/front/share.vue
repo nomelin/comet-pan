@@ -15,10 +15,12 @@
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="computedData" strip @selection-change="handleSelectionChange"
                 height="70vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
+                :row-style="{height: '4rem'}"
+                :cell-style="{padding: '0'}"
                 ref="table">
         <template slot="empty">
           <el-empty description=" ">
-            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>还没有分享的文件,快去分享吧！</span></p>
+            <p class="emptyText"><span style='font-size: 1.2rem;font-weight: bold'>还没有分享的文件,快去分享吧！</span></p>
           </el-empty>
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -204,23 +206,6 @@ export default {
 </script>
 
 <style scoped>
-.main-container {
-  /*border-radius: 50px;*/
-  border-top-left-radius: 50px;
-  background-color: #ffffff;
-  height: 100%;
-  width: 100%;
-}
-
-.table {
-  background-color: #ffffff;
-  height: 75%;
-}
-
-/* 设置 el-table 每一行的高度 */
-::v-deep .el-table .el-table__body .el-table__row {
-  height: 60px; /* 设置每一行的高度 */
-}
 
 .blank {
   height: 3%
@@ -231,148 +216,13 @@ export default {
   margin-left: 3%;
 }
 
-.backAndForward {
-  margin-left: 5%;
-  width: 80%;
-  display: flex;
-  justify-content: flex-start; /* 靠左对齐 */
-}
-
-
-.path {
-  font-weight: bold;
-  font-size: 16px;
-  color: #999999;
-  margin-left: 3%;
-  display: flex;
-  align-items: center; /* 垂直居中 */
-  /*text-align: left;*/
-  /*display: flex;*/
-  height: 5%;
-  /*text-align: center;*/
-  /*background-color: #f5f6f7;*/
-  /*border-radius: 5px;*/
-}
-
-::v-deep .search-input .el-input__inner {
-  width: 100%;
-  height: 5vh;
-  background-color: #EBEEF5;
-  text-align: center;
-  border: 0 !important;
-  outline: none;
-  font-weight: bold;
-  font-size: 14px;
-  border-radius: 15px;
-}
-
-.table-skeleton {
-  width: 80%;
-  margin-left: 10%;
-  margin-top: 5%;
-}
-
 ::v-deep .highlight {
   /*background-color: yellow;*/
   color: #0d53ff;
   font-weight: bold;
   font-size: 15px;
 }
-
-.table-style {
-  font-weight: bold;
-  font-size: 13px;
-}
-
-/*右键菜单*/
-.contextmenu__item {
-  display: block;
-  line-height: 35px;
-  text-align: center;
-}
-
-/*分割线*/
-.contextmenu__item:not(:last-child) {
-  border-bottom: 0px solid #00ffff;
-}
-
-.menu {
-  position: absolute;
-  background-color: #fff;
-  width: 10%;
-  /*height: 106px;*/
-  font-size: 14px;
-  font-weight: bold;
-  color: #52565e;
-  border-radius: 10px;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  border: 1px solid #DCDFE6;
-  /*box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);*/
-  white-space: nowrap;
-  z-index: 1000;
-}
-
-.contextmenu__item:hover {
-  cursor: pointer;
-  background: #e6f1ff;
-  border-color: #e6f1ff;
-  /*color: #52565e;*/
-}
-
-::v-deep .rename-input .el-input__inner {
-  overflow: visible;
-  width: 100%;
-  text-align: left;
-  border: 0 !important;
-  outline: none;
-  font-size: 15px;
-  font-weight: bold;
-}
-
-.dialog-files {
-  z-index: 999;
-}
-
 .folder-icon {
   width: 100%;
-}
-
-.little-icon {
-  width: 50px;
-  vertical-align: middle;
-}
-
-
-.primary-button {
-  background-color: #0d53ff;
-  color: #fff;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 120px;
-  height: 40px;
-}
-
-.normal-button {
-  background-color: #ffffff;
-  color: #606266;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 120px;
-  height: 40px;
-}
-
-.name-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.opt-container {
-  color: #606266;
-  font-size: 16px;
-  font-weight: bold;
 }
 </style>

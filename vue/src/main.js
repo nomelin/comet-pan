@@ -5,6 +5,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import '@/assets/css/global.css'
 import '@/assets/css/theme/index.css'
+import '@/assets/css/common.css'
 import request from "@/utils/request";
 import SlideVerify from 'vue-monoplasty-slide-verify';
 import uploader from 'vue-simple-uploader'

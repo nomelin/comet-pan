@@ -60,6 +60,8 @@
               }} / {{ totalSpace | sizeFormat }}</span>
           </div>
         </div>
+
+
         <el-menu text-color="#565757" active-text-color="#0d53ff" router class="el-menu" :default-active="$route.path">
           <el-menu-item class="el-menu-item" index="/files">
             <i class="el-icon-folder-opened"></i>
@@ -113,7 +115,7 @@ export default {
       notice: [],
       user: JSON.parse(localStorage.getItem("user") || '{}'),
 
-      totalSpace: 1024 * 1024 * 1024, // 1GB 总空间
+      totalSpace: 10 * 1024 * 1024 * 1024, // 10GB 总空间
       usedSpace: 0, // 从后端接口获取的已用空间（以字节为单位）
     }
   },
@@ -153,22 +155,6 @@ export default {
         }
       })
     },
-    /*    loadNotice() {
-          this.$request.get('/notice/selectAll').then(res => {
-            this.notice = res.data
-            let i = 0
-            if (this.notice && this.notice.length) {
-              this.top = this.notice[0].content
-              setInterval(() => {
-                this.top = this.notice[i].content
-                i++
-                if (i === this.notice.length) {
-                  i = 0
-                }
-              }, 2500)
-            }
-          })
-        },*/
     updateUser() {
       this.user = JSON.parse(localStorage.getItem('user') || '{}')   // 重新获取下用户的最新信息
     },
@@ -180,8 +166,18 @@ export default {
         type: 'success',
         center: true
       }).then(response => {
-        localStorage.removeItem("user");
-        this.$router.push("/login");
+        this.$request.delete("/logout").then(res => {
+          if (res.code === '200') {
+            this.$message.success("退出成功")
+            localStorage.removeItem("user");
+            this.$router.push("/login");
+          }
+          else {
+            this.$message.error(res.code + ": " + res.msg)
+          }
+        }).catch(error => {
+          this.$message.error("退出失败")
+        });
       }).catch(error => {
         // 用户点击了取消按钮，可以在这里处理取消事件，比如关闭对话框
       });
@@ -195,6 +191,7 @@ export default {
 </script>
 
 <style scoped>
+
 .front-layout {
   /*display: flex;*/
   height: 100vh;
@@ -209,18 +206,19 @@ export default {
 
 
 .main-left {
-  width: 18vw;
+  width: 20vw;
   height: 100%;
 }
 
 .main-left-upper {
   background-color: #ffffff;
   border: none;
-  border-radius: 20px;
-  height: 15%;
+  border-radius: 1.5rem;
+  height: auto;
   width: 80%;
   margin-left: 10%;
   margin-top: 10%;
+  padding-bottom: 10%;
   /*position: relative; !* 设置相对定位，为了让进度条容器相对于该 div 定位 *!*/
 }
 
@@ -233,11 +231,11 @@ export default {
 }
 
 .avatar {
-  margin-right: 20px; /* 头像与用户名之间的间距 */
+  margin-right: 1.4rem; /* 头像与用户名之间的间距 */
 }
 
 .user-name {
-  font-size: 16px; /* 可根据需要调整用户名的样式 */
+  font-size: 1rem; /* 可根据需要调整用户名的样式 */
   font-weight: bold; /* 加粗 */
   color: #333333; /* 字体颜色 */
 }
@@ -251,21 +249,28 @@ export default {
 
 .el-menu {
   border: none;
-  border-radius: 20px;
-  height: 70%;
+  border-radius: 1.5rem;
+  height: auto;
   width: 80%;
   margin-left: 10%;
   margin-top: 10%;
+  padding-bottom: 30%;
+  padding-top: 5%;
 }
 
 .el-menu-item {
+  height: 3.5rem;
+  font-size: 1rem;
+
   /*padding-top: 20px; !* 增加上边距 *!*/
-  margin-top: 10px; /* 修正菜单项的高度 */
+  /*margin-top: 0.5rem; !* 修正菜单项的高度 *!*/
 }
 
 .el-menu-item:hover {
+  font-size: 1rem;
+  height: 3.5rem;
   padding-top: 2px; /* 增加上边距 */
-  margin-top: 10px; /* 修正菜单项的高度 */
+  /*margin-top: 0.5rem; !* 修正菜单项的高度 *!*/
 }
 
 .main-right {
@@ -285,7 +290,7 @@ export default {
 /*}*/
 .logo {
   width: 10vw;
-  margin-top: 30px;
+  margin-top: 3%;
 }
 
 .front-header {
@@ -298,10 +303,10 @@ export default {
 }
 
 .front-header-left {
-  width: 400px;
+  width: 50%;
   /*display: flex;*/
   /*align-items: center;*/
-  padding-left: 30px;
+  padding-left: 2%;
 }
 
 .front-header-dropdown img {
@@ -360,7 +365,7 @@ export default {
 .user-space {
   display: inline-block; /* 将 span 元素设置为行内块级元素 */
   font-weight: bold;
-  font-size: 12px;
+  font-size: 0.8rem;
   width: 100%; /* 设置宽度为100% */
   text-align: right; /* 将文本内容右对齐 */
   box-sizing: border-box; /* 使用边框盒模型，确保宽度包含 padding 和 border */

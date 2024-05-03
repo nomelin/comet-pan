@@ -2,34 +2,34 @@
   <div class="main-container">
     <div class="blank"></div>
     <div class="operation">
-      <el-input class="search-input" placeholder="搜索全部文件" style="width: 200px" v-model="name"
+      <el-input class="search-input" placeholder="搜索全部文件" style="width:12rem" v-model="name"
                 @keyup.enter.native="selectAll(1)">
         <template #suffix>
           <i class="el-icon-search" @click="selectAll(1)"
-             style="cursor: pointer; font-size: 25px; color:#909399; transform: translateY(9px);"></i>
+             style="cursor: pointer; font-size: 2.5rem; color:#909399; transform: translateY(0.4rem);"></i>
         </template>
       </el-input>
 
 
-      <el-button class="normal-button" plain style="margin-left: 10px" @click="reset">
+      <el-button class="normal-button" plain style="margin-left: 1rem" @click="reset">
         <i class="el-icon-refresh"></i> 重置
       </el-button>
       <!--      <img class="little-icon" src="@/assets/imgs/folder-add.svg" alt="">-->
-      <el-button class="primary-button" type="text" plain style="margin-left: 10px" @click="addFolder">
+      <el-button class="primary-button" type="text" plain style="margin-left: 1rem" @click="addFolder">
         <i class="el-icon-plus"></i> 新建文件夹
       </el-button>
-      <el-button class="normal-button" type="danger" plain @click="delBatch" style="width: 120px">
+      <el-button class="normal-button" type="danger" plain @click="delBatch">
         <i class="el-icon-delete-solid"></i> 批量删除
       </el-button>
-      <el-button class="primary-button" type="primary" plain style="margin-left: 10px" @click="uploadFile">
+      <el-button class="primary-button" type="primary" plain style="margin-left: 1rem" @click="uploadFile">
         <i class="el-icon-upload"></i> 上传 / 秒传
       </el-button>
-      <el-button class="normal-button" type="info" plain style="margin-left: 10px"
+      <el-button class="normal-button" type="info" plain style="margin-left: 1rem"
                  @click="shareFile">
         <i class="el-icon-share"></i> 分享
       </el-button>
 
-      <span style="color: #909399;margin-left: 10px ;font-size: 14px ; font-weight: bold">功能仍在开发中</span>
+      <span style="color: #909399;margin-left: 1rem ;font-size: 0.8rem ; font-weight: bold">功能仍在开发中</span>
     </div>
     <div class="blank"></div>
     <div class="backAndForward">
@@ -48,10 +48,12 @@
       <!-- 使用 v-if 控制 el-skeleton 的显示与隐藏 -->
       <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
       <el-table v-else :data="filteredData" strip @selection-change="handleSelectionChange"
-                height="66vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
+                height="68vh" class="table-style" empty-text="" @row-contextmenu="rightClick"
                 ref="table" :default-sort="{prop: 'name', order: 'ascending'}"
                 @cell-mouse-enter="mouseEnter"
                 @cell-mouse-leave="mouseLeave"
+                :row-style="{height: '4rem'}"
+                :cell-style="{padding: '0'}"
       >
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
@@ -109,7 +111,8 @@
               <div>
                 <div class="opt-container" v-if="scope.row.optShow">
                   <el-tooltip content="分享" effect="dark" :open-delay="100">
-                    <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"></i>
+                    <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"
+                    @click="shareFile"></i>
                   </el-tooltip>
                   <el-tooltip content="删除" effect="dark" :open-delay="100">
                     <i class="el-icon-delete-solid" style="margin-right: 10px; cursor: pointer"
@@ -227,7 +230,7 @@
             title="上传文件"
             :visible.sync="uploaderVisible"
             :close-on-press-escape="false"
-            size="40%"
+            size="50%"
             @close="uploaderClose"
         >
           <span><uploader :src-id.sync="uploaderSrcId"/></span>
@@ -696,7 +699,7 @@ export default {
         console.log("是文件夹：" + row.name)
         return
       }
-      this.XHRLoadFile('https://pan.nomelin.top/api/download/' + row.id + '/0', {})
+      this.XHRLoadFile(process.env.VUE_APP_BASEURL+'/download/' + row.id + '/0', {})
     },
 
     //通过XMLHttpRequest发送post请求下载文件
@@ -794,23 +797,6 @@ export default {
 </script>
 
 <style scoped>
-.main-container {
-  /*border-radius: 50px;*/
-  border-top-left-radius: 50px;
-  background-color: #ffffff;
-  height: 100%;
-  width: 100%;
-}
-
-.table {
-  background-color: #ffffff;
-  height: 75%;
-}
-
-/* 设置 el-table 每一行的高度 */
-::v-deep .el-table .el-table__body .el-table__row {
-  height: 60px; /* 设置每一行的高度 */
-}
 
 .blank {
   height: 3%
@@ -829,86 +815,26 @@ export default {
 }
 
 
-.path {
-  font-weight: bold;
-  font-size: 16px;
-  color: #999999;
-  margin-left: 3%;
-  display: flex;
-  align-items: center; /* 垂直居中 */
-  /*text-align: left;*/
-  /*display: flex;*/
-  height: 5%;
-  /*text-align: center;*/
-  /*background-color: #f5f6f7;*/
-  /*border-radius: 5px;*/
-}
 
 ::v-deep .search-input .el-input__inner {
-  width: 100%;
-  height: 5vh;
+  width: 12rem;
+  height: 3rem;
   background-color: #EBEEF5;
   text-align: center;
   border: 0 !important;
   outline: none;
   font-weight: bold;
-  font-size: 14px;
-  border-radius: 15px;
-}
-
-.table-skeleton {
-  width: 80%;
-  margin-left: 10%;
-  margin-top: 5%;
+  font-size: 1rem;
+  border-radius: 1rem;
 }
 
 ::v-deep .highlight {
   /*background-color: yellow;*/
   color: #0d53ff;
   font-weight: bold;
-  font-size: 15px;
+  font-size: 1rem;
 }
 
-.table-style {
-  font-weight: bold;
-  font-size: 13px;
-}
-
-/*右键菜单*/
-.contextmenu__item {
-  display: block;
-  line-height: 35px;
-  text-align: center;
-}
-
-/*分割线*/
-.contextmenu__item:not(:last-child) {
-  border-bottom: 0px solid #00ffff;
-}
-
-.menu {
-  position: absolute;
-  background-color: #fff;
-  width: 10%;
-  /*height: 106px;*/
-  font-size: 14px;
-  font-weight: bold;
-  color: #52565e;
-  border-radius: 10px;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  border: 1px solid #DCDFE6;
-  /*box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);*/
-  white-space: nowrap;
-  z-index: 1000;
-}
-
-.contextmenu__item:hover {
-  cursor: pointer;
-  background: #e6f1ff;
-  border-color: #e6f1ff;
-  /*color: #52565e;*/
-}
 
 ::v-deep .rename-input .el-input__inner {
   overflow: visible;
@@ -916,42 +842,12 @@ export default {
   text-align: left;
   border: 0 !important;
   outline: none;
-  font-size: 15px;
+  font-size: 0.9rem;
   font-weight: bold;
 }
 
 .dialog-files {
   z-index: 999;
-}
-
-.folder-icon {
-  width: 100%;
-}
-
-.little-icon {
-  width: 50px;
-  vertical-align: middle;
-}
-
-
-.primary-button {
-  background-color: #0d53ff;
-  color: #fff;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 130px;
-  height: 40px;
-}
-
-.normal-button {
-  background-color: #ffffff;
-  color: #606266;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 80px;
-  height: 40px;
 }
 
 .name-container {
@@ -962,7 +858,7 @@ export default {
 
 .opt-container {
   color: #606266;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: bold;
 }
 
@@ -971,6 +867,6 @@ export default {
 }
 
 .navigation-button {
-  border: 3px solid;
+  border: 0.2rem solid;
 }
 </style>

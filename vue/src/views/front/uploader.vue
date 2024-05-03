@@ -46,7 +46,7 @@ export default {
       skip: false,
       options: {
         chunkSize: 1024 * 1024 * 10, // 10MB
-        target: "https://pan.nomelin.top/api/upload/chunk",
+        target: process.env.VUE_APP_BASEURL+"/upload/chunk",
         // 开启服务端分片校验功能
         testChunks: true,
         parseTimeRemaining: function (timeRemaining, parsedTimeRemaining) {
@@ -303,20 +303,20 @@ export default {
 
 <style>
 .uploader-container {
-  width: 80%;
-  height: 90%;
-  margin-left: 10%;
-  border-radius: 20px;
+  width: 90%;
+  height: 95%;
+  margin-left: 5%;
+  /*border-radius: 20px;*/
   background-color: #ffffff;
 }
 
 .uploader-title {
-  height: 50px;
+  height: 10%;
 }
 
 .uploader {
   width: 100%;
-  font-size: 14px;
+  font-size: 1rem;
   background-color: #ffffff;
 
 }
@@ -325,14 +325,14 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px;
+  height: 10vh;
   width: 80%;
   margin-left: 10%;
 
 }
 
 .drop-text {
-  font-size: 18px;
+  font-size: 1.1rem;
   color: #606266;
   font-weight: bold;
 }
@@ -344,8 +344,8 @@ export default {
 }
 
 .uploader-btn {
-  margin-top: 20px;
-  margin-right: 20px;
+  margin-top: 5%;
+  margin-right: 5%;
 }
 
 .uploader-list {
@@ -356,45 +356,23 @@ export default {
 }
 
 .uploader-files {
-  margin: 10px;
-  padding: 10px;
+  margin: 2%;
+  padding: 2%;
 }
 
 .uploader-footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 5%;
 }
 
 .uploader-tip {
-  font-size: 18px;
+  font-size: 1.1rem;
   color: #606266;
   font-weight: bold;
   display: inline-block;
   text-align: center;
   width: 100%; /* 如果需要让span占据其父元素的宽度，可以设置为100% */
-}
-
-.primary-button {
-  background-color: #0d53ff;
-  color: #ffffff;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 10%;
-  min-width: 100px;
-  height: 40px;
-}
-
-.normal-button {
-  background-color: #ffffff;
-  color: #606266;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 10%;
-  min-width: 100px;
-  height: 40px;
 }
 </style>

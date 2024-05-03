@@ -137,12 +137,12 @@ export default {
 }
 
 .header {
-  height: 80px;
+  height: 10%;
   position: fixed;
   top: 0;
   display: flex;
   align-items: center;
-  padding-left: 20px;
+  padding-left: 2%;
 }
 
 .slide-verify-window {
@@ -165,16 +165,16 @@ export default {
 }
 
 .logo {
-  width: 160px;
-  margin-top: 20px; /* 上边距 */
-  margin-left: 20px; /* 左边距 */
+  width: 60%;
+  margin-top: 5%; /* 上边距 */
+  margin-left: 5%; /* 左边距 */
 }
 
 .title {
   color: #151515;
-  font-size: 24px;
+  font-size: 1.8rem;
   font-weight: bold;
-  margin-left: 10px;
+  margin-left: 1rem;
 }
 
 .main-content {
@@ -184,57 +184,59 @@ export default {
 }
 
 .blank {
-  height: 40px;
+  height:1rem;
 }
 
 .login-box {
   width: 50vh;
   max-width: 500px;
-  padding: 60px 30px;
-  box-shadow: 0 20px 80px #e6e2ff;
+  padding: 3rem 1.5rem;
+  box-shadow: 0 1.5rem 6rem #e6e2ff;
   background-color: white;
-  border-radius: 50px;
+  border-radius: 4rem;
   height: 60vh;
   max-height: 800px;
+  min-height: 300px;
   overflow: auto;
 }
 
 .login-form {
   text-align: center;
-  font-size: 30px;
+  font-size: 1.8rem;
   font-weight: bold;
-  margin-bottom: 30px;
+  margin-bottom: 2rem;
   color: #242830;
 }
 
 ::v-deep .input-field .el-input__inner {
-  width:100%;
+  width: 100%;
   text-align: left;
   border: 0 !important;
   outline: none;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .custom-input {
   position: relative;
-  padding: 10px; /* 输入框内边距 */
+  padding: 0.8rem; /* 输入框内边距 */
   border: 2px solid #dcdfe6; /* 自定义输入框的边框 */
-  border-radius: 20px; /* 自定义输入框的边框圆角 */
-  height: 60px; /* 自定义输入框的高度 */
+  border-radius: 1.2rem; /* 自定义输入框的边框圆角 */
+  height: 4rem; /* 自定义输入框的高度 */
+  min-height: 50px;
 }
 
 
 .login-button {
   width: 100%;
   background-color: #0d53ff;
-  height: 60px;
-  border-radius: 20px;
+  height: 4rem;
+  border-radius:1.2rem;
   color: white;
 }
 
 .button-text {
-  font-size: 22px;
+  font-size:1.2rem;
   font-weight: bold;
 }
 
@@ -247,13 +249,13 @@ export default {
 
 .register-link span {
   color: #909399;
-  font-size: 15px;
+  font-size: 0.95rem;
 
 }
 
 .register-link a {
-  font-size: 15px;
+  font-size: 0.95rem;
   color: #2a60c9;
-  font-weight: bold; /* 设置字体粗细 */
+  font-weight: bold;
 }
 </style>

@@ -53,6 +53,12 @@ public class WebController {
         return Result.success(account);
     }
 
+    @DeleteMapping("/logout")
+    public Result logout() {
+        currentUserCache.clear();
+        return Result.success();
+    }
+
     /**
      * 注册
      */
@@ -73,7 +79,7 @@ public class WebController {
     @PutMapping("/updatePassword")
     public Result updatePassword(@RequestBody JSONObject requestBody) {
         String userName = requestBody.getStr("userName");
-        String password = requestBody.getStr("password");
+        String password = requestBody.getStr("oldPassword");
         String newPassword = requestBody.getStr("newPassword");
         if (ObjectUtil.isNull(newPassword)) {
             newPassword = requestBody.getStr("new_password");// 兼容前端传参的下划线形式
@@ -98,13 +104,13 @@ public class WebController {
 
     @GetMapping("/valid/{username}")
     public Result validUserName(@PathVariable String username) {
-        User user=new User();
+        User user = new User();
         user.setUserName(username);
-        List<User> users=userService.selectAll(user);//模糊查找，所以要遍历再验证
-        boolean res=true;
-        for(User u:users){
-            if(u.getUserName().equals(username)){
-                res=false;
+        List<User> users = userService.selectAll(user);//模糊查找，所以要遍历再验证
+        boolean res = true;
+        for (User u : users) {
+            if (u.getUserName().equals(username)) {
+                res = false;
                 break;
             }
         }

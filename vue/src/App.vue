@@ -35,10 +35,39 @@ Vue.filter('formatTime', function (timestamp) {
   return `${year}-${month}-${day} ${hour}:${minute}`;
 });
 
+
+// 动态计算根元素的字体大小
+function setRootFontSize() {
+  const baseFontSize = 16; // 默认字体大小
+  const screenWidth = window.innerWidth; // 获取屏幕宽度
+  // console.log(screenWidth);
+  const fontSize = screenWidth / 1920 * baseFontSize * 1.1; // 根据屏幕宽度计算字体大小
+  document.documentElement.style.setProperty('--base-font-size', `${fontSize}px`); // 设置根元素的字体大小
+}
+
+// 初始化时设置根元素的字体大小
+setRootFontSize();
+
+// 在窗口大小变化时重新设置根元素的字体大小
+window.addEventListener('resize', setRootFontSize);
+
+
 </script>
 <style>
+:root {
+  /* 默认字体大小 */
+  --base-font-size: 16px;
+}
+
+html {
+  /* 使用 CSS 变量设置根元素字体大小 */
+  font-size: var(--base-font-size);
+}
+
+
 /*以下的样式是为了解决弹出框导致页面元素发生偏移的问题。*/
 body {
+
   /*这段代码是为了防止页面出现水平滚动条*/
   padding-right: 0 !important;
 }
@@ -47,4 +76,7 @@ body {
   overflow-y: scroll;
   padding-right: 0 !important
 }
+
+
 </style>
+

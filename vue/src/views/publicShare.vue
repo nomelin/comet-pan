@@ -83,10 +83,10 @@
             </el-button>
 
             <div style="display: flex; align-items: center; background-color: #f5f6f8;
-            padding: 10px 20px;border-radius: 20px;">
+            padding: 1rem 2rem;border-radius: 2rem;">
               <el-avatar class="avatar" :src="$baseUrl+'/avatar/'+shareUser.id"
                          shape="circle" fit="contain" size="large" alt=""></el-avatar>
-              <div class="user-name" style="margin-left: 10px;">
+              <div class="user-name" style="margin-left: 1rem;">
                 <span>来自 [{{ shareUser.name }}] 的分享</span>
               </div>
             </div>
@@ -100,6 +100,8 @@
             <el-skeleton class="table-skeleton" :rows="10" animated v-if="loading"/>
             <el-table v-else :data="tableData" strip @selection-change="handleSelectionChange"
                       height="66vh" class="table-style" empty-text=""
+                      :row-style="{height: '4rem'}"
+                      :cell-style="{padding: '0'}"
                       ref="table" :default-sort="{prop: 'name', order: 'ascending'}"
             >
               <template v-if="!checked" slot="empty">
@@ -423,11 +425,11 @@ export default {
 }
 
 .avatar {
-  margin-right: 20px; /* 头像与用户名之间的间距 */
+  margin-right: 2rem; /* 头像与用户名之间的间距 */
 }
 
 .user-name {
-  font-size: 16px; /* 可根据需要调整用户名的样式 */
+  font-size: 1rem; /* 可根据需要调整用户名的样式 */
   font-weight: bold; /* 加粗 */
   color: #333333; /* 字体颜色 */
 }
@@ -441,7 +443,7 @@ export default {
 
 .el-menu {
   border: none;
-  border-radius: 20px;
+  border-radius: 1rem;
   height: 70%;
   width: 80%;
   margin-left: 10%;
@@ -450,18 +452,18 @@ export default {
 
 .el-menu-item {
   /*padding-top: 20px; !* 增加上边距 *!*/
-  margin-top: 10px; /* 修正菜单项的高度 */
+  margin-top: 1rem; /* 修正菜单项的高度 */
 }
 
 .el-menu-item:hover {
   padding-top: 2px; /* 增加上边距 */
-  margin-top: 10px; /* 修正菜单项的高度 */
+  margin-top: 1rem; /* 修正菜单项的高度 */
 }
 
 .main-right {
   width: 100%;
   height: 100%;
-  border-top-left-radius: 50px;
+  border-top-left-radius: 4rem;
 }
 
 .front-layout {
@@ -476,7 +478,7 @@ export default {
 /*}*/
 .logo {
   width: 10vw;
-  margin-top: 30px;
+  margin-top: 2rem;
 }
 
 .front-header {
@@ -489,16 +491,10 @@ export default {
 }
 
 .front-header-left {
-  width: 400px;
+  width: 50%;
   /*display: flex;*/
   /*align-items: center;*/
-  padding-left: 30px;
-}
-
-.front-header-dropdown img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%
+  padding-left: 3%;
 }
 
 .front-header-center {
@@ -506,44 +502,15 @@ export default {
 }
 
 .front-header-right {
-  width: 200px;
-  padding-right: 20px;
+  width: 30%;
+  padding-right: 5%;
   text-align: right;
 }
-
-.front-header-dropdown {
-  display: flex;
-  align-items: center;
-  justify-content: right;
-}
-
-.el-dropdown-menu {
-  width: 100px !important;
-  text-align: center !important;
-}
-
-/*页面具体样式自定义*/
-.main-content {
-  width: 100%;
-  margin: 5px auto;
-}
-
-/* ElementUI 样式覆盖 */
-/*.el-menu.el-menu--horizontal {*/
-/*  border: none !important;*/
-/*  height: 80px;*/
-/*  border-radius: 10px;*/
-/*}*/
-
 
 .words {
   font-weight: bold;
 }
 
-/*::v-deep .el-menu-item .is-active {*/
-/*  background-color: #3370ff !important;*/
-/*  color: #fff;*/
-/*}*/
 .user-space-info {
   width: 80%;
 }
@@ -551,29 +518,12 @@ export default {
 .user-space {
   display: inline-block; /* 将 span 元素设置为行内块级元素 */
   font-weight: bold;
-  font-size: 12px;
+  font-size: 0.8rem;
   width: 100%; /* 设置宽度为100% */
   text-align: right; /* 将文本内容右对齐 */
   box-sizing: border-box; /* 使用边框盒模型，确保宽度包含 padding 和 border */
 }
 
-.main-container {
-  /*border-radius: 50px;*/
-  border-top-left-radius: 50px;
-  background-color: #ffffff;
-  height: 100%;
-  width: 100%;
-}
-
-.table {
-  background-color: #ffffff;
-  height: 75%;
-}
-
-/* 设置 el-table 每一行的高度 */
-::v-deep .el-table .el-table__body .el-table__row {
-  height: 60px; /* 设置每一行的高度 */
-}
 
 .blank {
   height: 3%
@@ -584,154 +534,4 @@ export default {
   width: 80%;
   margin-left: 3%;
 }
-
-.backAndForward {
-  margin-left: 5%;
-  width: 80%;
-  display: flex;
-  justify-content: flex-start; /* 靠左对齐 */
-}
-
-
-.path {
-  font-weight: bold;
-  font-size: 16px;
-  color: #999999;
-  margin-left: 3%;
-  display: flex;
-  align-items: center; /* 垂直居中 */
-  /*text-align: left;*/
-  /*display: flex;*/
-  height: 5%;
-  /*text-align: center;*/
-  /*background-color: #f5f6f7;*/
-  /*border-radius: 5px;*/
-}
-
-::v-deep .search-input .el-input__inner {
-  width: 100%;
-  height: 5vh;
-  background-color: #EBEEF5;
-  text-align: center;
-  border: 0 !important;
-  outline: none;
-  font-weight: bold;
-  font-size: 14px;
-  border-radius: 15px;
-}
-
-.table-skeleton {
-  width: 80%;
-  margin-left: 10%;
-  margin-top: 5%;
-}
-
-::v-deep .highlight {
-  /*background-color: yellow;*/
-  color: #0d53ff;
-  font-weight: bold;
-  font-size: 15px;
-}
-
-.table-style {
-  font-weight: bold;
-  font-size: 13px;
-}
-
-/*右键菜单*/
-.contextmenu__item {
-  display: block;
-  line-height: 35px;
-  text-align: center;
-}
-
-/*分割线*/
-.contextmenu__item:not(:last-child) {
-  border-bottom: 0px solid #00ffff;
-}
-
-.menu {
-  position: absolute;
-  background-color: #fff;
-  width: 10%;
-  /*height: 106px;*/
-  font-size: 14px;
-  font-weight: bold;
-  color: #52565e;
-  border-radius: 10px;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  border: 1px solid #DCDFE6;
-  /*box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);*/
-  white-space: nowrap;
-  z-index: 1000;
-}
-
-.contextmenu__item:hover {
-  cursor: pointer;
-  background: #e6f1ff;
-  border-color: #e6f1ff;
-  /*color: #52565e;*/
-}
-
-::v-deep .rename-input .el-input__inner {
-  overflow: visible;
-  width: 100%;
-  text-align: left;
-  border: 0 !important;
-  outline: none;
-  font-size: 15px;
-  font-weight: bold;
-}
-
-.dialog-files {
-  z-index: 999;
-}
-
-.folder-icon {
-  width: 100%;
-}
-
-.little-icon {
-  width: 50px;
-  vertical-align: middle;
-}
-
-
-.primary-button {
-  background-color: #0d53ff;
-  color: #fff;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 130px;
-  height: 40px;
-}
-
-.normal-button {
-  background-color: #ffffff;
-  color: #606266;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 80px;
-  height: 40px;
-}
-
-.name-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.opt-container {
-  color: #606266;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.divider {
-  height: 0;
-}
-
 </style>

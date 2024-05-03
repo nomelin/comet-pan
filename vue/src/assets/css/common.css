@@ -1,0 +1,104 @@
+.normal-button {
+    background-color: #ffffff;
+    color: #606266;
+    border-radius: 0.8rem;
+    font-weight: bold;
+    font-size: 1rem;
+    width: auto;
+    padding: 0.5rem 1rem; /* 按钮的内边距，可以根据需要进行调整 */;
+    /*min-width: 100px;*/
+    height: 3rem;
+}
+.primary-button {
+    background-color: #0d53ff;
+    color: #ffffff;
+    border-radius: 0.8rem;
+    font-weight: bold;
+    font-size: 1rem;
+    width: auto;
+    padding: 0.5rem 1rem; /* 按钮的内边距，可以根据需要进行调整 */;
+    /*min-width: 100px;*/
+    /*height: 5vh;*/
+    height:3rem
+}
+.main-container {
+    /*border-radius: 50px;*/
+    border-top-left-radius: 4rem;
+    background-color: #ffffff;
+    height: 100%;
+    width: 100%;
+}
+
+.path {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #999999;
+    margin-left: 3%;
+    display: flex;
+    align-items: center; /* 垂直居中 */
+    /*text-align: left;*/
+    /*display: flex;*/
+    height: 5%;
+    /*text-align: center;*/
+    /*background-color: #f5f6f7;*/
+    /*border-radius: 5px;*/
+}
+
+.table {
+    background-color: #ffffff;
+    height: 75%;
+}
+
+/*!* 设置 el-table 每一行的高度 *!*/
+/*::v-deep .el-table .el-table__body .el-table__row {*/
+/*    height: 500px; !* 设置每一行的高度 *!*/
+/*}*/
+
+
+.table-style {
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.table-skeleton {
+    width: 80%;
+    margin-left: 10%;
+    margin-top: 5%;
+}
+/*右键菜单*/
+.contextmenu__item {
+    display: block;
+    line-height: 2.2rem;
+    text-align: center;
+}
+
+/*分割线*/
+.contextmenu__item:not(:last-child) {
+    border-bottom: 0 solid #00ffff;
+}
+
+.menu {
+    position: absolute;
+    background-color: #fff;
+    width: 10%;
+    /*height: 106px;*/
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #52565e;
+    border-radius: 0.5rem;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #DCDFE6;
+    /*box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);*/
+    white-space: nowrap;
+    z-index: 1000;
+}
+/**
+右键菜单项
+ */
+.contextmenu__item:hover {
+    cursor: pointer;
+    background: #e6f1ff;
+    border-color: #e6f1ff;
+    /*color: #52565e;*/
+}

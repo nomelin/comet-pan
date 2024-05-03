@@ -242,6 +242,6 @@ export default {
 
 .table-files {
   font-weight: bold;
-  font-size: 13px;
+  font-size: 0.8rem;
 }
 </style>

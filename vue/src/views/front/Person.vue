@@ -2,7 +2,7 @@
   <div class="main-content">
     <el-card class="card">
       <div class="password">
-        <el-button class="password-btn" type="primary" @click="updatePassword">修改密码</el-button>
+        <el-button class="primary-button" style="margin-right: 10rem" type="primary" @click="updatePassword">修改密码</el-button>
       </div>
       <el-form class="form" :model="user" label-width="80px">
         <div style="margin: 15px; text-align: center">
@@ -29,7 +29,7 @@
           <el-input class="input" v-model="user.email" placeholder="邮箱"></el-input>
         </el-form-item>
         <div class="btn-group">
-          <el-button class ="btn" type="primary" @click="update">保 存</el-button>
+          <el-button class ="primary-button" type="primary" @click="update">保 存</el-button>
         </div>
       </el-form>
     </el-card>
@@ -37,7 +37,7 @@
                destroy-on-close class="dialog">
       <el-form :model="user" label-width="80px" style="padding-right: 20px" :rules="rules" ref="formRef">
         <el-form-item label="原始密码" prop="password">
-          <el-input class="input" show-password v-model="user.password" placeholder="原始密码"></el-input>
+          <el-input class="input" show-password v-model="user.oldPassword" placeholder="原始密码"></el-input>
         </el-form-item>
         <el-form-item label="新密码" prop="newPassword">
           <el-input class="input" show-password v-model="user.newPassword" placeholder="新密码"></el-input>
@@ -71,7 +71,7 @@ export default {
       dialogVisible: false,
 
       rules: {
-        password: [
+        oldPassword: [
           {required: true, message: '请输入原始密码', trigger: 'blur'},
         ],
         newPassword: [
@@ -128,7 +128,18 @@ export default {
             if (res.code === '200') {
               // 成功更新
               this.$message.success('修改密码成功')
-              this.$router.push('/login')
+              this.$request.delete("/logout").then(res => {
+                if (res.code === '200') {
+                  this.$message.success("请重新登录")
+                  localStorage.removeItem("user");
+                  this.$router.push("/login");
+                }
+                else {
+                  this.$message.error(res.code + ": " + res.msg)
+                }
+              }).catch(error => {
+                this.$message.error("退出失败")
+              });
             } else {
               this.$message.error(res.msg)
             }
@@ -163,19 +174,19 @@ export default {
   border-color: #0d53ff;
 }
 
-.avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 120px;
-  height: 120px;
-  line-height: 120px;
-  text-align: center;
-  border-radius: 50%;
-}
+/*.avatar-uploader-icon {*/
+/*  font-size: 28px;*/
+/*  color: #8c939d;*/
+/*  width: 50%;*/
+/*  height:50%;*/
+/*  line-height: 120px;*/
+/*  text-align: center;*/
+/*  border-radius: 50%;*/
+/*}*/
 
 .avatar {
-  width: 120px;
-  height: 120px;
+  width: 9rem;
+  height: 9rem;
   display: block;
   border-radius: 20%;
 }
@@ -187,25 +198,15 @@ export default {
 .card{
   width: 80%;
   height: 80%;
-  box-shadow: 0 30px 100px rgba(217, 236, 255, 0.5);
+  box-shadow: 0 2rem 7rem rgba(217, 236, 255, 0.5);
   margin: 0 auto;
-  border-radius: 50px;
+  border-radius: 5rem;
 }
 .password{
   text-align: right;
   width: 100%;
   height: 5vh;
 
-}
-.password-btn{
-  margin-right: 12%;
-  background-color:#0d53ff;
-  color: #fff;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 10%;
-  height: 100%;
 }
 .form{
   width: 70%;
@@ -218,30 +219,20 @@ export default {
   border: 1px solid #d9d9d9;
   outline: none;
   font-weight: bold;
-  font-size: 15px;
-  height: 40px;
-  border-radius: 10px;
+  font-size: 1rem;
+  height: 3rem;
+  border-radius: 0.5rem;
 }
 
 .btn-group{
-  margin-top: 20px;
+  margin-top: 1rem;
   text-align: center;
-}
-.btn{
-  background-color:#0d53ff;
-  color: #fff;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  width: 100px;
-  height: 40px;
-
 }
 .dialog-footer {
   text-align: center;
 }
 .dialog{
-  border-radius: 10px;
+  border-radius: 0.5rem;
 }
 
 </style>

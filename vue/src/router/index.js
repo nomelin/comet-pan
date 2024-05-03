@@ -48,7 +48,7 @@ const routes = [
         path: '/',
         name: 'Front',
         component: () => import('../views/Front.vue'),
-        redirect: '/files',  // 重定向到主页
+        // redirect: '/files',  // 重定向到主页
         children: [
             // { path: 'home', name: 'Home', meta: { name: '系统首页' }, component: () => import('../views/front/Home') },
             {
@@ -89,7 +89,7 @@ const router = new VueRouter({
 // 如果用户访问的不是根路径 /，则直接调用 next() 方法，继续执行下一个导航钩子。
 router.beforeEach((to, from, next) => {
     let user = JSON.parse(localStorage.getItem("user") || '{}');
-    if (to.path === '/') {
+    if (to.path === '/'||to.path==='') {
         if (user.role) {
             if (user.role === 2) {
                 next('/files')
@@ -97,6 +97,7 @@ router.beforeEach((to, from, next) => {
                 next('/manager/home')
             } else {
                 this.$message.error('用户角色权限非法')
+                next('/login')
             }
         } else {
             next('/login')
