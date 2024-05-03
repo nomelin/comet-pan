@@ -155,8 +155,11 @@
       <div class="contextmenu__item"
            @click="handleFolderClick(CurrentRow)">打开
       </div>
+<!--      <div class="contextmenu__item"-->
+<!--           @click="download(CurrentRow)">下载(小文件)-->
+<!--      </div>-->
       <div class="contextmenu__item"
-           @click="download(CurrentRow)">下载
+           @click="downloadByBrowser(CurrentRow)">下载
       </div>
       <div class="contextmenu__item"
            @click="shareFile">分享
@@ -180,6 +183,7 @@
       <div class="contextmenu__item"
            @click="del(CurrentRow.id)">删除
       </div>
+
     </div>
 
     <el-dialog title="分享" :visible.sync="shareDialogVisible" width="40%"
@@ -246,6 +250,7 @@
 import FileTableDialog from "@/views/front/fileTableDialog";
 import Uploader from "@/views/front/uploader";
 import FileIcon from "@/views/FileIcon";
+import {downloadFile} from "@/App";
 
 export default {
   name: "DiskFiles",
@@ -692,6 +697,14 @@ export default {
     },
     mouseLeave(row) {
       this.$set(row, 'optShow', false)
+    },
+    async downloadByBrowser(row){
+      if (row.folder === true) {
+        this.$message.info('暂不支持下载文件夹')
+        return
+      }
+      // console.log(row)
+      downloadFile(row.diskId,row.id)
     },
     download(row) {
       if (row.folder === true) {

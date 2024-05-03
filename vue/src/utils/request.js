@@ -24,6 +24,11 @@ request.interceptors.request.use(config => {
 // 可以在接口响应后统一处理结果
 request.interceptors.response.use(
     response => {
+        console.log("content-type: "+response.headers['content-type']);
+        // 判断是否是文件下载请求，如果是，则直接返回配置对象
+        if (response.headers['content-type'] === 'application/octet-stream'|| isFileDownloadRequest(response.config.url)) {
+            return response;
+        }
         let res = response.data;
         // 兼容服务端返回的字符串数据
         if (typeof res === 'string') {
@@ -40,5 +45,11 @@ request.interceptors.response.use(
     }
 )
 
+// 判断是否是文件下载请求的辅助函数
+function isFileDownloadRequest(url) {
+    // 根据 URL 的特定条件判断是否是文件下载请求，您需要根据实际情况修改这里的判断逻辑
+    // 比如判断 URL 是否以特定的文件扩展名结尾，或者是否包含特定的文件路径等
+    return url.endsWith('.pdf') || url.includes('/download/');
+}
 
 export default request

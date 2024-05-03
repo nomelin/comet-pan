@@ -36,6 +36,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/users/{id}")
                 .excludePathPatterns("/valid/*")
                 .excludePathPatterns("/share/*")
+                .excludePathPatterns("/download/**")// 下载文件,到时候请关闭
                 .excludePathPatterns("/files/share/batch");
 //                .excludePathPatterns("/upload/**");
         registry.addInterceptor(adminInterceptor).addPathPatterns("/users/**")

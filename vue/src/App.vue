@@ -52,6 +52,27 @@ setRootFontSize();
 window.addEventListener('resize', setRootFontSize);
 
 
+// export function downloadFile(onDownloadProgress, fileName, diskId) {
+//   return axios({
+//     baseURL: process.env.VUE_APP_BASEURL,
+//     url: `/download/test/${diskId}`,
+//     method: 'get',
+//     responseType: 'blob',
+//     onDownloadProgress
+//   }).then(response => {
+//     const url = window.URL.createObjectURL(new Blob([response.data]))
+//     const link = document.createElement('a')
+//     link.href = url
+//     link.setAttribute('download', fileName) // 这里的 'file' 应该是你的文件名
+//     document.body.appendChild(link)
+//     link.click()
+//     link.remove()
+//   })
+// }
+export function downloadFile( diskId, fileId) {
+  window.location.href = `${process.env.VUE_APP_BASEURL}/download/test/${diskId}/${fileId}`
+}
+
 </script>
 <style>
 :root {
