@@ -9,7 +9,6 @@ import top.nomelin.cometpan.pojo.User;
  *
  * @author nomelin
  */
-//TODO 因为是session，所以需要在用户退出后清空缓存，否则会导致登录别的用户时获取到上次的用户信息。直接调用clear方法即可
 @Component
 @SessionScope
 public class CurrentUserCache {

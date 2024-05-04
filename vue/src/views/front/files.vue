@@ -6,7 +6,7 @@
                 @keyup.enter.native="selectAll(1)">
         <template #suffix>
           <i class="el-icon-search" @click="selectAll(1)"
-             style="cursor: pointer; font-size: 2.5rem; color:#909399; transform: translateY(0.4rem);"></i>
+             style="cursor: pointer; font-size: 2rem; color:#909399; transform: translateY(0.4rem);"></i>
         </template>
       </el-input>
 

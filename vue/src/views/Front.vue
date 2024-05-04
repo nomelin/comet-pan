@@ -208,6 +208,7 @@ export default {
 .main-left {
   width: 20vw;
   height: 100%;
+  min-width: 150px;
 }
 
 .main-left-upper {

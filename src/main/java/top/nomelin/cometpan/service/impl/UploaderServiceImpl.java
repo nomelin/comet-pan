@@ -183,7 +183,7 @@ public class UploaderServiceImpl implements UploaderService {
         diskFile.setHash(identifier);
         diskFile.setLength(size);
         diskMapper.insert(diskFile); // 插入数据库，得到id
-        fileService.addFile(filename, targetFolderId, Math.toIntExact(size), diskFile.getId());
+        fileService.addFile(filename, targetFolderId,size, diskFile.getId());
         //合并文件
         String filePath = getFilePath(identifier, diskFile.getId()); // 获取文件路径
         diskFile.setPath(filePath);

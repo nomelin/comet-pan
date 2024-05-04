@@ -13,7 +13,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,8 @@ import top.nomelin.cometpan.util.Util;
 import java.io.*;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
@@ -70,7 +75,7 @@ public class DownloadServiceImpl implements DownloadService {
      */
 
     private static String getEncodedFilename(HttpServletRequest request, String originalFileName) {
-        String encodedFilename = null;
+        String encodedFilename;
         String agent = request.getHeader("User-Agent");
         if (agent.contains("MSIE")) {
             // IE浏览器
@@ -87,7 +92,9 @@ public class DownloadServiceImpl implements DownloadService {
     }
 
     @Override
-    public ResponseEntity<FileSystemResource> downloadByBrowser(Integer diskId, Integer fileId) throws FileNotFoundException {
+    public ResponseEntity<Resource> downloadByBrowser(Integer diskId,
+                                                      Integer fileId,
+                                                      String rangeHeader) throws IOException {
         DiskFile diskFile = diskMapper.selectById(diskId);
         FileMeta fileMeta = fileService.selectById(fileId);
         if (ObjectUtil.isNull(diskFile) || ObjectUtil.isNull(fileMeta)) {
@@ -100,26 +107,55 @@ public class DownloadServiceImpl implements DownloadService {
         if (!file.exists()) {
             throw new BusinessException(CodeMessage.NOT_FOUND_ERROR);
         }
+        if(rangeHeader == null){
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+            headers.add("Content-Disposition", "attachment; filename="
+                    + Util.getFullName(fileMeta.getName(), fileMeta.getType()));
+            headers.add("Pragma", "no-cache");
+            headers.add("Expires", "0");
+            headers.add("Last-Modified", new Date().toString());
+            headers.add("ETag", String.valueOf(System.currentTimeMillis()));
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentLength(file.length())
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
+                    .body(new FileSystemResource(file));
+        }
+        //TODO range头模式下工作不正常，待修复
+
+        // 解析 Range 头
+        long from = 0;
+        long to = file.length() - 1;
+        String[] ranges = rangeHeader.split("=")[1].split("-");
+        from = Long.parseLong(ranges[0]);
+        if (ranges.length > 1) {
+            to = Math.min(Long.parseLong(ranges[1]), to);
+        }
+
+        // 创建 InputStream
+        RandomAccessFile raf = new RandomAccessFile(file, "r");
+        FileChannel fileChannel = raf.getChannel();
+        InputStream is = new FileChannelInputStream(fileChannel, from, to+1);
+        InputStreamResource resource = new InputStreamResource(is);
+
+        // 创建 HttpHeaders
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Content-Range", String.format("bytes %d-%d/%d", from, to, file.length()));
+        headers.add("Accept-Ranges", "bytes");
         headers.add("Content-Disposition", "attachment; filename="
                 + Util.getFullName(fileMeta.getName(), fileMeta.getType()));
-        headers.add("Pragma", "no-cache");
-        headers.add("Expires", "0");
-        headers.add("Last-Modified", new Date().toString());
-        headers.add("ETag", String.valueOf(System.currentTimeMillis()));
-        return ResponseEntity
-                .ok()
+        // 其他头...
+
+        headers.add("Content-Range", String.format("bytes %d-%d/%d", from, to, file.length()));
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                 .headers(headers)
-                .contentLength(file.length())
+                .contentLength(to - from + 1)
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
-                .body(new FileSystemResource(file));
+                .body(resource);
     }
 
-
-    /**
-     * 下载文件
-     */
     @Override
     public void downloadNormal(Integer id, Boolean isAttachment, HttpServletRequest request, HttpServletResponse response) {
         if (ObjectUtil.isNull(id)) {
@@ -364,6 +400,7 @@ public class DownloadServiceImpl implements DownloadService {
         response.setHeader("Content-Length", String.valueOf(downloadFileInfo.getRangeLength()));
     }
 
+    @Deprecated(forRemoval = true)
     private class SliceDownloadRunnable implements Runnable {
         private final long start;
         private final long end;
@@ -384,6 +421,36 @@ public class DownloadServiceImpl implements DownloadService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private class FileChannelInputStream extends InputStream {
+        private final FileChannel fileChannel;
+        private final long end;
+
+        public FileChannelInputStream(FileChannel fileChannel, long start, long end) throws IOException {
+            this.fileChannel = fileChannel;
+            this.end = end;
+            fileChannel.position(start);
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (fileChannel.position() >= end) {
+                return -1;
+            }
+            ByteBuffer buffer = ByteBuffer.allocate(1);
+            int bytesRead = fileChannel.read(buffer);
+            if (bytesRead == -1) {
+                return -1;
+            } else {
+                return buffer.get(0);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            fileChannel.close();
         }
     }
 

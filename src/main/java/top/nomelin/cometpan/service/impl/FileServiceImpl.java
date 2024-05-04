@@ -60,7 +60,7 @@ public class FileServiceImpl implements FileService {
      * 得到用户所用的空间
      */
     @Override
-    public int getUsedSpace(Integer userId) {
+    public Long getUsedSpace(Integer userId) {
         User user = userMapper.selectById(userId);
         FileMeta root = fileMapper.selectById(user.getRootId());
         return root.getSize();
@@ -235,7 +235,7 @@ public class FileServiceImpl implements FileService {
      */
     @Transactional
     @Override
-    public int addFile(String fileName, Integer parentFolderId, int size, int disk_id) {
+    public int addFile(String fileName, Integer parentFolderId, Long size, int disk_id) {
         FileService bean = SpringBeanUtil.getBean(FileService.class);
         if (ObjectUtil.isNull(bean)) {
             throw new SystemException(CodeMessage.BEAN_ERROR);
@@ -289,7 +289,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public void updateSizeById(Integer id, boolean add) {
         FileMeta fileMeta = fileMapper.selectById(id);
-        int size = fileMeta.getSize();
+        Long size = fileMeta.getSize();
         if (fileMeta.getFolderId() == 0) {
             throw new BusinessException(CodeMessage.INVALID_FILE_ID_ERROR);
         }
@@ -300,7 +300,7 @@ public class FileServiceImpl implements FileService {
                 break; // 到达根目录
             }
             fileMeta = fileMapper.selectById(folderId); // 获取父目录
-            int newSize = add ? fileMeta.getSize() + size : fileMeta.getSize() - size;
+            Long newSize = add ? fileMeta.getSize() + size : fileMeta.getSize() - size;
             FileMeta updatedFolder = new FileMeta(); // 创建一个新的对象来保存更新后的父目录信息
             updatedFolder.setId(fileMeta.getId());
             updatedFolder.setSize(newSize);
@@ -507,6 +507,7 @@ public class FileServiceImpl implements FileService {
      * 删除
      */
     @Transactional
+    @Override
     public void deleteById(Integer id) {
         FileMeta fileMeta = fileMapper.selectById(id);
         if (ObjectUtil.isNull(fileMeta) || fileMeta.getFolderId() == 0) {
@@ -523,6 +524,7 @@ public class FileServiceImpl implements FileService {
      * 批量删除
      */
     @Transactional
+    @Override
     public void deleteBatch(List<Integer> ids) {
         Set<Integer> idsSet = new HashSet<>(ids);
         for (Integer id : idsSet) {
@@ -562,6 +564,7 @@ public class FileServiceImpl implements FileService {
     /**
      * 修改
      */
+    @Override
     public void updateById(FileMeta diskFiles) {
         fileMapper.updateById(diskFiles);
     }
@@ -569,6 +572,7 @@ public class FileServiceImpl implements FileService {
     /**
      * 根据ID查询
      */
+    @Override
     public FileMeta selectById(Integer id) {
         return fileMapper.selectById(id);
     }
@@ -576,6 +580,7 @@ public class FileServiceImpl implements FileService {
     /**
      * 查询所有,不包括删除的文件
      */
+    @Override
     public List<FileMeta> selectAll(FileMeta fileMeta) {
         fileMeta.setDelete(false);
         return fileMapper.selectAll(fileMeta);

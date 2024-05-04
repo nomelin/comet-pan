@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
         if (ObjectUtil.isEmpty(user.getName())) {//如果没有设置昵称，则默认昵称是用户名
             user.setName(user.getUserName());//默认昵称是用户名
         }
-        user.setRole(Role.USER.roleCode);//默认角色是普通用户//TODO 后续可以增加角色管理功能
+        user.setRole(Role.USER.roleCode);//默认角色是普通用户
         userMapper.insert(user);//插入数据库
         int fileId = fileService.addRoot(user.getId());//创建用户目录,id自动获取
         logger.info("新增用户，：" + user.getId() + "，根文件夹ID：" + fileId);

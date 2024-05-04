@@ -71,7 +71,7 @@ public class UploaderController {
 
     @PostMapping("/instant")
     public Result instantUpload(@RequestBody InstantUploadDTO dto) {
-        fileService.addFile(dto.getFilename(), dto.getTargetFolderId(), Math.toIntExact(dto.getTotalSize()), dto.getDiskId());
+        fileService.addFile(dto.getFilename(), dto.getTargetFolderId(),dto.getTotalSize(), dto.getDiskId());
         diskService.incDiskCount(dto.getDiskId());
         return Result.success();
     }

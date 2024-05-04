@@ -38,7 +38,7 @@ public class FileMeta {
     /**
      * 文件大小
      */
-    private Integer size;
+    private Long size;
     /**
      * 创建时间
      */
@@ -105,11 +105,11 @@ public class FileMeta {
         this.type = type;
     }
 
-    public Integer getSize() {
+    public Long getSize() {
         return size;
     }
 
-    public void setSize(Integer size) {
+    public void setSize(Long size) {
         this.size = size;
     }
 

@@ -37,7 +37,7 @@ public interface FileService {
      * 在当前用户空间新增文件
      */
 
-    int addFile(String fileName, Integer parentFolderId, int size, int disk_id);
+    int addFile(String fileName, Integer parentFolderId, Long size, int disk_id);
 
     /**
      * 从这个节点的父文件夹开始，更新节点大小,直到根目录
@@ -101,7 +101,7 @@ public interface FileService {
      */
     void setDeleteBatch(List<Integer> ids);
 
-    int getUsedSpace(Integer userId);
+    Long getUsedSpace(Integer userId);
 
     /**
      * 标记删除节点，包括子节点

@@ -4,10 +4,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.BusinessException;
 import top.nomelin.cometpan.service.DownloadService;
@@ -46,8 +49,11 @@ public class DownloadController {
     }
 
     @GetMapping("/test/{diskId}/{fileId}")
-    public ResponseEntity<FileSystemResource> downloadFile(@PathVariable Integer diskId, @PathVariable Integer fileId) throws IOException {
-        logger.info("download diskId: " + diskId+", fileId: "+fileId);
-        return downloadService.downloadByBrowser(diskId, fileId);
+    public ResponseEntity<Resource> downloadFile(@PathVariable Integer diskId,
+                                                 @PathVariable Integer fileId,
+                                                 HttpServletRequest request) throws IOException {
+        logger.info("download diskId: " + diskId + ", fileId: " + fileId + "，range: " + request.getHeader("Range"));
+        return downloadService.downloadByBrowser(diskId, fileId, request.getHeader("Range"));
     }
+
 }
