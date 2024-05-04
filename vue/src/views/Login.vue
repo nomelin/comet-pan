@@ -48,7 +48,11 @@
               <span>还没有账号？请<a href="/register">注册</a></span>
             </div>
           </el-form>
+          <div class ="temp" >
+            测试账号用户名: 123, 密码: 123
+          </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -128,6 +132,15 @@ export default {
 </script>
 
 <style scoped>
+.temp {
+  font-size: 1.2rem;
+  margin-top: 1.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  background-color: #f3f6fe;
+  color: #707375;
+  border-radius: 0.5rem;
+}
 .container {
   height: 100vh;
   overflow: hidden;

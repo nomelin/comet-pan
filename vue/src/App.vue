@@ -70,7 +70,7 @@ window.addEventListener('resize', setRootFontSize);
 //   })
 // }
 export function downloadFile( diskId, fileId) {
-  window.location.href = `${process.env.VUE_APP_BASEURL}/download/test/${diskId}/${fileId}`
+  window.location.href = `${process.env.VUE_APP_BASEURL}/download?diskId=${diskId}&fileId=${fileId}`
 }
 
 </script>

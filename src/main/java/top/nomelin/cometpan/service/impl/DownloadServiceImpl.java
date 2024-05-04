@@ -107,11 +107,13 @@ public class DownloadServiceImpl implements DownloadService {
         if (!file.exists()) {
             throw new BusinessException(CodeMessage.NOT_FOUND_ERROR);
         }
-        if(rangeHeader == null){
+//      if(rangeHeader == null){
+        if (true) {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-            headers.add("Content-Disposition", "attachment; filename="
-                    + Util.getFullName(fileMeta.getName(), fileMeta.getType()));
+            // 使用 UTF-8 编码来确保文件名中的特殊字符被正确处理
+            String encodedFileName = URLEncoder.encode(Util.getFullName(fileMeta.getName(), fileMeta.getType()), StandardCharsets.UTF_8);
+            headers.add("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
             headers.add("Pragma", "no-cache");
             headers.add("Expires", "0");
             headers.add("Last-Modified", new Date().toString());
@@ -137,7 +139,7 @@ public class DownloadServiceImpl implements DownloadService {
         // 创建 InputStream
         RandomAccessFile raf = new RandomAccessFile(file, "r");
         FileChannel fileChannel = raf.getChannel();
-        InputStream is = new FileChannelInputStream(fileChannel, from, to+1);
+        InputStream is = new FileChannelInputStream(fileChannel, from, to + 1);
         InputStreamResource resource = new InputStreamResource(is);
 
         // 创建 HttpHeaders

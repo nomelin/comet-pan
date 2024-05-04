@@ -7,10 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.BusinessException;
 import top.nomelin.cometpan.service.DownloadService;
@@ -48,9 +45,9 @@ public class DownloadController {
         downloadService.downloadNormal(request, response);
     }
 
-    @GetMapping("/test/{diskId}/{fileId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Integer diskId,
-                                                 @PathVariable Integer fileId,
+    @GetMapping("")
+    public ResponseEntity<Resource> downloadFile(@RequestParam Integer diskId,
+                                                 @RequestParam Integer fileId,
                                                  HttpServletRequest request) throws IOException {
         logger.info("download diskId: " + diskId + ", fileId: " + fileId + "，range: " + request.getHeader("Range"));
         return downloadService.downloadByBrowser(diskId, fileId, request.getHeader("Range"));

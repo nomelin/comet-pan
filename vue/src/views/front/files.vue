@@ -112,7 +112,7 @@
                 <div class="opt-container" v-if="scope.row.optShow">
                   <el-tooltip content="分享" effect="dark" :open-delay="100">
                     <i class="el-icon-share" style="margin-right: 10px; cursor: pointer"
-                    @click="shareFile"></i>
+                       @click="shareFile"></i>
                   </el-tooltip>
                   <el-tooltip content="删除" effect="dark" :open-delay="100">
                     <i class="el-icon-delete-solid" style="margin-right: 10px; cursor: pointer"
@@ -155,9 +155,9 @@
       <div class="contextmenu__item"
            @click="handleFolderClick(CurrentRow)">打开
       </div>
-<!--      <div class="contextmenu__item"-->
-<!--           @click="download(CurrentRow)">下载(小文件)-->
-<!--      </div>-->
+      <!--      <div class="contextmenu__item"-->
+      <!--           @click="download(CurrentRow)">下载(小文件)-->
+      <!--      </div>-->
       <div class="contextmenu__item"
            @click="downloadByBrowser(CurrentRow)">下载
       </div>
@@ -245,12 +245,13 @@
 
   </div>
 </template>
-
 <script>
 import FileTableDialog from "@/views/front/fileTableDialog";
 import Uploader from "@/views/front/uploader";
 import FileIcon from "@/views/FileIcon";
 import {downloadFile} from "@/App";
+// 在需要使用的地方引入 Base64
+import { Base64 } from 'js-base64';
 
 export default {
   name: "DiskFiles",
@@ -538,6 +539,12 @@ export default {
         this.handleCacheAndGetFileRequest('/files/folder/' + row.id)
         // console.log(this.requestCache + ":" + this.cacheIndex)
         this.folderId = row.id
+      } else {
+        //let originUrl = 'http://localhost:12345/download?diskId=' + row.diskId + "&fileId=" + row.id;
+        let originUrl = process.env.VUE_APP_BASEURL + '/download?diskId=' + row.diskId + "&fileId=" + row.id;
+        console.log(originUrl)
+        originUrl = originUrl + '&fullfilename=' + row.name + "." + row.type;
+        window.open('http://127.0.0.1:8012/onlinePreview?url=' + encodeURIComponent(Base64.encode(originUrl)));
       }
     },
     backNavigation() {
@@ -698,13 +705,13 @@ export default {
     mouseLeave(row) {
       this.$set(row, 'optShow', false)
     },
-    async downloadByBrowser(row){
+    async downloadByBrowser(row) {
       if (row.folder === true) {
         this.$message.info('暂不支持下载文件夹')
         return
       }
       // console.log(row)
-      downloadFile(row.diskId,row.id)
+      downloadFile(row.diskId, row.id)
     },
     download(row) {
       if (row.folder === true) {
@@ -712,7 +719,7 @@ export default {
         console.log("是文件夹：" + row.name)
         return
       }
-      this.XHRLoadFile(process.env.VUE_APP_BASEURL+'/download/' + row.id + '/0', {})
+      this.XHRLoadFile(process.env.VUE_APP_BASEURL + '/download/' + row.id + '/0', {})
     },
 
     //通过XMLHttpRequest发送post请求下载文件
@@ -826,7 +833,6 @@ export default {
   display: flex;
   justify-content: flex-start; /* 靠左对齐 */
 }
-
 
 
 ::v-deep .search-input .el-input__inner {

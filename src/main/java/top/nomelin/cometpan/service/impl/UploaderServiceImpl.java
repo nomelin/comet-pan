@@ -284,7 +284,7 @@ public class UploaderServiceImpl implements UploaderService {
     private void testRedisConnection() {
         try {
             String pingResult = Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().ping();
-            logger.info("redis连接成功: " + pingResult);
+//            logger.info("redis连接成功: " + pingResult);
         } catch (Exception e) {
             logger.warn("redis连接失败: " + e.getMessage());
             throw new SystemException(CodeMessage.REDIS_CONNECTION_ERROR);
