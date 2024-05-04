@@ -544,7 +544,10 @@ export default {
         let originUrl = process.env.VUE_APP_BASEURL + '/download?diskId=' + row.diskId + "&fileId=" + row.id;
         console.log(originUrl)
         originUrl = originUrl + '&fullfilename=' + row.name + "." + row.type;
-        window.open('http://127.0.0.1:8012/onlinePreview?url=' + encodeURIComponent(Base64.encode(originUrl)));
+        // window.open(process.env.VUE_APP_FILE_VIEW_URL+'?url=' + encodeURIComponent(Base64.encode(originUrl)));
+        let url=process.env.VUE_APP_FILE_VIEW_URL+'?url=' + encodeURIComponent(Base64.encode(originUrl))
+        console.log(url)
+        window.open(url);
       }
     },
     backNavigation() {
