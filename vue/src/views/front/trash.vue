@@ -21,7 +21,7 @@
                 ref="table">
         <template slot="empty">
           <el-empty description=" ">
-            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里什么都没有</span></p>
+            <p class="emptyText"><span style='font-size: 1.2rem;font-weight: bold'>这里什么都没有</span></p>
           </el-empty>
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -91,7 +91,7 @@
 </template>
 
 <script>
-import FileIcon  from "@/views/FileIcon";
+import FileIcon from "@/views/FileIcon";
 
 export default {
 

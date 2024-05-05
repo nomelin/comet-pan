@@ -2,7 +2,8 @@
   <div class="main-content">
     <el-card class="card">
       <div class="password">
-        <el-button class="primary-button" style="margin-right: 10rem" type="primary" @click="updatePassword">修改密码</el-button>
+        <el-button class="primary-button" style="margin-right: 10rem" type="primary" @click="updatePassword">修改密码
+        </el-button>
       </div>
       <el-form class="form" :model="user" label-width="80px">
         <div style="margin: 15px; text-align: center">
@@ -29,7 +30,7 @@
           <el-input class="input" v-model="user.email" placeholder="邮箱"></el-input>
         </el-form-item>
         <div class="btn-group">
-          <el-button class ="primary-button" type="primary" @click="update">保 存</el-button>
+          <el-button class="primary-button" type="primary" @click="update">保 存</el-button>
         </div>
       </el-form>
     </el-card>
@@ -55,6 +56,8 @@
 </template>
 
 <script>
+import CryptoJS from 'crypto-js'
+
 export default {
   data() {
     const validatePassword = (rule, value, callback) => {
@@ -107,9 +110,9 @@ export default {
       this.$message.success('头像上传成功')
       location.reload();
       return;
-      if(response.code === '200'){
+      if (response.code === '200') {
         this.$message.success('头像上传成功')
-      }else {
+      } else {
         this.$message.error(response.code + ": " + response.msg)
       }
       setTimeout(() => {
@@ -124,7 +127,17 @@ export default {
     save() {
       this.$refs.formRef.validate((valid) => {
         if (valid) {
-          this.$request.put('/updatePassword', this.user).then(res => {
+          // 对密码进行哈希和加盐处理
+          let saltedOldPassword = this.user.userName + this.user.oldPassword;
+          let saltedNewPassword = this.user.userName + this.user.newPassword;
+          // 使用哈希过的密码
+          let oldPassword = CryptoJS.SHA256(saltedOldPassword).toString();
+          let newPassword = CryptoJS.SHA256(saltedNewPassword).toString();
+          this.$request.put('/updatePassword', {
+            userName: this.user.userName,
+            oldPassword: oldPassword,
+            newPassword: newPassword
+          }).then(res => {
             if (res.code === '200') {
               // 成功更新
               this.$message.success('修改密码成功')
@@ -133,8 +146,7 @@ export default {
                   this.$message.success("请重新登录")
                   localStorage.removeItem("user");
                   this.$router.push("/login");
-                }
-                else {
+                } else {
                   this.$message.error(res.code + ": " + res.msg)
                 }
               }).catch(error => {
@@ -159,7 +171,6 @@ export default {
 /*/deep/ .el-upload {*/
 /*  border-radius: 50%;*/
 /*}*/
-
 
 
 ::v-deep .avatar-uploader .el-upload {
@@ -190,31 +201,36 @@ export default {
   display: block;
   border-radius: 20%;
 }
-.main-content{
+
+.main-content {
   width: 95%;
   height: 95%;
 
 }
-.card{
+
+.card {
   width: 80%;
   height: 80%;
   box-shadow: 0 2rem 7rem rgba(217, 236, 255, 0.5);
   margin: 0 auto;
   border-radius: 5rem;
 }
-.password{
+
+.password {
   text-align: right;
   width: 100%;
   height: 5vh;
 
 }
-.form{
+
+.form {
   width: 70%;
   height: 100%;
   margin: 0 auto;
 }
+
 ::v-deep .input .el-input__inner {
-  width:100%;
+  width: 100%;
   text-align: left;
   border: 1px solid #d9d9d9;
   outline: none;
@@ -224,14 +240,16 @@ export default {
   border-radius: 0.5rem;
 }
 
-.btn-group{
+.btn-group {
   margin-top: 1rem;
   text-align: center;
 }
+
 .dialog-footer {
   text-align: center;
 }
-.dialog{
+
+.dialog {
   border-radius: 0.5rem;
 }
 

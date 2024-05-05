@@ -24,7 +24,7 @@ request.interceptors.request.use(config => {
 // 可以在接口响应后统一处理结果
 request.interceptors.response.use(
     response => {
-        console.log("content-type: "+response.headers['content-type']);
+        // console.log("content-type: "+response.headers['content-type']);
         // 判断是否是文件下载请求，如果是，则直接返回配置对象
         if (response.headers['content-type'] === 'application/octet-stream'|| isFileDownloadRequest(response.config.url)) {
             return response;

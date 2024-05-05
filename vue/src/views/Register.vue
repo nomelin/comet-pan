@@ -58,6 +58,8 @@
 </template>
 
 <script>
+import CryptoJS from 'crypto-js'
+
 export default {
   name: "Register",
   data() {
@@ -125,7 +127,15 @@ export default {
       });
     },
     onSuccess() {
-      this.$request.post('/register', this.form).then(res => {
+      // 对密码进行哈希和加盐处理
+      let saltedPassword = this.form.username + this.form.password;
+      // 使用哈希过的密码
+      let hashedPassword = CryptoJS.SHA256(saltedPassword).toString();
+      console.log("hashedPassword: "+hashedPassword)
+      this.$request.post('/register', {
+        username: this.form.username,
+        password: hashedPassword
+      }).then(res => {
         if (res.code === '200') {
           this.$router.push('/login')  // 跳转登录页面
           this.$message.success('注册成功，请登录')

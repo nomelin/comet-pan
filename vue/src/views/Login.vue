@@ -59,6 +59,8 @@
 </template>
 
 <script>
+import CryptoJS from 'crypto-js'
+
 export default {
   name: "Login",
   data() {
@@ -98,7 +100,15 @@ export default {
       })
     },
     onSuccess() {
-      this.$request.post('/login', this.form).then(res => {
+      // 对密码进行哈希和加盐处理
+      let saltedPassword = this.form.username + this.form.password;
+      // 使用哈希过的密码
+      let hashedPassword = CryptoJS.SHA256(saltedPassword).toString();
+      console.log("hashedPassword: "+hashedPassword)
+      this.$request.post('/login', {
+        username: this.form.username,
+        password: hashedPassword
+      }).then(res => {
         if (res.code === '200') {
           localStorage.setItem("user", JSON.stringify(res.data));
           this.$message.success('登录成功');

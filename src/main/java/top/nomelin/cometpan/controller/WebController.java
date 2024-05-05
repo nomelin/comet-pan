@@ -81,9 +81,6 @@ public class WebController {
         String userName = requestBody.getStr("userName");
         String password = requestBody.getStr("oldPassword");
         String newPassword = requestBody.getStr("newPassword");
-        if (ObjectUtil.isNull(newPassword)) {
-            newPassword = requestBody.getStr("new_password");// 兼容前端传参的下划线形式
-        }
         if (StrUtil.isBlank(userName) || StrUtil.isBlank(password)
                 || ObjectUtil.isNull(newPassword) || StrUtil.isBlank(newPassword)) {
             return Result.error(CodeMessage.PARAM_LOST_ERROR);// 参数缺失

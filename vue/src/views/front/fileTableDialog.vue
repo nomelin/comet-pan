@@ -72,7 +72,7 @@ export default {
       // console.log(this.folderIdTemp)
       let data = this.tableDataTemp.filter(item => item.folder)
       this.totalTemp = data.length
-      if(typeof this.user === 'object' && Object.keys(this.user).length > 0){
+      if (typeof this.user === 'object' && Object.keys(this.user).length > 0) {
         //如果用户没有登录,则不计算路径
         console.log("get user")
         this.getPath(this.folderIdTemp)
@@ -171,8 +171,14 @@ export default {
     },
     getPath(id) {
       this.$request.get('/files/file/' + id).then(res => {
+        // console.log(res)
         if (res.code === '200') {
-          this.pathTemp = res.data.path.replace(/\//g, '>'); // 使用正则表达式替换所有匹配到的 /
+          if (!res.data) {
+            return;
+          }
+          if (res.data.path) {
+            this.pathTemp = res.data.path.replace(/\//g, '>'); // 使用正则表达式替换所有匹配到的 /
+          }
         } else {
           this.$message.error(res.code + ": " + res.msg)  // 弹出错误的信息
         }

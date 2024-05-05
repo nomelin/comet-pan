@@ -57,13 +57,13 @@
       >
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
-            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
+            <p class="emptyText"><span style='font-size: 1.2rem;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
           </el-empty>
           <el-button type="primary" @click="uploadFile" class="primary-button">上传 / 秒传</el-button>
         </template>
         <template v-else slot="empty">
           <el-empty description=" ">
-            <p class="emptyText"><span style='font-size: 18px;font-weight: bold'>没有找到相关文件</span></p>
+            <p class="emptyText"><span style='font-size: 1.1rem;font-weight: bold'>没有找到相关文件</span></p>
           </el-empty>
         </template>
 
@@ -251,7 +251,7 @@ import Uploader from "@/views/front/uploader";
 import FileIcon from "@/views/FileIcon";
 import {downloadFile} from "@/App";
 // 在需要使用的地方引入 Base64
-import { Base64 } from 'js-base64';
+import {Base64} from 'js-base64';
 
 export default {
   name: "DiskFiles",
@@ -541,11 +541,16 @@ export default {
         this.folderId = row.id
       } else {
         //let originUrl = 'http://localhost:12345/download?diskId=' + row.diskId + "&fileId=" + row.id;
+        // console.log("total:"+row.size)
+        if (row.size > 30 * 1024 * 1024) {
+          this.$message.error("文件过大，暂不支持在线预览");
+          return;
+        }
         let originUrl = process.env.VUE_APP_BASEURL + '/download?diskId=' + row.diskId + "&fileId=" + row.id;
-        console.log(originUrl)
+        // console.log(originUrl)
         originUrl = originUrl + '&fullfilename=' + row.name + "." + row.type;
         // window.open(process.env.VUE_APP_FILE_VIEW_URL+'?url=' + encodeURIComponent(Base64.encode(originUrl)));
-        let url=process.env.VUE_APP_FILE_VIEW_URL+'?url=' + encodeURIComponent(Base64.encode(originUrl))
+        let url = process.env.VUE_APP_FILE_VIEW_URL + '?url=' + encodeURIComponent(Base64.encode(originUrl))
         console.log(url)
         window.open(url);
       }

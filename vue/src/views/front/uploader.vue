@@ -248,7 +248,7 @@ export default {
           // this.disabled = false;
           setTimeout(() => {
             this.removeFromSet(file.id);
-          }, 300);//延时是为了保证一定处理好了.
+          }, 500);//延时是为了保证一定处理好了.
         }
       };
       fileReader.onerror = function () {

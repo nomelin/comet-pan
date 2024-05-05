@@ -41,7 +41,10 @@ function setRootFontSize() {
   const baseFontSize = 16; // 默认字体大小
   const screenWidth = window.innerWidth; // 获取屏幕宽度
   // console.log(screenWidth);
-  const fontSize = screenWidth / 1920 * baseFontSize * 1.1; // 根据屏幕宽度计算字体大小
+  let fontSize = screenWidth / 1920 * baseFontSize * 1.1; // 根据屏幕宽度计算字体大小
+  if (fontSize < 10) {
+    fontSize = 10; // 最小字体大小为10px
+  }
   document.documentElement.style.setProperty('--base-font-size', `${fontSize}px`); // 设置根元素的字体大小
 }
 
