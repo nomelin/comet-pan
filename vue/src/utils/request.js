@@ -34,8 +34,8 @@ request.interceptors.response.use(
         if (typeof res === 'string') {
             res = res ? JSON.parse(res) : res
         }
-        if (res.code === '401' || res.code === '402' || res.code === '403' || res.code === '406'
-            || res.code === '407' || res.code === '502'|| res.code === '504') {
+        if (res.code === '401' || res.code === '402' || res.code === '403' || res.code === '406' || res.code === '407'
+            || res.code === '502'||res.code==='504') {
             router.push('/login')
         }
         return res;

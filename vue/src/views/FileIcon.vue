@@ -9,6 +9,7 @@
       <img v-else-if="iconType === 'audio'" src="@/assets/imgs/audio.svg" alt="声音文件" class="file-icon">
       <img v-else-if="iconType === 'image'" src="@/assets/imgs/image.svg" alt="图片文件" class="file-icon">
       <img v-else-if="iconType === 'text'" src="@/assets/imgs/text.svg" alt="文本文件" class="file-icon">
+      <img v-else-if="iconType === 'ppt'" src="@/assets/imgs/ppt.svg" alt="ppt文件" class="file-icon">
       <img v-else-if="iconType === 'word'" src="@/assets/imgs/word.svg" alt="word文件" class="file-icon">
       <img v-else-if="iconType === 'pdf'" src="@/assets/imgs/pdf.svg" alt="pdf文件" class="file-icon">
       <img v-else-if="iconType === 'excel'" src="@/assets/imgs/excel.svg" alt="excel文件" class="file-icon">
@@ -35,6 +36,7 @@ export default {
         text: ["txt", "md", "log", "ini"],
         excel: ["xls", "xlsx", "csv"],
         pdf: ["pdf"],
+        ppt: ["ppt", "pptx"],
         word: ["doc", "docx"],
         exes: ["exe", "bat", "sh", "apk"],
         code: ["java", "c", "cpp", "py", "js", "html", "css", "php", "go", "swift", "scala", "kotlin", "sql", "xml",
