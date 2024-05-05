@@ -214,7 +214,8 @@ export default {
 
 .card {
   width: 80%;
-  height: 80%;
+  height: auto;
+  padding-bottom: 3rem;
   box-shadow: 0 2rem 7rem rgba(217, 236, 255, 0.5);
   margin: 0 auto;
   border-radius: 5rem;
