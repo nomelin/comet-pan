@@ -34,11 +34,14 @@
 </template>
 
 <script>
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: "AdminPerson",
   data() {
     return {
-      user: JSON.parse(localStorage.getItem('user') || '{}')
+      user: getItemWithExpiry("user")
     }
   },
   created() {
@@ -53,7 +56,7 @@ export default {
           this.$message.success('保存成功')
 
           // 更新浏览器缓存里的用户信息
-          localStorage.setItem('user', JSON.stringify(this.user))
+          setItemWithExpiry("user",this.user)
 
           // 触发父级的数据更新
           this.$emit('update:user')

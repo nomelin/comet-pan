@@ -76,6 +76,50 @@ export function downloadFile( diskId, fileId) {
   window.location.href = `${process.env.VUE_APP_BASEURL}/download?diskId=${diskId}&fileId=${fileId}`
 }
 
+// 存储数据和时间戳
+//ttl是过期时间，单位是毫秒
+export function setItemWithExpiry(key, value, ttl) {
+  const now = new Date()
+  // `item`是我们要在localStorage中存储的对象
+  const item = {
+    value: value,
+    expiry: now.getTime() + ttl,
+  }
+  localStorage.setItem(key, JSON.stringify(item))
+}
+
+// 获取数据并检查是否过期
+export function getItemWithExpiry(key) {
+  const itemStr = localStorage.getItem(key)
+  // 如果数据不存在，返回空对象
+  if (!itemStr) {
+    return {}
+  }
+  const item = JSON.parse(itemStr)
+  const now = new Date()
+  // 比较当前时间和存储的时间戳
+  if (now.getTime() > item.expiry) {
+    // 如果过期了，删除数据并返回null
+    localStorage.removeItem(key)
+    return {}
+  }
+  return item.value
+}
+
+// 更新数据但不更改过期时间
+export function updateItemWithExpiry(key, newValue) {
+  const itemStr = localStorage.getItem(key)
+  // 如果数据不存在，返回空对象
+  if (!itemStr) {
+    return {}
+  }
+  const item = JSON.parse(itemStr)
+  // 更新数据的值
+  item.value = newValue
+  // 将更新后的数据重新存储
+  localStorage.setItem(key, JSON.stringify(item))
+}
+
 </script>
 <style>
 :root {

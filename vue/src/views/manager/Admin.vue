@@ -95,6 +95,9 @@
 </template>
 
 <script>
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: "Admin",
   data() {
@@ -106,7 +109,7 @@ export default {
       userName: null,
       fromVisible: false,
       form: {},
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
       rules: {
         userName: [
           {required: true, message: '请输入账号', trigger: 'blur'},

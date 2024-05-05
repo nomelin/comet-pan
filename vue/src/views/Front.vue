@@ -105,7 +105,9 @@
 </template>
 
 <script>
-
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: "FrontLayout",
 
@@ -113,7 +115,7 @@ export default {
     return {
       top: '',
       notice: [],
-      user: JSON.parse(localStorage.getItem("user") || '{}'),
+      user: getItemWithExpiry("user"),
 
       totalSpace: 10 * 1024 * 1024 * 1024, // 10GB 总空间
       usedSpace: 0, // 从后端接口获取的已用空间（以字节为单位）
@@ -156,7 +158,7 @@ export default {
       })
     },
     updateUser() {
-      this.user = JSON.parse(localStorage.getItem('user') || '{}')   // 重新获取下用户的最新信息
+      this.user = getItemWithExpiry("user")   // 重新获取下用户的最新信息
     },
     // 退出登录
     logout() {

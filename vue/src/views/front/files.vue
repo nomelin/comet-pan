@@ -254,6 +254,10 @@ import {downloadFile} from "@/App";
 // 在需要使用的地方引入 Base64
 import {Base64} from 'js-base64';
 
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
+
 export default {
   name: "DiskFiles",
   components: {FileTableDialog, Uploader, FileIcon},
@@ -266,7 +270,7 @@ export default {
       pageSize: 10,  // 每页显示的个数
       total: 0,
       name: null,
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
       ids: [],
 
       requestCache: [], // 存储发送的请求 URL
@@ -753,7 +757,7 @@ export default {
       xhr.open('post', url)
       //如果需要请求头中这是token信息可以在这设置
       // xhr.setRequestHeader('Content-Type','application/json;charset=UTF-8')
-      let user = JSON.parse(localStorage.getItem('user') || '{}')
+      let user = getItemWithExpiry("user")
       console.log(user.token)
       let token = user.token
       xhr.setRequestHeader('token', token)

@@ -36,6 +36,9 @@
 </template>
 
 <script>
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: 'fileTableDialog',
   data() {
@@ -47,7 +50,7 @@ export default {
       pathTemp: "", // 弹出框里面显示的文件夹路径
       totalTemp: 0, // 弹出框里面显示的文件总数
       folderIdTemp: 0, // 当前的文件夹 ID
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
     }
   },
   props: {

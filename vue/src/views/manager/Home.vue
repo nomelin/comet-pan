@@ -26,12 +26,14 @@
 </template>
 
 <script>
-
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: 'Home',
   data() {
     return {
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
       notices: []
     }
   },

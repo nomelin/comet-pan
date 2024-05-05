@@ -20,6 +20,9 @@
 </template>
 
 <script>
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: "Password",
   data() {
@@ -34,7 +37,7 @@ export default {
     }
 
     return {
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry('user'),
       rules: {
         password: [
           { required: true, message: '请输入原始密码', trigger: 'blur' },

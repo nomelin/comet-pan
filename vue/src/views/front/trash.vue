@@ -92,7 +92,9 @@
 
 <script>
 import FileIcon from "@/views/FileIcon";
-
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
 
   name: "trash",
@@ -104,7 +106,7 @@ export default {
       tableData: [],  // 所有的数据
       total: 0,
       name: null,
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
       ids: [],
 
       loading: true, // 控制加载动画的显示与隐藏

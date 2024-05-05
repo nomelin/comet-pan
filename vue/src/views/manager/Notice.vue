@@ -62,6 +62,9 @@
 </template>
 
 <script>
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: "Notice",
   data() {
@@ -73,7 +76,7 @@ export default {
       title: null,
       fromVisible: false,
       form: {},
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
       rules: {
         title: [
           {required: true, message: '请输入标题', trigger: 'blur'},

@@ -48,7 +48,7 @@
               <span>还没有账号？请<a href="/register">注册</a></span>
             </div>
           </el-form>
-          <div class ="temp" >
+          <div class="temp">
             测试账号用户名: 123, 密码: 123
           </div>
         </div>
@@ -60,6 +60,9 @@
 
 <script>
 import CryptoJS from 'crypto-js'
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 
 export default {
   name: "Login",
@@ -104,13 +107,15 @@ export default {
       let saltedPassword = this.form.username + this.form.password;
       // 使用哈希过的密码
       let hashedPassword = CryptoJS.SHA256(saltedPassword).toString();
-      console.log("hashedPassword: "+hashedPassword)
+      console.log("hashedPassword: " + hashedPassword)
       this.$request.post('/login', {
         username: this.form.username,
         password: hashedPassword
       }).then(res => {
         if (res.code === '200') {
-          localStorage.setItem("user", JSON.stringify(res.data));
+          console.log("data: " + JSON.stringify(res.data))
+          // localStorage.setItem("user", JSON.stringify(res.data));
+          setItemWithExpiry('user', res.data, 1000 * 60 * 60 * 2); // 设置 token 过期时间为2小时
           this.$message.success('登录成功');
           setTimeout(() => {
             //以下是为了实现跳转回登录前的页面,比如分享页面
@@ -151,6 +156,7 @@ export default {
   color: #707375;
   border-radius: 0.5rem;
 }
+
 .container {
   height: 100vh;
   overflow: hidden;
@@ -207,7 +213,7 @@ export default {
 }
 
 .blank {
-  height:1rem;
+  height: 1rem;
 }
 
 .login-box {
@@ -254,12 +260,12 @@ export default {
   width: 100%;
   background-color: #0d53ff;
   height: 4rem;
-  border-radius:1.2rem;
+  border-radius: 1.2rem;
   color: white;
 }
 
 .button-text {
-  font-size:1.2rem;
+  font-size: 1.2rem;
   font-weight: bold;
 }
 

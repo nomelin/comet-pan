@@ -1,6 +1,8 @@
 import axios from 'axios'
 import router from "@/router";
-
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 // 创建可一个新的axios对象
 const request = axios.create({
     baseURL: process.env.VUE_APP_BASEURL,   // 后端的接口地址  ip:port
@@ -12,8 +14,11 @@ const request = axios.create({
 // 比如统一加token，对请求参数统一加密
 request.interceptors.request.use(config => {
     config.headers['Content-Type'] = 'application/json;charset=utf-8';        // 设置请求头格式
-    let user = JSON.parse(localStorage.getItem("user") || '{}')  // 获取缓存的用户信息
-    config.headers['token'] = user.token  // 设置请求头
+    let user = getItemWithExpiry("user")  // 获取缓存的用户信息
+    // console.log("user: "+user)
+    if(user&&user.token){
+        config.headers['token'] = user.token  // 设置请求头
+    }
     return config
 }, error => {
     console.error('请求错误: ' + error) // for debug
@@ -24,7 +29,7 @@ request.interceptors.request.use(config => {
 // 可以在接口响应后统一处理结果
 request.interceptors.response.use(
     response => {
-        // console.log("content-type: "+response.headers['content-type']);
+        console.log("content-type: "+response.headers['content-type']);
         // 判断是否是文件下载请求，如果是，则直接返回配置对象
         if (response.headers['content-type'] === 'application/octet-stream'|| isFileDownloadRequest(response.config.url)) {
             return response;

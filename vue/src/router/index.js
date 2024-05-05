@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import {getItemWithExpiry} from "@/App"
 
 Vue.use(VueRouter)
 
@@ -67,7 +68,12 @@ const routes = [
     },
     {path: '/login', name: 'Login', meta: {name: '登录'}, component: () => import('../views/Login.vue')},
     {path: '/register', name: 'Register', meta: {name: '注册'}, component: () => import('../views/Register.vue')},
-    {path: '/share/**', name: 'public share', meta: {name: '分享文件'}, component: () => import('../views/publicShare')},
+    {
+        path: '/share/**',
+        name: 'public share',
+        meta: {name: '分享文件'},
+        component: () => import('../views/publicShare')
+    },
     {path: '*', name: 'NotFound', meta: {name: '无法访问'}, component: () => import('../views/404.vue')},
 ]
 
@@ -88,9 +94,10 @@ const router = new VueRouter({
 // 如果用户未登录，则将路由重定向到登录页面 /login。
 // 如果用户访问的不是根路径 /，则直接调用 next() 方法，继续执行下一个导航钩子。
 router.beforeEach((to, from, next) => {
-    let user = JSON.parse(localStorage.getItem("user") || '{}');
-    if (to.path === '/'||to.path==='') {
-        if (user.role) {
+    let user = getItemWithExpiry("user");
+    console.log("get user", user)
+    if (to.path === '/' || to.path === '') {
+        if (user && !(Object.keys(user).length === 0) && user.role) {
             if (user.role === 2) {
                 next('/files')
             } else if (user.role === 1) {
@@ -101,6 +108,13 @@ router.beforeEach((to, from, next) => {
             }
         } else {
             next('/login')
+        }
+    } else if (to.path === "/files") {
+        // console.log(Object.keys(user).length===0)
+        if (!user || Object.keys(user).length === 0) {
+            next('/login')
+        } else {
+            next()
         }
     } else {
         next()

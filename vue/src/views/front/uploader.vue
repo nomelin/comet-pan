@@ -35,6 +35,9 @@
 </template>
 
 <script>
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 import SparkMD5 from "spark-md5";
 // import {upload} from "@/api/user";
 // import storage from "store";
@@ -96,7 +99,7 @@ export default {
         },
         headers: {
           // 在header中添加的验证
-          "token": localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).token : "none",
+          "token": JSON.parse(getItemWithExpiry("user")).token,
         },
         simultaneousUploads: 3, // 并发上传的最大数量
       },

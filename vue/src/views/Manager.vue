@@ -63,11 +63,14 @@
 </template>
 
 <script>
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 export default {
   name: "Manager",
   data() {
     return {
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
     }
   },
   created() {
@@ -77,7 +80,7 @@ export default {
   },
   methods: {
     updateUser() {
-      this.user = JSON.parse(localStorage.getItem('user') || '{}')   // 重新获取下用户的最新信息
+      this.user = getItemWithExpiry("user")   // 重新获取下用户的最新信息
     },
     goToPerson() {
       if (this.user.role === 1) {

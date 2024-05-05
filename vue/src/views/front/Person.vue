@@ -58,6 +58,10 @@
 <script>
 import CryptoJS from 'crypto-js'
 
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
+
 export default {
   data() {
     const validatePassword = (rule, value, callback) => {
@@ -70,7 +74,7 @@ export default {
       }
     }
     return {
-      user: JSON.parse(localStorage.getItem('user') || '{}'),
+      user: getItemWithExpiry("user"),
       dialogVisible: false,
 
       rules: {
@@ -97,7 +101,7 @@ export default {
           // 成功更新
           this.$message.success('个人信息保存成功')
           // 更新浏览器缓存里的用户信息
-          localStorage.setItem('user', JSON.stringify(this.user))
+          updateItemWithExpiry("user",this.user);
 
           // 触发父级的数据更新
           this.$emit('update:user')

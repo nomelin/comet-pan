@@ -163,6 +163,9 @@
 import FileTableDialog from "@/views/front/fileTableDialog";
 // import {fileExtensions} from "@/utils/const.js";
 import FileIcon from "@/views/FileIcon";
+import {setItemWithExpiry} from "@/App"
+import {getItemWithExpiry} from "@/App"
+import {updateItemWithExpiry} from "@/App"
 
 export default {
   name: "publicShare",
@@ -174,7 +177,7 @@ export default {
       // extension: fileExtensions,
 
       top: '',
-      user: JSON.parse(localStorage.getItem("user") || '{}'),
+      user: getItemWithExpiry("user"),
 
       totalSpace: 1024 * 1024 * 1024, // 1GB 总空间
       usedSpace: 0, // 从后端接口获取的已用空间（以字节为单位）
@@ -245,7 +248,7 @@ export default {
       })
     },
     updateUser() {
-      this.user = JSON.parse(localStorage.getItem('user') || '{}')   // 重新获取下用户的最新信息
+      this.user = getItemWithExpiry("user")   // 重新获取下用户的最新信息
     },
     // 退出登录
     logout() {
