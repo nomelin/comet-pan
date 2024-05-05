@@ -57,7 +57,8 @@
       >
         <template v-if="!isSearch" slot="empty">
           <el-empty description=" ">
-            <p class="emptyText"><span style='font-size: 1.2rem;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span></p>
+            <p class="emptyText"><span style='font-size: 1.2rem;font-weight: bold'>这里还没有文件哦, 赶快上传吧</span>
+            </p>
           </el-empty>
           <el-button type="primary" @click="uploadFile" class="primary-button">上传 / 秒传</el-button>
         </template>
@@ -618,18 +619,32 @@ export default {
       document.removeEventListener('click', this.foo) // 关掉监听，
     },
     styleMenu(menu) {
-      if (event.clientX > 1800) {
-        menu.style.left = event.clientX - 100 + 'px'
-      } else {
-        menu.style.left = event.clientX + 1 + 'px'
+      let clientX = event.clientX
+      let clientY = event.clientY
+      let menuWidth = menu.offsetWidth
+      let menuHeight = menu.offsetHeight
+      if (menuWidth === 0) {
+        menuWidth = 150
       }
-      document.addEventListener('click', this.foo) // 给整个document新增监听鼠标事件，点击任何位置执行foo方法
-      if (event.clientY > 700) {
-        menu.style.top = event.clientY - 30 + 'px'
+      if (menuHeight === 0) {
+        menuHeight = 250
+      }
+      let windowWidth = window.innerWidth
+      let windowHeight = window.innerHeight
+      console.log(clientX, clientY, menuWidth, menuHeight, windowWidth, windowHeight)
+      if (clientX + menuWidth + 10 > windowWidth) {
+        menu.style.left = clientX - menuWidth - 2 + 'px';
       } else {
-        menu.style.top = event.clientY - 10 + 'px'
+        menu.style.left = clientX + 2 + 'px';
+      }
+      document.addEventListener('click', this.foo);
+      if (clientY + menuHeight + 10 > windowHeight) {
+        menu.style.top = clientY - menuHeight - 2 + 'px';
+      } else {
+        menu.style.top = clientY + 2 + 'px';
       }
     },
+
     formatSize(row, column) {
       // row 是当前行的数据对象
       // column 是当前列的属性配置对象
