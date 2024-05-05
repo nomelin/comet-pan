@@ -73,7 +73,19 @@ window.addEventListener('resize', setRootFontSize);
 //   })
 // }
 export function downloadFile( diskId, fileId) {
-  window.location.href = `${process.env.VUE_APP_BASEURL}/download?diskId=${diskId}&fileId=${fileId}`
+  // window.location.href = `${process.env.VUE_APP_BASEURL}/download?diskId=${diskId}&fileId=${fileId}`
+  // 创建一个新的 <a> 元素
+  const a = document.createElement('a')
+  // 设置 href 属性
+  a.href = `${process.env.VUE_APP_BASEURL}/download?diskId=${diskId}&fileId=${fileId}`
+  // 设置 download 属性
+  a.download = ''
+  // 将 <a> 元素添加到 DOM
+  document.body.appendChild(a)
+  // 触发点击事件
+  a.click()
+  // 从 DOM 中移除 <a> 元素
+  document.body.removeChild(a)
 }
 
 // 存储数据和时间戳

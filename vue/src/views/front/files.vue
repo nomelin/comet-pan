@@ -28,8 +28,12 @@
                  @click="shareFile">
         <i class="el-icon-share"></i> 分享
       </el-button>
+      <el-button class="primary-button" type="text" plain style="margin-left: 1rem"
+                 @click="downloadBatch">
+        <i class="el-icon-download"></i> 下载
+      </el-button>
 
-      <span style="color: #909399;margin-left: 1rem ;font-size: 0.8rem ; font-weight: bold">功能仍在开发中</span>
+<!--      <span style="color: #909399;margin-left: 1rem ;font-size: 0.8rem ; font-weight: bold">功能仍在开发中</span>-->
     </div>
     <div class="blank"></div>
     <div class="backAndForward">
@@ -737,10 +741,25 @@ export default {
         this.$message.info('暂不支持下载文件夹')
         return
       }
-      // console.log(row)
+      console.log("下载文件："+row.name)
       downloadFile(row.diskId, row.id)
     },
-    download(row) {
+    downloadBatch() {
+      if (!this.ids.length) {
+        this.$message.warning('请选择数据')
+        return
+      }
+      console.log(this.ids)
+      for (let i = 0; i < this.ids.length; i++) {
+        let row = this.tableData.find(item => item.id === this.ids[i])
+
+        // 添加延迟
+        setTimeout(() => {
+          this.downloadByBrowser(row)
+        }, i * 1000) // 每个下载操作之间延迟1秒
+      }
+    },
+    /*download(row) {
       if (row.folder === true) {
         this.$message.info('暂不支持下载文件夹')
         console.log("是文件夹：" + row.name)
@@ -781,7 +800,7 @@ export default {
           window.URL.revokeObjectURL(url)
         }
       }
-    },
+    },*/
     shareFile() {
       if (!this.ids.length) {
         this.$message.warning('请选择数据')
