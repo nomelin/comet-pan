@@ -16,7 +16,7 @@ request.interceptors.request.use(config => {
     config.headers['Content-Type'] = 'application/json;charset=utf-8';        // 设置请求头格式
     let user = getItemWithExpiry("user")  // 获取缓存的用户信息
     // console.log("user: "+user)
-    if(user&&user.token){
+    if(user&&Object.keys(user).length>0&&user.token){
         config.headers['token'] = user.token  // 设置请求头
     }
     return config

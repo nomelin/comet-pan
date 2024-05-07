@@ -35,9 +35,7 @@
 </template>
 
 <script>
-import {setItemWithExpiry} from "@/App"
 import {getItemWithExpiry} from "@/App"
-import {updateItemWithExpiry} from "@/App"
 import SparkMD5 from "spark-md5";
 // import {upload} from "@/api/user";
 // import storage from "store";
@@ -49,7 +47,7 @@ export default {
       skip: false,
       options: {
         chunkSize: 1024 * 1024 * 10, // 10MB
-        target: process.env.VUE_APP_BASEURL+"/upload/chunk",
+        target: process.env.VUE_APP_BASEURL + "/upload/chunk",
         // 开启服务端分片校验功能
         testChunks: true,
         parseTimeRemaining: function (timeRemaining, parsedTimeRemaining) {
@@ -99,7 +97,7 @@ export default {
         },
         headers: {
           // 在header中添加的验证
-          "token": JSON.parse(getItemWithExpiry("user")).token,
+          "token": Object.keys(getItemWithExpiry("user")).length > 0 ? getItemWithExpiry("user").token : "",
         },
         simultaneousUploads: 3, // 并发上传的最大数量
       },
