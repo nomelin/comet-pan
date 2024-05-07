@@ -84,7 +84,7 @@ public class ShareServiceImpl implements ShareService {
         long currentTime = System.currentTimeMillis();
         String time = String.valueOf(currentTime);
         share.setShareTime(time);
-        share.setEndTime(String.valueOf(currentTime + days * 24 * 60 * 60 * 1000 + 60 * 1000));//多加一分钟
+        share.setEndTime(String.valueOf(currentTime + (long) days * 24 * 60 * 60 * 1000 + 60 * 1000));//多加一分钟
         if (days == -1) {
             share.setEndTime("-1");
         }
