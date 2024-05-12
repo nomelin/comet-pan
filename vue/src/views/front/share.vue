@@ -89,7 +89,6 @@ export default {
         const nowTime = new Date();
 
         const endTime = item.endTime === "-1" ? null : new Date(parseInt(item.endTime)); // 如果是永久则设为null
-        console.log(shareTime + ' ' + endTime + '当前时间： ' + nowTime)
         // const days = endTime ? Math.floor((endTime - shareTime) / (1000 * 3600 * 24)) + '天后' : "永久";
         const days = endTime ? Math.floor((endTime - nowTime) / (1000 * 3600 * 24)) + '天后' : "永久";
         // 设置访问密码
