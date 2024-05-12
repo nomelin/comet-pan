@@ -20,7 +20,8 @@
                 ref="table">
         <template slot="empty">
           <el-empty description=" ">
-            <p class="emptyText"><span style='font-size: 1.2rem;font-weight: bold'>还没有分享的文件,快去分享吧！</span></p>
+            <p class="emptyText"><span style='font-size: 1.2rem;font-weight: bold'>还没有分享的文件,快去分享吧！</span>
+            </p>
           </el-empty>
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -28,7 +29,7 @@
           <img class="folder-icon" src="@/assets/imgs/分享.svg" alt="文件夹">
         </el-table-column>
         <el-table-column prop="name" label="分享名称" show-overflow-tooltip></el-table-column>
-        <el-table-column  label="分享链接" show-overflow-tooltip min-width="400">
+        <el-table-column label="分享链接" show-overflow-tooltip min-width="400">
           <template v-slot="scope">
             <!-- 使用自定义渲染函数，将路径加上固定前缀 -->
             <span>{{ 'https://pan.nomelin.top/share/' + scope.row.path }}</span>
@@ -54,9 +55,8 @@
 </template>
 
 <script>
-import {setItemWithExpiry} from "@/App"
 import {getItemWithExpiry} from "@/App"
-import {updateItemWithExpiry} from "@/App"
+
 export default {
   name: "trash",
   data() {
@@ -86,11 +86,12 @@ export default {
       return this.tableData.map(item => {
         // 计算天数
         const shareTime = new Date(parseInt(item.shareTime));
+        const nowTime = new Date();
 
         const endTime = item.endTime === "-1" ? null : new Date(parseInt(item.endTime)); // 如果是永久则设为null
-        console.log(shareTime + ' ' + endTime)
-        const days = endTime ? Math.floor((endTime - shareTime) / (1000 * 3600 * 24)) + '天后' : "永久";
-
+        console.log(shareTime + ' ' + endTime + '当前时间： ' + nowTime)
+        // const days = endTime ? Math.floor((endTime - shareTime) / (1000 * 3600 * 24)) + '天后' : "永久";
+        const days = endTime ? Math.floor((endTime - nowTime) / (1000 * 3600 * 24)) + '天后' : "永久";
         // 设置访问密码
         const code = item.code.trim() ? item.code.trim() : "无访问密码";
 
@@ -238,6 +239,7 @@ export default {
   font-weight: bold;
   font-size: 15px;
 }
+
 .folder-icon {
   width: 100%;
 }
