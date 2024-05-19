@@ -16,6 +16,7 @@ import top.nomelin.cometpan.interfaces.DoubleCache;
 import top.nomelin.cometpan.util.Util;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.TreeMap;
@@ -71,23 +72,25 @@ public class CacheAspect {
             cache.invalidate(realKey);
             return point.proceed();
         }
+//        printAllCacheItems();
 
         //读写，查询Caffeine
         Object caffeineCache = cache.getIfPresent(realKey);
         if (Objects.nonNull(caffeineCache)) {
-            log.info("从Caffeine中获取缓存");
+            log.info("从Caffeine中获取缓存:" + realKey);
             return caffeineCache;
         }
 
         //查询Redis
         Object redisCache = redisTemplate.opsForValue().get(realKey);
         if (Objects.nonNull(redisCache)) {
-            log.info("从Redis中获取缓存");
+            log.info("从Redis中获取缓存:" + realKey);
             cache.put(realKey, redisCache);
+//            printAllCacheItems();
             return redisCache;
         }
 
-        log.info("缓存不存在，从数据库中查询");
+        log.info("缓存不存在，从数据库中查询:" + realKey);
         Object object = point.proceed();
         if (Objects.nonNull(object)) {
             //写入Redis
@@ -96,5 +99,11 @@ public class CacheAspect {
             cache.put(realKey, object);
         }
         return object;
+    }
+    public void printAllCacheItems() {
+        Map<String, Object> cacheMap = cache.asMap();
+        log.info("当前缓存数量:" + cacheMap.size());
+        cacheMap.forEach((key, value) -> log.info("Key: " + key + ", Value: " + value));
+        log.info("end----------");
     }
 }

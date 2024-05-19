@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class CaffeineConfig {
     @Value("${cache.l1.max-size:1024}")
-    private static int MAX_SIZE;
+    private int MAX_SIZE;
     @Value("${cache.l1.init-size:128}")
-    private static int INITIAL_SIZE;
+    private int INITIAL_SIZE;
     @Value("${cache.l1.expire-time:60}")
-    private static int L1_TIMEOUT;
+    private int L1_TIMEOUT;
 
     @Bean
     public Cache<String, Object> caffeineCache() {
@@ -33,9 +33,9 @@ public class CaffeineConfig {
         return Caffeine.newBuilder()
                 .initialCapacity(INITIAL_SIZE)//初始大小
                 .maximumSize(MAX_SIZE)//最大数量
-//                .expireAfterWrite(60, TimeUnit.SECONDS)//某个数据在多久没有被更新后，就过期。
+//                .expireAfterWrite(L1_TIMEOUT, TimeUnit.SECONDS)//某个数据在多久没有被更新后，就过期。
                 .expireAfterAccess(L1_TIMEOUT, TimeUnit.SECONDS)//某个数据在多久没有被访问后，就过期。
-                .weakKeys()//弱引用key
+//                .weakKeys()//弱引用key(不要使用，可能会导致同一个key被保存多次)
                 .weakValues()//弱引用value
                 .build();
     }

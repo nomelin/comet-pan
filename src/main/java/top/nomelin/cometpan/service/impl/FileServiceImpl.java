@@ -11,11 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.nomelin.cometpan.cache.CurrentUserCache;
+import top.nomelin.cometpan.common.enums.CacheType;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.BusinessException;
 import top.nomelin.cometpan.common.exception.SystemException;
 import top.nomelin.cometpan.dao.FileMapper;
 import top.nomelin.cometpan.dao.UserMapper;
+import top.nomelin.cometpan.interfaces.DoubleCache;
 import top.nomelin.cometpan.pojo.FileMeta;
 import top.nomelin.cometpan.pojo.User;
 import top.nomelin.cometpan.service.DiskService;
@@ -707,7 +709,7 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 复制节点的递归方法,不要之间使用此方法
+     * 复制节点的递归方法,不要直接使用此方法
      *
      * @param id             节点ID
      * @param parentFolderId 要复制到的父文件夹ID
