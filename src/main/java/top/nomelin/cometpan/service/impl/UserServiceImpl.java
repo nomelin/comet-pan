@@ -10,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.nomelin.cometpan.common.Constants;
+import top.nomelin.cometpan.common.enums.CacheType;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.enums.Role;
 import top.nomelin.cometpan.common.exception.BusinessException;
 import top.nomelin.cometpan.dao.FileMapper;
 import top.nomelin.cometpan.dao.UserMapper;
+import top.nomelin.cometpan.interfaces.DoubleCache;
 import top.nomelin.cometpan.pojo.Account;
 import top.nomelin.cometpan.pojo.User;
 import top.nomelin.cometpan.service.FileService;
@@ -71,6 +73,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 删除
      */
+    @DoubleCache(cacheName = "user", key = "#id", type = CacheType.DELETE)
     @Override
     public void deleteById(Integer id) {
         userMapper.deleteById(id);
@@ -89,14 +92,17 @@ public class UserServiceImpl implements UserService {
     /**
      * 修改
      */
+    @DoubleCache(cacheName = "user", key = "#user.id", type = CacheType.DELETE)
     @Override
-    public void updateById(User user) {
+    public User updateById(User user) {
         userMapper.updateById(user);
+        return user;
     }
 
     /**
      * 根据ID查询
      */
+    @DoubleCache(cacheName = "user", key = "#id", type = CacheType.FULL)
     @Override
     public User selectById(Integer id) {
         return userMapper.selectById(id);

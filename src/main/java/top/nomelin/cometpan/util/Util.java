@@ -5,6 +5,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.common.TemplateParserContext;
+import org.springframework.expression.spel.SpelEvaluationException;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import top.nomelin.cometpan.common.enums.CodeMessage;
 import top.nomelin.cometpan.common.exception.SystemException;
 
@@ -215,6 +221,32 @@ public class Util {
         LocalDate endDate = LocalDate.ofInstant(endInstant, ZoneId.systemDefault());
         // 计算剩余的天数，并向上取整
         return (int) (Duration.between(currentDate.atStartOfDay(), endDate.atStartOfDay()).toDays() + 1);
+    }
+
+    /**
+     * 解析EL表达式
+     *
+     * @param elString EL表达式字符串
+     * @param map      EL表达式需要的上下文变量
+     * @return EL表达式解析结果
+     */
+    public static String parse(String elString, TreeMap<String, Object> map) {
+        elString = String.format("#{%s}", elString);
+        // 创建表达式解析器
+        ExpressionParser parser = new SpelExpressionParser();
+        // 通过evaluationContext.setVariable可以在上下文中设定变量。
+        StandardEvaluationContext context = new StandardEvaluationContext();
+        map.forEach(context::setVariable);
+
+        try {
+            // 解析表达式
+            Expression expression = parser.parseExpression(elString, new TemplateParserContext());
+            // 使用Expression.getValue()获取表达式的值，这里传入了Evaluation上下文
+            return expression.getValue(context, String.class);
+        } catch (SpelEvaluationException e) {
+            System.err.println("SpEL evaluation error: " + e.getMessage());
+            return null; // 或者返回一个默认值
+        }
     }
 
 

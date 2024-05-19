@@ -13,7 +13,7 @@ public interface UserService {
 
     void deleteBatch(List<Integer> ids);
 
-    void updateById(User user);
+    User updateById(User user);
 
     User selectById(Integer id);
 
