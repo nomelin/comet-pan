@@ -174,16 +174,22 @@ public class UploaderServiceImpl implements UploaderService {
         }
         // 更新数据库
         //如果有执行到合并文件这一步，一定不是秒传,所以一定是新文件
-        Long size = (Long) redisTemplate.opsForHash().get(identifier, "totalSize");
-        if (ObjectUtil.isNull(size)) {
-            size = 0L;
+        Object sizeTemp = redisTemplate.opsForHash().get(identifier, "totalSize");
+        logger.info("size:" + sizeTemp + " : " + sizeTemp.getClass().getName());
+        long size = 0L;
+        if (!ObjectUtil.isNull(size)) {
+            if (sizeTemp instanceof Integer) {
+                size = ((Integer) sizeTemp).longValue();
+            } else if (sizeTemp instanceof Long) {
+                size = (Long) sizeTemp;
+            }
         }
         DiskFile diskFile = new DiskFile();
         diskFile.setCount(1);
         diskFile.setHash(identifier);
         diskFile.setLength(size);
         diskMapper.insert(diskFile); // 插入数据库，得到id
-        fileService.addFile(filename, targetFolderId,size, diskFile.getId());
+        fileService.addFile(filename, targetFolderId, size, diskFile.getId());
         //合并文件
         String filePath = getFilePath(identifier, diskFile.getId()); // 获取文件路径
         diskFile.setPath(filePath);
